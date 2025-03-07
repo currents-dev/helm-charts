@@ -1,0 +1,4 @@
+- Differs from helm default in that there isn't one main deployment, but several microservice 'components' that make up the chart
+- If a template needs use the component name, the template should take a dict with context and component defined (a standard used by bitnami and many other charts)
+- Include as many of the default helm settings, even if we don't need them quite yet, only remove ones that don't make sense before we have other parts working
+- The default settings will often have to be moved to either .global or a component config. There should be minimal settings left in the root config scope
