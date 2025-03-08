@@ -1,0 +1,23 @@
+global:
+  # Reference to one or more secrets to be used when pulling images.
+  # For more information, see [Pull an Image from a Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
+  #
+  # For example:
+  imagePullSecrets:
+    - name: "currents-pull-secret"
+  imagePullPolicy: IfNotPresent
+  imageTag: staging-aarch64
+  
+  apiJwtToken:
+    secretName: currents-api-jwt-token
+  mongoConnection:
+    secretName: mongodb-admin-my-user
+    key: connectionString.standardSrv
+
+server:
+  env:
+    - name: MONGODB_DATABASE
+      value: admin
+
+redis:
+  enabled: true

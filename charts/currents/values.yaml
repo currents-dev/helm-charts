@@ -15,6 +15,11 @@ global:
   imagePullPolicy: IfNotPresent
   imageTag: staging-aarch64
 
+  apiJwtToken:
+    # secretName: currents-api-jwt-token
+    key: token
+    expiry: 1d
+
   # Labels to apply to all resources.
   additionalLabels: {}
 
@@ -70,6 +75,13 @@ global:
     kubernetes.io/os: linux
   tolerations: []
   affinity: {}
+
+currents:
+  redis:
+    # -- set the redis hostname to talk to
+    # @default -- `{{ .Release.Name }}-redis-master`
+    host: "{{ .Release.Name }}-redis-master"
+    password: ""
 
 server:
   name: server
@@ -138,7 +150,7 @@ server:
     # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     type: ClusterIP
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-    port: 80
+    port: 4000
 
   # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
   ingress:
@@ -177,3 +189,23 @@ serviceAccount:
   # Automatically mount a ServiceAccount's API credentials?
   automount: true
 
+
+# The included redis CAN be used in production, but you won't have high availability during version upgrades
+redis:
+  # -- enable the Bitnami Redis chart. Refer to https://github.com/bitnami/charts/blob/main/bitnami/redis/ for possible values.
+  enabled: false
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    resourcesPreset: "none"
+  replica:
+    resourcesPreset: "none"
+  sentinel:
+    resourcesPreset: "none"
+  metrics:
+    resourcesPreset: "none"
+  volumePermissions:
+    resourcesPreset: "none"
+  sysctl:
+    resourcesPreset: "none"

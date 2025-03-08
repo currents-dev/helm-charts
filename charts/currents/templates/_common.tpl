@@ -68,7 +68,7 @@ Create the name of the service account to use
 {{- end }}
 
 {{- define "currents.image" -}}
-{{- $registryName := default .imageRoot.registry ((.context.global).imageRegistry) -}}
+{{- $registryName := default .imageRoot.registry ((.context.Values.global).imageRegistry) -}}
 {{- $repositoryName := .imageRoot.repository -}}
 {{- $separator := ":" -}}
 {{- $termination := .imageRoot.tag | toString -}}
@@ -87,3 +87,18 @@ Create the name of the service account to use
 {{- end -}}
 {{- end -}}
 
+{{- define "currents.redis.host" -}}
+{{ .Values.currents.redis.host }}
+{{- end -}}
+
+{{- define "currents.connectionConfigEnv" -}}
+- name: REDIS_URI
+  value: {{ printf "redis://%s:6379"  (tpl .Values.currents.redis.host .) }}
+- name: REDIS_URI_SLAVE
+  value: {{ printf "redis://%s:6379"  (tpl .Values.currents.redis.host .) }}
+- name: MONGODB_URI
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.global.mongoConnection.secretName }}
+      key: {{ .Values.global.mongoConnection.key }}
+{{- end }}
