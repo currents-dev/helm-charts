@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "currents.scheduler.fullname" . }}
+  labels:
+    {{- include "currents.labels" (dict "context" . "component" .Values.scheduler.name) | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "currents.selectorLabels" (dict "context" . "component" .Values.scheduler.name) | nindent 6 }}
+  {{- if .Values.scheduler.deploymentStrategy }}
+  strategy:
+    {{- toYaml .Values.scheduler.deploymentStrategy | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      {{- with .Values.global.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "currents.labels" (dict "context" . "component" .Values.scheduler.name) | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "currents.serviceAccountName" . }}
+      {{- with .Values.global.SecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.scheduler.name }}
+          {{- with .Values.global.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.scheduler.image) }}
+          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.scheduler.image.pullPolicy }}
+          env:
+            - name: RUN_STARTUP_TASKS
+              value: "true"
+            {{- include "currents.connectionConfigEnv" . | nindent 12 }}
+            {{- with (concat .Values.global.env .Values.scheduler.env) }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: pm2-data
+              mountPath: /home/node/.pm2
+            - name: startup
+              mountPath: /app/packages/scheduler/dist/.startup
+          {{- with .Values.scheduler.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.scheduler.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.scheduler.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.global.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.scheduler.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: pm2-data
+          emptyDir:
+            medium: "Memory"
+        - name: startup
+          persistentVolumeClaim:
+            claimName: {{ template "currents.scheduler.fullname" . }}-startup-tmp
+      {{- with .Values.global.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scheduler.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scheduler.nodeSelector | default .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scheduler.tolerations | default .Values.global.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scheduler.affinity | default .Values.global.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

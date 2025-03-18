@@ -101,4 +101,6 @@ Create the name of the service account to use
     secretKeyRef:
       name: {{ .Values.global.mongoConnection.secretName }}
       key: {{ .Values.global.mongoConnection.key }}
+- name: ELASTIC_URI
+  value: {{ printf "http://%s:%d" (tpl .Values.currents.elastic.host .) (.Values.currents.elastic.port | int) }}
 {{- end }}

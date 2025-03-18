@@ -13,11 +13,13 @@ global:
   mongoConnection:
     secretName: mongodb-admin-my-user
     key: connectionString.standardSrv
-
-server:
   env:
     - name: MONGODB_DATABASE
       value: admin
+
+currents:
+  elastic:
+    host: elasticsearch-es-http
 
 redis:
   enabled: true

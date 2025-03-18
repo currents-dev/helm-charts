@@ -11,7 +11,7 @@ Create namespace (easier to cleanup resources in a custom namespace)
 
 ```sh
 kubectl create namespace deej-mar7
-kubectl config set-context --current --namespace deej-mar7
+kubectl ns deej-mar7
 ```
 
 
@@ -50,9 +50,43 @@ Edit the password in `samples/mongodb-community-replicaset.yml`
 kubectl apply -f samples/mongodb-community-replicaset.yml
 ```
 
+Setup ES
+
+https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-install-helm.html
+
+
+Replace `deej-mar17` in the following command with your namespace
+
+```sh
+helm repo add elastic https://helm.elastic.co
+helm install elastic-operator-crds elastic/eck-operator-crds
+helm install elastic-operator elastic/eck-operator  \
+  --set=installCRDs=false \
+  --set=managedNamespaces='{deej-mar17}'
+  --set=createClusterScopedResources=false \
+  --set=webhook.enabled=false \
+  --set=config.validateStorageClass=false
+```
+
+Install sample es cluster
+https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html
+
+```sh
+kubectl apply -f samples/elasticsearch.yml
+```
+
+
+Install the Currents Helm chart
+
+```sh
+cd charts/currents
+helm dep up
+helm upgrade ---install  -f config.yaml test-currents .
+```
 
 Access the api via port forward
 
-```
-kubectl port-forward service/deej-test-currents-server 4000:4000
+```sh
+  # Find the actual service name using # kubectl get services
+  kubectl port-forward service/test-currents-server 4000:4000
 ```

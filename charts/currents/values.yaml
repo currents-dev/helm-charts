@@ -82,6 +82,9 @@ currents:
     # @default -- `{{ .Release.Name }}-redis-master`
     host: "{{ .Release.Name }}-redis-master"
     password: ""
+  elastic:
+    host: ""
+    port: 9200
 
 server:
   name: server
@@ -169,7 +172,75 @@ server:
     #    hosts:
     #      - chart-example.local
 
+scheduler:
+  name: scheduler
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    # The container registry to pull the manager image from.
+    registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
 
+    # The container image for Currents Server API.
+    repository: currents/on-prem/scheduler
+
+    # Override the image tag to deploy by setting this variable.
+    # If no value is set, the chart's appVersion is used.
+    # tag: vX.Y.Z
+
+    # Setting a digest will override any tag.
+    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
+
+    pullPolicy: "" # defaults to global.image.pullPolicy
+  startup:
+    persistence:
+      accessMode: ReadWriteOnce
+      size: 10Mi
+      subPath: ""
+      ## if volumeName is set, use this existing PersistentVolume
+      # volumeName:
+      matchLabels: {}
+      matchExpressions: []
+
+  # Deployment update strategy for Currents deployment.
+  # For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
+  #
+  # For example:
+  #  strategy:
+  #    type: RollingUpdate
+  #    rollingUpdate:
+  #      maxSurge: 0
+  #      maxUnavailable: 1
+  deploymentStrategy: {}
+  env: []
+  volumes: []
+  volumeMounts: []
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+  # Resources to provide
+  #
+  # For example:
+  #  requests:
+  #    cpu: 10m
+  #    memory: 32Mi
+  #
+  # For more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
+  resources: {}
+  # -- [Node selector]
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+
+  # -- [Tolerations] for use with node taints
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
+
+  # -- Assign custom [affinity] rules to the deployment
+  # @default -- `{}` (defaults to the global.affinity preset)
+  affinity: {}
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
