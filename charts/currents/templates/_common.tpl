@@ -103,4 +103,14 @@ Create the name of the service account to use
       key: {{ .Values.currents.mongoConnection.key }}
 - name: ELASTIC_URI
   value: {{ printf "%s://%s:%d" (.Values.currents.elastic.tls.enabled | ternary "https" "http") (tpl .Values.currents.elastic.host .) (.Values.currents.elastic.port | int) }}
+- name: ELASTIC_API_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.currents.elastic.apiUser.secretName }}
+      key: {{ .Values.currents.elastic.apiUser.idKey }}
+- name: ELASTIC_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.currents.elastic.apiUser.secretName }}
+      key: {{ .Values.currents.elastic.apiUser.secretKey }}
 {{- end }}

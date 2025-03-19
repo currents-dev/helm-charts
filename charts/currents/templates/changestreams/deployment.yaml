@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "currents.writer.fullname" . }}
+  name: {{ template "currents.changestreams.fullname" . }}
   labels:
-    {{- include "currents.labels" (dict "context" . "component" .Values.writer.name) | nindent 4 }}
+    {{- include "currents.labels" (dict "context" . "component" .Values.changestreams.name) | nindent 4 }}
 spec:
-  replicas: {{ .Values.writer.replicas }}
+  replicas: 1
   selector:
     matchLabels:
-      {{- include "currents.selectorLabels" (dict "context" . "component" .Values.writer.name) | nindent 6 }}
-  {{- if .Values.writer.deploymentStrategy }}
+      {{- include "currents.selectorLabels" (dict "context" . "component" .Values.changestreams.name) | nindent 6 }}
+  {{- if .Values.changestreams.deploymentStrategy }}
   strategy:
-    {{- toYaml .Values.writer.deploymentStrategy | nindent 4 }}
+    {{- toYaml .Values.changestreams.deploymentStrategy | nindent 4 }}
   {{- end }}
   template:
     metadata:
@@ -20,7 +20,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "currents.labels" (dict "context" . "component" .Values.writer.name) | nindent 8 }}
+        {{- include "currents.labels" (dict "context" . "component" .Values.changestreams.name) | nindent 8 }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -35,58 +35,52 @@ spec:
       priorityClassName: {{ . }}
       {{- end }}
       containers:
-        - name: {{ .Values.writer.name }}
+        - name: {{ .Values.changestreams.name }}
           {{- with .Values.global.containerSecurityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.writer.image) }}
-          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.writer.image.pullPolicy }}
+          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.changestreams.image) }}
+          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.changestreams.image.pullPolicy }}
           env:
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
-            {{- with (concat .Values.global.env .Values.writer.env) }}
+            {{- with (concat .Values.global.env .Values.changestreams.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
-          volumeMounts:
-            - name: pm2-data
-              mountPath: /home/node/.pm2
-          {{- with .Values.writer.livenessProbe }}
+          {{- with .Values.changestreams.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.writer.readinessProbe }}
+          {{- with .Values.changestreams.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.writer.resources }}
+          {{- with .Values.changestreams.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.global.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.writer.volumeMounts }}
+          {{- with .Values.changestreams.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
-        - name: pm2-data
-          emptyDir:
-            medium: "Memory"
       {{- with .Values.global.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.writer.volumes }}
+      {{- with .Values.changestreams.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.writer.nodeSelector | default .Values.global.nodeSelector }}
+      {{- with .Values.changestreams.nodeSelector | default .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.writer.tolerations | default .Values.global.tolerations }}
+      {{- with .Values.changestreams.tolerations | default .Values.global.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.writer.affinity | default .Values.global.affinity }}
+      {{- with .Values.changestreams.affinity | default .Values.global.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}

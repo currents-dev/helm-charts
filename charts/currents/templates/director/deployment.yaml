@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "currents.server.fullname" . }}
+  name: {{ template "currents.director.fullname" . }}
   labels:
-    {{- include "currents.labels" (dict "context" . "component" .Values.server.name) | nindent 4 }}
+    {{- include "currents.labels" (dict "context" . "component" .Values.director.name) | nindent 4 }}
 spec:
-  replicas: {{ .Values.server.replicas }}
+  replicas: {{ .Values.director.replicas }}
   selector:
     matchLabels:
-      {{- include "currents.selectorLabels" (dict "context" . "component" .Values.server.name) | nindent 6 }}
-  {{- if .Values.server.deploymentStrategy }}
+      {{- include "currents.selectorLabels" (dict "context" . "component" .Values.director.name) | nindent 6 }}
+  {{- if .Values.director.deploymentStrategy }}
   strategy:
-    {{- toYaml .Values.server.deploymentStrategy | nindent 4 }}
+    {{- toYaml .Values.director.deploymentStrategy | nindent 4 }}
   {{- end }}
   template:
     metadata:
@@ -20,7 +20,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "currents.labels" (dict "context" . "component" .Values.server.name) | nindent 8 }}
+        {{- include "currents.labels" (dict "context" . "component" .Values.director.name) | nindent 8 }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -35,87 +35,73 @@ spec:
       priorityClassName: {{ . }}
       {{- end }}
       containers:
-        - name: {{ .Values.server.name }}
+        - name: {{ .Values.director.name }}
           {{- with .Values.global.containerSecurityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.server.image) }}
-          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.server.image.pullPolicy }}
+          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.director.image) }}
+          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.director.image.pullPolicy }}
           env:
-            - name: INCLUDE_DASHBOARD
-              value: "onprem"
             - name: ON_PREM_MODE
               value: "true"
+            - name: APP_BASE_URL
+              value: {{ .Values.currents.baseUrl | quote }}
             - name: GITLAB_STATE_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.currents.gitlab.state.secretName }}
                   key: {{ .Values.currents.gitlab.state.secretKey }}
-            - name: JWT_SECRET_EXPIRY
-              value: {{ .Values.currents.apiJwtToken.expiry | quote }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
-          {{- if .Values.currents.apiJwtToken.secretName }}
-            - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.currents.apiJwtToken.secretName }}
-                  key: {{ .Values.currents.apiJwtToken.key }}
-          {{- end }}
           {{- if .Values.currents.apiInternalToken.secretName }}
+            - name: API_URL
+              value: http://{{ include "currents.server.fullname" . }}/api/v1
             - name: API_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.currents.apiInternalToken.secretName }}
                   key: {{ .Values.currents.apiInternalToken.key }}
           {{- end }}
-          {{- with (concat .Values.global.env .Values.server.env) }}
+          {{- with (concat .Values.global.env .Values.director.env) }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.server.service.port }}
+              containerPort: {{ .Values.director.service.port }}
               protocol: TCP
-          volumeMounts:
-            - name: pm2-data
-              mountPath: /home/node/.pm2
-          {{- with .Values.server.livenessProbe }}
+          {{- with .Values.director.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.server.readinessProbe }}
+          {{- with .Values.director.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.server.resources }}
+          {{- with .Values.director.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.global.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.server.volumeMounts }}
+          {{- with .Values.director.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      volumes:
-        - name: pm2-data
-          emptyDir:
-            medium: "Memory"
       {{- with .Values.global.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.volumes }}
+      {{- with .Values.director.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.nodeSelector | default .Values.global.nodeSelector }}
+      {{- with .Values.director.nodeSelector | default .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.tolerations | default .Values.global.tolerations }}
+      {{- with .Values.director.tolerations | default .Values.global.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.affinity | default .Values.global.affinity }}
+      {{- with .Values.director.affinity | default .Values.global.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}

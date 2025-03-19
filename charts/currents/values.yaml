@@ -72,6 +72,7 @@ global:
 
 currents:
   imageTag: staging-aarch64
+  baseUrl: "http://localhost:4000"
 
   gitlab:
     state:
@@ -82,6 +83,10 @@ currents:
     # secretName: currents-api-jwt-token
     key: token
     expiry: 1d
+  apiInternalToken:
+    # secretName: currents-api-internal-token
+    key: token
+    
   redis:
     # -- set the redis hostname to talk to
     # @default -- `{{ .Release.Name }}-redis-master`
@@ -92,10 +97,100 @@ currents:
       username: elastic
       # secretName:
       # secretKey:
+    apiUser:
+      # secretName:
+      idKey: apiId
+      secretKey: apiKey
     tls:
       enabled: true
     host: ""
     port: 9200
+
+director:
+  name: director
+  replicas: 1
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    # The container registry to pull the manager image from.
+    registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
+
+    # The container image for Currents Director.
+    repository: currents/on-prem/director
+
+    # Override the image tag to deploy by setting this variable.
+    # If no value is set, the chart's appVersion is used.
+    # tag: vX.Y.Z
+
+    # Setting a digest will override any tag.
+    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
+
+    pullPolicy: "" # defaults to global.image.pullPolicy
+
+  # Deployment update strategy for Currents deployment.
+  # For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
+  #
+  # For example:
+  #  strategy:
+  #    type: RollingUpdate
+  #    rollingUpdate:
+  #      maxSurge: 0
+  #      maxUnavailable: 1
+  deploymentStrategy: {}
+  env: []
+  volumes: []
+  volumeMounts: []
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+  # Resources to provide
+  #
+  # For example:
+  #  requests:
+  #    cpu: 10m
+  #    memory: 32Mi
+  #
+  # For more information, see [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
+  resources: {}
+  # -- [Node selector]
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+
+  # -- [Tolerations] for use with node taints
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
+
+  # -- Assign custom [affinity] rules to the deployment
+  # @default -- `{}` (defaults to the global.affinity preset)
+  affinity: {}
+
+  # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+  service:
+    # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+    type: ClusterIP
+    # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+    port: 1234
+
+  # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
 server:
   name: server
@@ -185,6 +280,7 @@ server:
 
 writer:
   name: writer
+  replicas: 1
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
     # The container registry to pull the manager image from.
@@ -201,6 +297,7 @@ writer:
     # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
 
     pullPolicy: "" # defaults to global.image.pullPolicy
+  deploymentStrategy: {}
   env: []
   volumes: []
   volumeMounts: []
@@ -285,6 +382,30 @@ scheduler:
   # @default -- `{}` (defaults to the global.affinity preset)
   affinity: {}
 
+changestreams:
+  name: change-streams
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    # The container registry to pull the manager image from.
+    registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
+
+    # The container image for Currents Change Streams Image
+    repository: currents/on-prem/change-streams
+
+    # Override the image tag to deploy by setting this variable.
+    # If no value is set, the chart's appVersion is used.
+    # tag: vX.Y.Z
+
+    # Setting a digest will override any tag.
+    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
+
+    pullPolicy: "" # defaults to global.image.pullPolicy
+  deploymentStrategy:
+    type: Recreate
+  env: []
+  volumes: []
+  volumeMounts: []
+
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created
@@ -308,6 +429,11 @@ serviceAccount:
 redis:
   # -- enable the Bitnami Redis chart. Refer to https://github.com/bitnami/charts/blob/main/bitnami/redis/ for possible values.
   enabled: false
+  image:
+    repository: redis/redis-stack-server
+    tag: 7.2.0-v15
+  commonConfiguration: |-
+    loadmodule /opt/redis-stack/lib/rejson.so
   architecture: standalone
   auth:
     enabled: false

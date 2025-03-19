@@ -10,6 +10,8 @@ global:
 currents:
   apiJwtToken:
     secretName: currents-api-jwt-token
+  apiInternalToken:
+    secretName: currents-api-internal-token
   gitlab:
     state:
       secretName: currents-gitlab-key 
@@ -25,6 +27,8 @@ currents:
     admin:
       secretName: elasticsearch-es-elastic-user 
       secretKey: elastic
+    apiUser:
+      secretName: currents-es-api-key
 
 redis:
   enabled: true
