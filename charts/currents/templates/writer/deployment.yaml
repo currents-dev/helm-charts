@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "currents.scheduler.fullname" . }}
+  name: {{ template "currents.writer.fullname" . }}
   labels:
-    {{- include "currents.labels" (dict "context" . "component" .Values.scheduler.name) | nindent 4 }}
+    {{- include "currents.labels" (dict "context" . "component" .Values.writer.name) | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "currents.selectorLabels" (dict "context" . "component" .Values.scheduler.name) | nindent 6 }}
-  {{- if .Values.scheduler.deploymentStrategy }}
+      {{- include "currents.selectorLabels" (dict "context" . "component" .Values.writer.name) | nindent 6 }}
+  {{- if .Values.writer.deploymentStrategy }}
   strategy:
-    {{- toYaml .Values.scheduler.deploymentStrategy | nindent 4 }}
+    {{- toYaml .Values.writer.deploymentStrategy | nindent 4 }}
   {{- end }}
   template:
     metadata:
@@ -20,7 +20,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "currents.labels" (dict "context" . "component" .Values.scheduler.name) | nindent 8 }}
+        {{- include "currents.labels" (dict "context" . "component" .Values.writer.name) | nindent 8 }}
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -35,72 +35,58 @@ spec:
       priorityClassName: {{ . }}
       {{- end }}
       containers:
-        - name: {{ .Values.scheduler.name }}
+        - name: {{ .Values.writer.name }}
           {{- with .Values.global.containerSecurityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.scheduler.image) }}
-          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.scheduler.image.pullPolicy }}
+          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.writer.image) }}
+          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.writer.image.pullPolicy }}
           env:
-            - name: RUN_STARTUP_TASKS
-              value: "true"
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
-            - name: ELASTIC_USERNAME
-              value: {{ .Values.currents.elastic.admin.username | quote }}
-            - name: ELASTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.currents.elastic.admin.secretName }}
-                  key: {{ .Values.currents.elastic.admin.secretKey }}
-            {{- with (concat .Values.global.env .Values.scheduler.env) }}
+            {{- with (concat .Values.global.env .Values.writer.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
           volumeMounts:
             - name: pm2-data
               mountPath: /home/node/.pm2
-            - name: startup
-              mountPath: /app/packages/scheduler/dist/.startup
-          {{- with .Values.scheduler.livenessProbe }}
+          {{- with .Values.writer.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.scheduler.readinessProbe }}
+          {{- with .Values.writer.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.scheduler.resources }}
+          {{- with .Values.writer.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.global.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.scheduler.volumeMounts }}
+          {{- with .Values.writer.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
         - name: pm2-data
           emptyDir:
             medium: "Memory"
-        - name: startup
-          persistentVolumeClaim:
-            claimName: {{ template "currents.scheduler.fullname" . }}-startup-tmp
       {{- with .Values.global.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.scheduler.volumes }}
+      {{- with .Values.writer.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.scheduler.nodeSelector | default .Values.global.nodeSelector }}
+      {{- with .Values.writer.nodeSelector | default .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.scheduler.tolerations | default .Values.global.tolerations }}
+      {{- with .Values.writer.tolerations | default .Values.global.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.scheduler.affinity | default .Values.global.affinity }}
+      {{- with .Values.writer.affinity | default .Values.global.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}

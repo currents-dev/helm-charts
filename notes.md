@@ -10,8 +10,8 @@ Good to install k9s for exploring the cluster
 Create namespace (easier to cleanup resources in a custom namespace)
 
 ```sh
-kubectl create namespace deej-mar7
-kubectl ns deej-mar7
+kubectl create namespace currents
+kubectl ns currents
 ```
 
 
@@ -36,33 +36,38 @@ Create JWT secret
 kubectl create secret generic currents-api-jwt-token --from-literal=token=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32)
 ```
 
+Create a GitLab private encoding key
+
+```sh
+openssl genrsa -out gitlab-key.pem 2048
+kubectl create secret generic currents-gitlab-key --from-file=gitlab-key.pem
+```
+
 
 Install a mongo DB
 
-```
+```sh
 helm repo add mongodb https://mongodb.github.io/helm-charts
 helm install community-operator mongodb/community-operator
 ```
 
 Edit the password in `samples/mongodb-community-replicaset.yml`
 
-```
+```sh
 kubectl apply -f samples/mongodb-community-replicaset.yml
 ```
 
-Setup ES
+## Setup ES
 
 https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-install-helm.html
 
-
-Replace `deej-mar17` in the following command with your namespace
 
 ```sh
 helm repo add elastic https://helm.elastic.co
 helm install elastic-operator-crds elastic/eck-operator-crds
 helm install elastic-operator elastic/eck-operator  \
   --set=installCRDs=false \
-  --set=managedNamespaces='{deej-mar17}'
+  --set=managedNamespaces='{currents}'
   --set=createClusterScopedResources=false \
   --set=webhook.enabled=false \
   --set=config.validateStorageClass=false
@@ -75,13 +80,20 @@ https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.ht
 kubectl apply -f samples/elasticsearch.yml
 ```
 
+Wait for es to be available, then generate an api key by:
 
-Install the Currents Helm chart
+```sh
+PASSWORD=$(kubectl get secret elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
+kubectl exec elasticsearch-es-default-0 -- curl -u "elastic:$PASSWORD" -X POST -H "Content-Type: application/json" -d "{ \"name\": \"currents-key\" }"  "http://elasticsearch-es-http:9200/_security/api_key" > es-api.key.json
+```
+
+
+## Install the Currents Helm chart
 
 ```sh
 cd charts/currents
 helm dep up
-helm upgrade ---install  -f config.yaml test-currents .
+helm upgrade --install  -f config.yaml test-currents .
 ```
 
 Access the api via port forward

@@ -11,3 +11,10 @@ Create scheduler name and version as used by the chart label.
 {{- define "currents.scheduler.fullname" -}}
 {{- printf "%s-%s" (include "currents.fullname" .) .Values.scheduler.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Create writer name and version as used by the chart label.
+*/}}
+{{- define "currents.writer.fullname" -}}
+{{- printf "%s-%s" (include "currents.fullname" .) .Values.writer.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}

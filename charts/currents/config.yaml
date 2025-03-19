@@ -6,20 +6,25 @@ global:
   imagePullSecrets:
     - name: "currents-pull-secret"
   imagePullPolicy: IfNotPresent
-  imageTag: staging-aarch64
-  
-  apiJwtToken:
-    secretName: currents-api-jwt-token
-  mongoConnection:
-    secretName: mongodb-admin-my-user
-    key: connectionString.standardSrv
-  env:
-    - name: MONGODB_DATABASE
-      value: admin
 
 currents:
+  apiJwtToken:
+    secretName: currents-api-jwt-token
+  gitlab:
+    state:
+      secretName: currents-gitlab-key 
+      secretKey: gitlab-key.pem
+  mongoConnection:
+    secretName: mongodb-currents-currents-user
+    key: connectionString.standardSrv
+  imageTag: staging-aarch64
   elastic:
+    tls:
+      enabled: false
     host: elasticsearch-es-http
+    admin:
+      secretName: elasticsearch-es-elastic-user 
+      secretKey: elastic
 
 redis:
   enabled: true

@@ -74,7 +74,7 @@ Create the name of the service account to use
 {{- $termination := .imageRoot.tag | toString -}}
 
 {{- if not .imageRoot.tag }}
-{{- $termination = default .context.Chart.AppVersion  ((.context.Values.global).imageTag) | toString -}}
+{{- $termination = default .context.Chart.AppVersion  ((.context.Values.currents).imageTag) | toString -}}
 {{- end -}}
 {{- if .imageRoot.digest }}
 {{- $separator = "@" -}}
@@ -99,8 +99,8 @@ Create the name of the service account to use
 - name: MONGODB_URI
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.global.mongoConnection.secretName }}
-      key: {{ .Values.global.mongoConnection.key }}
+      name: {{ .Values.currents.mongoConnection.secretName }}
+      key: {{ .Values.currents.mongoConnection.key }}
 - name: ELASTIC_URI
-  value: {{ printf "http://%s:%d" (tpl .Values.currents.elastic.host .) (.Values.currents.elastic.port | int) }}
+  value: {{ printf "%s://%s:%d" (.Values.currents.elastic.tls.enabled | ternary "https" "http") (tpl .Values.currents.elastic.host .) (.Values.currents.elastic.port | int) }}
 {{- end }}

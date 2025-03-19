@@ -13,12 +13,6 @@ global:
   #    - name: "image-pull-secret"
   imagePullSecrets: []
   imagePullPolicy: IfNotPresent
-  imageTag: staging-aarch64
-
-  apiJwtToken:
-    # secretName: currents-api-jwt-token
-    key: token
-    expiry: 1d
 
   # Labels to apply to all resources.
   additionalLabels: {}
@@ -77,12 +71,29 @@ global:
   affinity: {}
 
 currents:
+  imageTag: staging-aarch64
+
+  gitlab:
+    state:
+      # secretName: ''
+      # secretKey: ''
+
+  apiJwtToken:
+    # secretName: currents-api-jwt-token
+    key: token
+    expiry: 1d
   redis:
     # -- set the redis hostname to talk to
     # @default -- `{{ .Release.Name }}-redis-master`
     host: "{{ .Release.Name }}-redis-master"
     password: ""
   elastic:
+    admin:
+      username: elastic
+      # secretName:
+      # secretKey:
+    tls:
+      enabled: true
     host: ""
     port: 9200
 
@@ -172,6 +183,40 @@ server:
     #    hosts:
     #      - chart-example.local
 
+writer:
+  name: writer
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    # The container registry to pull the manager image from.
+    registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
+
+    # The container image for Currents Server API.
+    repository: currents/on-prem/writer
+
+    # Override the image tag to deploy by setting this variable.
+    # If no value is set, the chart's appVersion is used.
+    # tag: vX.Y.Z
+
+    # Setting a digest will override any tag.
+    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
+
+    pullPolicy: "" # defaults to global.image.pullPolicy
+  env: []
+  volumes: []
+  volumeMounts: []
+  livenessProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - writer-service
+  readinessProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - writer-service
+
 scheduler:
   name: scheduler
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
@@ -202,25 +247,23 @@ scheduler:
 
   # Deployment update strategy for Currents deployment.
   # For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
-  #
-  # For example:
-  #  strategy:
-  #    type: RollingUpdate
-  #    rollingUpdate:
-  #      maxSurge: 0
-  #      maxUnavailable: 1
-  deploymentStrategy: {}
+  deploymentStrategy:
+    type: Recreate
   env: []
   volumes: []
   volumeMounts: []
   livenessProbe:
-    httpGet:
-      path: /
-      port: http
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - dist
   readinessProbe:
-    httpGet:
-      path: /
-      port: http
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - dist
   # Resources to provide
   #
   # For example:
