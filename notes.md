@@ -5,6 +5,7 @@
 
 
 Good to install k9s for exploring the cluster
+ Also kubetail is decent https://github.com/johanhaleby/kubetail
 
 
 Create namespace (easier to cleanup resources in a custom namespace)
@@ -63,6 +64,38 @@ Create a new secret with the api info from the key we just created (requires jq 
 kubectl create secret generic currents-es-api-key --from-literal=apiId=$(jq -r .id es-api.key.json) --from-literal=apiKey=$(jq -r .api_key es-api.key.json)
 ```
 
+## Setup Object Storage
+
+### Option: Setup Minio
+
+Add the minio operator
+
+```sh
+helm repo add minio https://operator.min.io/
+helm install minio-operator minio/operator \
+  --set operator.env\[0\].name=WATCHED_NAMESPACE \
+  --set operator.env\[0\].value=currents \
+  --set operator.replicaCount=1
+```
+
+Create the root user config (edit the username/password in samples/minio-config.env)
+
+```sh
+kubectl create secret generic currents-minio-env-configuration --from-file=config.env=samples/minio-config.env
+```
+
+Create the additional users for currents
+
+```sh
+kubectl create secret generic currents-minio-user --from-literal=CONSOLE_ACCESS_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | LC_ALL=C tr -dc 'a-zA-Z0-9'  | head -c 32) --from-literal=CONSOLE_SECRET_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+```
+
+Create a minio tenant instance
+
+```sh
+helm install tenant minio/tenant -f samples/minio-tenant-helm-config.yaml
+```
+
 ## Install the Currents Helm chart
 
 Add/update pull secret
@@ -81,13 +114,13 @@ kubectl create secret docker-registry currents-pull-secret \
 Create JWT secret
 
 ```sh
-kubectl create secret generic currents-api-jwt-token --from-literal=token=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32)
+kubectl create secret generic currents-api-jwt-token --from-literal=token=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
 ```
 
 Create internal API secret
 
 ```sh
-kubectl create secret generic currents-api-internal-token --from-literal=token=$(head -c 512 /dev/urandom | LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 32)
+kubectl create secret generic currents-api-internal-token --from-literal=token=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
 ```
 
 Create a GitLab private encoding key
@@ -96,6 +129,15 @@ Create a GitLab private encoding key
 openssl genrsa -out gitlab-key.pem 2048
 kubectl create secret generic currents-gitlab-key --from-file=gitlab-key.pem
 ```
+
+Setup the Object storage secrets:
+
+```sh
+KEYID=youraccesskey
+KEYSECRET=yourkeysecret
+kubectl create secret generic currents-object-storage --from-literal=keyId=$KEYID --from-literal=keySecret=$KEYSECRET
+```
+
 
 ```sh
 cd charts/currents

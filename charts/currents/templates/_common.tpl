@@ -113,4 +113,27 @@ Create the name of the service account to use
     secretKeyRef:
       name: {{ .Values.currents.elastic.apiUser.secretName }}
       key: {{ .Values.currents.elastic.apiUser.secretKey }}
+- name: S3_BUCKET
+  value: {{ .Values.currents.objectStorage.bucket }}
+- name: FILE_STORAGE_BUCKET
+  value: {{ .Values.currents.objectStorage.bucket }}
+- name: FILE_STORAGE_ENDPOINT
+  value: {{ .Values.currents.objectStorage.endpoint }}
+- name: FILE_STORAGE_ACCESS_KEY_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.currents.objectStorage.secretName }}
+      key: {{ .Values.currents.objectStorage.secretIdKey }}
+- name: FILE_STORAGE_SECRET_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.currents.objectStorage.secretName }}
+      key: {{ .Values.currents.objectStorage.secretAccessKey }}
+{{- if .Values.currents.objectStorage.pathStyle }}
+- name: FILE_STORAGE_FORCE_PATH_STYLE
+  value: "true"
+{{- end }}
+{{- end -}}
+
+{{- define "currents.redisConfigEnv" -}}
 {{- end }}

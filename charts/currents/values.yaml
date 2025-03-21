@@ -74,11 +74,6 @@ currents:
   imageTag: staging-aarch64
   baseUrl: "http://localhost:4000"
 
-  gitlab:
-    state:
-      # secretName: ''
-      # secretKey: ''
-
   apiJwtToken:
     # secretName: currents-api-jwt-token
     key: token
@@ -105,6 +100,19 @@ currents:
       enabled: true
     host: ""
     port: 9200
+  objectStorage:
+    # endpoint: ""
+    # secretName: ""
+    secretIdKey: keyId
+    secretAccessKey: keySecret
+    # bucket: ""
+    # pathStyle: false
+  mongoConnection:
+  gitlab:
+    state:
+      # secretName: ''
+      # secretKey: ''
+
 
 director:
   name: director
