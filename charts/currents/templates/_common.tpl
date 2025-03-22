@@ -133,6 +133,10 @@ Create the name of the service account to use
 - name: FILE_STORAGE_FORCE_PATH_STYLE
   value: "true"
 {{- end }}
+{{- if .Values.currents.objectStorage.internalEndpoint }}
+- name: FILE_STORAGE_INTERNAL_ENDPOINT
+  value: {{ .Values.currents.objectStorage.internalEndpoint }}
+{{- end }}
 {{- end -}}
 
 {{- define "currents.redisConfigEnv" -}}

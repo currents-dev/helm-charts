@@ -102,6 +102,7 @@ currents:
     port: 9200
   objectStorage:
     # endpoint: ""
+    # internalEndpoint: ""
     # secretName: ""
     secretIdKey: keyId
     secretAccessKey: keySecret
@@ -321,6 +322,18 @@ writer:
         - ./node_modules/.bin/pm2
         - show
         - writer-service
+  resources: {}
+  # -- [Node selector]
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+
+  # -- [Tolerations] for use with node taints
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
+
+  # -- Assign custom [affinity] rules to the deployment
+  # @default -- `{}` (defaults to the global.affinity preset)
+  affinity: {}
 
 scheduler:
   name: scheduler
@@ -413,6 +426,18 @@ changestreams:
   env: []
   volumes: []
   volumeMounts: []
+  resources: {}
+  # -- [Node selector]
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+
+  # -- [Tolerations] for use with node taints
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
+
+  # -- Assign custom [affinity] rules to the deployment
+  # @default -- `{}` (defaults to the global.affinity preset)
+  affinity: {}
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:

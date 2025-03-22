@@ -29,6 +29,14 @@ currents:
       secretKey: elastic
     apiUser:
       secretName: currents-es-api-key
+  objectStorage:
+    endpoint: http://minio.localhost
+    internalEndpoint: https://minio
+    secretName: currents-minio-user
+    secretIdKey: CONSOLE_ACCESS_KEY
+    secretAccessKey: CONSOLE_SECRET_KEY
+    bucket: currents
+    pathStyle: true
 
 redis:
   enabled: true

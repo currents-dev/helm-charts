@@ -1,12 +1,8 @@
-- Differs from helm default in that there isn't one main deployment, but several microservice 'components' that make up the chart
-- If a template needs use the component name, the template should take a dict with context and component defined (a standard used by bitnami and many other charts)
-- Include as many of the default helm settings, even if we don't need them quite yet, only remove ones that don't make sense before we have other parts working
-- The default settings will often have to be moved to either .global or a component config. There should be minimal settings left in the root config scope
+# Currents Helm Charts
 
+This repo contains the Currents Helm chart (in `charts/currents`) as well as some sample instructions for setting up the services the chart depends on.
 
-Good to install k9s for exploring the cluster
- Also kubetail is decent https://github.com/johanhaleby/kubetail
-
+## Setup Namespace
 
 Create namespace (easier to cleanup resources in a custom namespace)
 
@@ -16,7 +12,25 @@ kubectl ns currents
 ```
 
 
-## Install a mongo DB
+## Setup prerequisites
+
+<details>
+<summary>Ingress</summary>
+
+Install nginx ingress
+
+```sh
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --set controller.scope.enabled=true \
+  --set controller.allowSnippetAnnotations=true \
+  --set controller.config.annotations-risk-level=Critical
+```
+
+</details>
+
+<details>
+<summary>MongoDB</summary>
 
 ```sh
 helm repo add mongodb https://mongodb.github.io/helm-charts
@@ -29,8 +43,12 @@ Edit the password in `samples/mongodb-community-replicaset.yml`
 kubectl apply -f samples/mongodb-community-replicaset.yml
 ```
 
-## Setup ES
+</details>
 
+<details>
+<summary>Elasticsearch</summary>
+
+Advanced options avail at:
 (docs: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-install-helm.html )
 
 
@@ -64,9 +82,10 @@ Create a new secret with the api info from the key we just created (requires jq 
 kubectl create secret generic currents-es-api-key --from-literal=apiId=$(jq -r .id es-api.key.json) --from-literal=apiKey=$(jq -r .api_key es-api.key.json)
 ```
 
-## Setup Object Storage
+</details>
 
-### Option: Setup Minio
+<details>
+<summary>Object Storage</summary>
 
 Add the minio operator
 
@@ -95,6 +114,16 @@ Create a minio tenant instance
 ```sh
 helm install tenant minio/tenant -f samples/minio-tenant-helm-config.yaml
 ```
+
+Create an ingress for minio
+
+```sh
+kubectl apply -f samples/minio-ingress.yaml
+```
+
+Note that you will need to add `mino.localhost` to your `/etc/hosts` file on the loopback
+
+</details>
 
 ## Install the Currents Helm chart
 
@@ -130,13 +159,7 @@ openssl genrsa -out gitlab-key.pem 2048
 kubectl create secret generic currents-gitlab-key --from-file=gitlab-key.pem
 ```
 
-Setup the Object storage secrets:
-
-```sh
-KEYID=youraccesskey
-KEYSECRET=yourkeysecret
-kubectl create secret generic currents-object-storage --from-literal=keyId=$KEYID --from-literal=keySecret=$KEYSECRET
-```
+Install the chart
 
 
 ```sh
@@ -157,4 +180,12 @@ Access the director via additional port forward
 ```sh
   # Find the actual service name using # kubectl get services
   kubectl port-forward service/test-currents-director 1234:1234
+```
+
+Expose the ingress controller to access minio
+
+Needs to use sudo to get port 80
+
+```sh
+sudo kubectl port-forward service/ingress-nginx-controller 80:80
 ```
