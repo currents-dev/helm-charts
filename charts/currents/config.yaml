@@ -6,8 +6,10 @@ global:
   imagePullSecrets:
     - name: "currents-pull-secret"
   imagePullPolicy: IfNotPresent
+  ingressClassName: currents-nginx
 
 currents:
+  baseUrl: "http://currents-app.localhost"
   apiJwtToken:
     secretName: currents-api-jwt-token
   apiInternalToken:
@@ -37,6 +39,23 @@ currents:
     secretAccessKey: CONSOLE_SECRET_KEY
     bucket: currents
     pathStyle: true
+
+director:
+  ingress:
+    enabled: true
+    hosts:
+      - host: currents-api.localhost
+        paths:
+          - path: /
+            pathType: Prefix
+server:
+  ingress:
+    enabled: true
+    hosts:
+      - host: currents-app.localhost
+        paths:
+          - path: /
+            pathType: Prefix
 
 redis:
   enabled: true

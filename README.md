@@ -24,7 +24,9 @@ helm upgrade --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
   --set controller.scope.enabled=true \
   --set controller.allowSnippetAnnotations=true \
-  --set controller.config.annotations-risk-level=Critical
+  --set controller.config.annotations-risk-level=Critical \
+  --set controller.ingressClass=currents-nginx \
+  --set controller.ingressClassResource.name=currents-nginx
 ```
 
 </details>
@@ -168,22 +170,7 @@ helm dep up
 helm upgrade --install  -f config.yaml test-currents .
 ```
 
-Access the api via port forward
-
-```sh
-  # Find the actual service name using # kubectl get services
-  kubectl port-forward service/test-currents-server 4000:4000
-```
-
-Access the director via additional port forward
-
-```sh
-  # Find the actual service name using # kubectl get services
-  kubectl port-forward service/test-currents-director 1234:1234
-```
-
-Expose the ingress controller to access minio
-
+Expose the ingress controller to access all the apis
 Needs to use sudo to get port 80
 
 ```sh

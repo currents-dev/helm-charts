@@ -124,5 +124,5 @@ tenant:
   # - Specify ``console: true`` to expose the Console.
   #
   # Both fields default to ``false``.
-  exposeServices:
-    minio: true
+  # exposeServices:
+  #   minio: true

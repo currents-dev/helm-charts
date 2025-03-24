@@ -1,4 +1,6 @@
-{{- if .Values.server.ingress.enabled -}}
+{{- $generalSet := and (hasKey .Values.currents.ingress "enabled") (kindIs "bool" .Values.currents.ingress.enabled) -}}
+{{- $localSet := and (hasKey .Values.server.ingress "enabled") (kindIs "bool" .Values.server.ingress.enabled) -}}
+{{- if or (and $localSet .Values.server.ingress.enabled) (and $generalSet .Values.currents.ingress.enabled) -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -10,7 +12,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- with .Values.server.ingress.className }}
+  {{- with .Values.server.ingress.className | default .Values.global.ingressClassName }}
   ingressClassName: {{ . }}
   {{- end }}
   {{- if .Values.server.ingress.tls }}
