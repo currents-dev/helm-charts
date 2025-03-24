@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "currents.writer.fullname" . }}
+  labels:
+    {{- include "currents.labels" (dict "context" . "component" .Values.writer.name) | nindent 4 }}
+spec:
+  replicas: {{ .Values.writer.replicas }}
+  selector:
+    matchLabels:
+      {{- include "currents.selectorLabels" (dict "context" . "component" .Values.writer.name) | nindent 6 }}
+  {{- if .Values.writer.deploymentStrategy }}
+  strategy:
+    {{- toYaml .Values.writer.deploymentStrategy | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      {{- with .Values.global.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "currents.labels" (dict "context" . "component" .Values.writer.name) | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "currents.serviceAccountName" . }}
+      {{- with .Values.global.SecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.writer.name }}
+          {{- with .Values.global.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.writer.image) }}
+          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.writer.image.pullPolicy }}
+          env:
+            {{- include "currents.connectionConfigEnv" . | nindent 12 }}
+            {{- with (concat .Values.global.env .Values.writer.env) }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: pm2-data
+              mountPath: /home/node/.pm2
+          {{- with .Values.writer.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.writer.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.writer.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.global.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.writer.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: pm2-data
+          emptyDir:
+            medium: "Memory"
+      {{- with .Values.global.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.writer.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.writer.nodeSelector | default .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.writer.tolerations | default .Values.global.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.writer.affinity | default .Values.global.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

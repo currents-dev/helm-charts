@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "currents.server.fullname" . }}
+  labels:
+    {{- include "currents.labels" (dict "context" . "component" .Values.server.name) | nindent 4 }}
+spec:
+  type: {{ .Values.server.service.type }}
+  ports:
+    - port: {{ .Values.server.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "currents.selectorLabels" (dict "context" . "component" .Values.server.name) | nindent 4 }}
