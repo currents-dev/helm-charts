@@ -111,9 +111,9 @@ currents:
     secretAccessKey: keySecret
     # bucket: ""
     # pathStyle: false
-  mongoConnection:
+  mongoConnection: {}
   gitlab:
-    state:
+    state: {}
       # secretName: ''
       # secretKey: ''
 
