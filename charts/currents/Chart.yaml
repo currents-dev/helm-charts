@@ -9,7 +9,7 @@ type: application
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: 0.1.0
 
-# Version number of the application being deployed. 
+# Version number of the application being deployed.
 # Versions are not expected to follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: "2025-03-05-001"
 
