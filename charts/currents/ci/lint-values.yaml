@@ -1,0 +1,4 @@
+currents:
+  mongoConnection:
+    secretName: mongodb-currents-currents-user
+    key: connectionString.standardSrv
