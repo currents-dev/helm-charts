@@ -96,13 +96,16 @@ Create the name of the service account to use
   value: {{ printf "redis://%s:6379"  (tpl .Values.currents.redis.host .) }}
 - name: REDIS_URI_SLAVE
   value: {{ printf "redis://%s:6379"  (tpl .Values.currents.redis.host .) }}
+{{- if .Values.currents.mongoConnection.secretName }}
 - name: MONGODB_URI
   valueFrom:
     secretKeyRef:
       name: {{ .Values.currents.mongoConnection.secretName }}
       key: {{ .Values.currents.mongoConnection.key }}
+{{- end }}
 - name: ELASTIC_URI
   value: {{ printf "%s://%s:%d" (.Values.currents.elastic.tls.enabled | ternary "https" "http") (tpl .Values.currents.elastic.host .) (.Values.currents.elastic.port | int) }}
+{{- if .Values.currents.elastic.apiUser.secretName }}
 - name: ELASTIC_API_ID
   valueFrom:
     secretKeyRef:
@@ -113,12 +116,14 @@ Create the name of the service account to use
     secretKeyRef:
       name: {{ .Values.currents.elastic.apiUser.secretName }}
       key: {{ .Values.currents.elastic.apiUser.secretKey }}
+{{- end }}
 - name: S3_BUCKET
   value: {{ .Values.currents.objectStorage.bucket }}
 - name: FILE_STORAGE_BUCKET
   value: {{ .Values.currents.objectStorage.bucket }}
 - name: FILE_STORAGE_ENDPOINT
   value: {{ .Values.currents.objectStorage.endpoint }}
+{{- if .Values.currents.objectStorage.secretName }}
 - name: FILE_STORAGE_ACCESS_KEY_ID
   valueFrom:
     secretKeyRef:
@@ -129,6 +134,7 @@ Create the name of the service account to use
     secretKeyRef:
       name: {{ .Values.currents.objectStorage.secretName }}
       key: {{ .Values.currents.objectStorage.secretAccessKey }}
+{{- end }}
 {{- if .Values.currents.objectStorage.pathStyle }}
 - name: FILE_STORAGE_FORCE_PATH_STYLE
   value: "true"
