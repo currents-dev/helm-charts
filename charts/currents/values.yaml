@@ -1,8 +1,8 @@
 # Default values for currents.
 
 # This is to override the chart name.
-#nameOverride: "my-currents"
-#fullnameOverride: "my-currents"
+# nameOverride: "my-currents"
+# fullnameOverride: "my-currents"
 
 global:
   # Reference to one or more secrets to be used when pulling images.
@@ -84,7 +84,7 @@ currents:
   apiInternalToken:
     # secretName: currents-api-internal-token
     key: token
-    
+
   redis:
     # -- set the redis hostname to talk to
     # @default -- `{{ .Release.Name }}-redis-master`
@@ -111,9 +111,9 @@ currents:
     secretAccessKey: keySecret
     # bucket: ""
     # pathStyle: false
-  mongoConnection:
+  mongoConnection: {}
   gitlab:
-    state:
+    state: {}
       # secretName: ''
       # secretKey: ''
 
@@ -136,7 +136,8 @@ director:
     # Setting a digest will override any tag.
     # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
 
-    pullPolicy: "" # defaults to global.image.pullPolicy
+    # defaults to global.image.pullPolicy
+    pullPolicy: ""
 
   # Deployment update strategy for Currents deployment.
   # For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
@@ -222,7 +223,8 @@ server:
     # Setting a digest will override any tag.
     # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
 
-    pullPolicy: "" # defaults to global.image.pullPolicy
+    # defaults to global.image.pullPolicy
+    pullPolicy: ""
 
   # Deployment update strategy for Currents deployment.
   # For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
@@ -308,7 +310,8 @@ writer:
     # Setting a digest will override any tag.
     # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
 
-    pullPolicy: "" # defaults to global.image.pullPolicy
+    # defaults to global.image.pullPolicy
+    pullPolicy: ""
   deploymentStrategy: {}
   env: []
   volumes: []
@@ -355,7 +358,8 @@ scheduler:
     # Setting a digest will override any tag.
     # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
 
-    pullPolicy: "" # defaults to global.image.pullPolicy
+    # defaults to global.image.pullPolicy
+    pullPolicy: ""
   startup:
     persistence:
       accessMode: ReadWriteOnce
@@ -423,7 +427,8 @@ changestreams:
     # Setting a digest will override any tag.
     # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
 
-    pullPolicy: "" # defaults to global.image.pullPolicy
+    # defaults to global.image.pullPolicy
+    pullPolicy: ""
   deploymentStrategy:
     type: Recreate
   env: []
@@ -449,14 +454,14 @@ serviceAccount:
 
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  # name: "" 
+  # name: ""
 
   # Optional additional annotations to add to the Service Account. Templates are allowed for both keys and values.
   # Example using templating:
   # annotations:
   #   "{{ .Chart.Name }}-helm-chart/version": "{{ .Chart.Version }}"
   # annotations: {}
-  
+
   # Automatically mount a ServiceAccount's API credentials?
   automount: true
 

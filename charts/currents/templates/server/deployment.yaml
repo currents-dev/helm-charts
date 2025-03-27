@@ -47,11 +47,13 @@ spec:
               value: "onprem"
             - name: ON_PREM_MODE
               value: "true"
+          {{- if .Values.currents.gitlab.state.secretName }}
             - name: GITLAB_STATE_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.currents.gitlab.state.secretName }}
                   key: {{ .Values.currents.gitlab.state.secretKey }}
+          {{- end }}
             - name: JWT_SECRET_EXPIRY
               value: {{ .Values.currents.apiJwtToken.expiry | quote }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}

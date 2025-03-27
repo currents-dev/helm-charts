@@ -23,3 +23,4 @@
 .vscode/
 config.yaml
 custom.yaml
+ci/

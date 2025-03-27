@@ -47,11 +47,13 @@ spec:
               value: "true"
             - name: APP_BASE_URL
               value: {{ .Values.currents.baseUrl | quote }}
+          {{- if .Values.currents.gitlab.state.secretName }}
             - name: GITLAB_STATE_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.currents.gitlab.state.secretName }}
                   key: {{ .Values.currents.gitlab.state.secretKey }}
+          {{- end }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
           {{- if .Values.currents.apiInternalToken.secretName }}
             - name: API_URL
