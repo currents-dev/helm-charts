@@ -165,9 +165,8 @@ Install the chart
 
 
 ```sh
-cd charts/currents
-helm dep up
-helm upgrade --install  -f config.yaml test-currents .
+(cd charts/currents && helm dep up)
+helm upgrade --install  -f samples/chart-config.yaml test-currents ./charts/currents
 ```
 
 Expose the ingress controller to access all the apis

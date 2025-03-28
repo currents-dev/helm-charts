@@ -44,6 +44,7 @@ spec:
           imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.writer.image.pullPolicy }}
           env:
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
+            {{- include "currents.URLConfigEnv" . | nindent 12 }}
             {{- with (concat .Values.global.env .Values.writer.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}

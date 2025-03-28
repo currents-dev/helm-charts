@@ -5,7 +5,7 @@ global:
   # For example:
   imagePullSecrets:
     - name: "currents-pull-secret"
-  imagePullPolicy: IfNotPresent
+  imagePullPolicy: Always
   ingressClassName: currents-nginx
 
 currents:
@@ -15,6 +15,7 @@ currents:
   apiInternalToken:
     secretName: currents-api-internal-token
   gitlab:
+    callbackUrl: "http://currents-api.localhost/gitlab/callback"
     state:
       secretName: currents-gitlab-key 
       secretKey: gitlab-key.pem

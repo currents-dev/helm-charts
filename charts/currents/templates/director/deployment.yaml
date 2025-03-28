@@ -55,6 +55,7 @@ spec:
                   key: {{ .Values.currents.gitlab.state.secretKey }}
           {{- end }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
+          {{- include "currents.URLConfigEnv" . | nindent 12 }}
           {{- if .Values.currents.apiInternalToken.secretName }}
             - name: API_URL
               value: http://{{ include "currents.server.fullname" . }}/api/v1
