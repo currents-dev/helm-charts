@@ -113,6 +113,7 @@ currents:
     # pathStyle: false
   mongoConnection: {}
   gitlab:
+    callbackUrl: ""
     state: {}
       # secretName: ''
       # secretKey: ''

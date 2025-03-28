@@ -145,5 +145,9 @@ Create the name of the service account to use
 {{- end }}
 {{- end -}}
 
-{{- define "currents.redisConfigEnv" -}}
+{{- define "currents.URLConfigEnv" -}}
+{{- if .Values.currents.gitlab.callbackUrl }}
+- name: GITLAB_REDIRECT_URL
+  value: {{ .Values.currents.gitlab.callbackUrl }}
 {{- end }}
+{{- end -}}
