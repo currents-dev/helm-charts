@@ -448,6 +448,55 @@ changestreams:
   # @default -- `{}` (defaults to the global.affinity preset)
   affinity: {}
 
+webhooks:
+  name: webhooks
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    # The container registry to pull the manager image from.
+    registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
+
+    # The container image for Currents Webhooks Image
+    repository: currents/on-prem/webhooks
+
+    # Override the image tag to deploy by setting this variable.
+    # If no value is set, the chart's appVersion is used.
+    # tag: vX.Y.Z
+
+    # Setting a digest will override any tag.
+    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
+
+    # defaults to global.image.pullPolicy
+    pullPolicy: ""
+  deploymentStrategy:
+    type: Recreate
+  env: []
+  volumes: []
+  volumeMounts: []
+  livenessProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - dist
+  readinessProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - dist
+  resources: {}
+  # -- [Node selector]
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+
+  # -- [Tolerations] for use with node taints
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
+
+  # -- Assign custom [affinity] rules to the deployment
+  # @default -- `{}` (defaults to the global.affinity preset)
+  affinity: {}
+
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created
