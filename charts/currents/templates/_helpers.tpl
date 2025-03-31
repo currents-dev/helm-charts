@@ -32,3 +32,10 @@ Create change-streams name and version as used by the chart label.
 {{- define "currents.changestreams.fullname" -}}
 {{- printf "%s-%s" (include "currents.fullname" .) .Values.changestreams.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Create webhooks name and version as used by the chart label.
+*/}}
+{{- define "currents.webhooks.fullname" -}}
+{{- printf "%s-%s" (include "currents.fullname" .) .Values.webhooks.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
