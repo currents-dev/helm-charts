@@ -170,3 +170,40 @@ Create the name of the service account to use
   value: {{ .Values.currents.elastic.datastreams.instances }}
 {{- end }}
 {{- end -}}
+
+{{- define "currents.emailSMTPEnv" -}}
+- name: EMAIL_TRANSPORTER
+  value: smtp
+{{- if .Values.currents.email.smtp.host }}
+- name: SMTP_HOST
+  value: {{ .Values.currents.email.smtp.host }}
+{{- end }}
+{{- if .Values.currents.email.smtp.port }}
+- name: SMTP_PORT
+  value: {{ .Values.currents.email.smtp.port | toString | quote }}
+{{- end }}
+{{- if .Values.currents.email.smtp.tls }}
+- name: SMTP_SECURE
+  value: "true"
+{{- end }}
+{{- if .Values.currents.email.smtp.secretName }}
+- name: SMTP_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.currents.email.smtp.secretName }}
+      key: {{ .Values.currents.email.smtp.secretUserKey }}
+{{- end }}
+{{- if .Values.currents.email.smtp.secretName }}
+- name: SMTP_PASS
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.currents.email.smtp.secretName }}
+      key: {{ .Values.currents.email.smtp.secretPasswordKey }}
+{{- end }}
+- name: AUTOMATED_REPORTS_CURRENTS_DASHBOARD_HOSTNAME
+  value: {{ .Values.currents.baseUrl | quote }}
+{{- if .Values.currents.email.smtp.from }}
+- name: AUTOMATED_REPORTS_EMAIL_FROM
+  value: {{ .Values.currents.email.smtp.from }}
+{{- end }}
+{{- end -}}

@@ -77,6 +77,16 @@ currents:
   imageTag: staging-aarch64
   baseUrl: "http://currents-app.localhost"
 
+  email:
+    smtp:
+      port: 587
+      secretUserKey: username
+      secretPasswordKey: password
+      # from: "Currents Report <report@example.com>"
+      # host: smtp.mailgun.org
+      # secretName: currents-email-smtp
+      # tls: false
+
   ingress:
     enabled: false
 
