@@ -58,6 +58,7 @@ spec:
               value: {{ .Values.currents.apiJwtToken.expiry | quote }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
           {{- include "currents.URLConfigEnv" . | nindent 12 }}
+          {{- include "currents.elasticDataStreamsEnv" . | nindent 12 }}
           {{- if .Values.currents.apiJwtToken.secretName }}
             - name: JWT_SECRET
               valueFrom:
