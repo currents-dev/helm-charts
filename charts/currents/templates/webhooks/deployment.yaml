@@ -45,6 +45,7 @@ spec:
           env:
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
             {{- include "currents.URLConfigEnv" . | nindent 12 }}
+            {{- include "currents.elasticDataStreamsEnv" . | nindent 12 }}
             {{- with (concat .Values.global.env .Values.webhooks.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}

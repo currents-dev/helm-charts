@@ -45,8 +45,6 @@ spec:
           env:
             - name: ON_PREM_MODE
               value: "true"
-            - name: APP_BASE_URL
-              value: {{ .Values.currents.baseUrl | quote }}
           {{- if .Values.currents.gitlab.state.secretName }}
             - name: GITLAB_STATE_SECRET
               valueFrom:

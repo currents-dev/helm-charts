@@ -150,4 +150,23 @@ Create the name of the service account to use
 - name: GITLAB_REDIRECT_URL
   value: {{ .Values.currents.gitlab.callbackUrl }}
 {{- end }}
+- name: APP_BASE_URL
+  value: {{ .Values.currents.baseUrl | quote }}
+- name: DASHBOARD_URL
+  value: {{ .Values.currents.baseUrl | quote }}
+{{- end -}}
+
+{{- define "currents.elasticDataStreamsEnv" -}}
+{{- if .Values.currents.elastic.datastreams.tests }}
+- name: ELASTIC_DATASTREAM_TESTS
+  value: {{ .Values.currents.elastic.datastreams.tests }}
+{{- end }}
+{{- if .Values.currents.elastic.datastreams.runs }}
+- name: ELASTIC_DATASTREAM_RUNS
+  value: {{ .Values.currents.elastic.datastreams.runs }}
+{{- end }}
+{{- if .Values.currents.elastic.datastreams.instances }}
+- name: ELASTIC_DATASTREAM_INSTANCES
+  value: {{ .Values.currents.elastic.datastreams.instances }}
+{{- end }}
 {{- end -}}
