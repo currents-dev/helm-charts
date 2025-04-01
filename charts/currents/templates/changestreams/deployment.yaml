@@ -27,7 +27,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "currents.serviceAccountName" . }}
-      {{- with .Values.global.SecurityContext }}
+      {{- with .Values.global.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
