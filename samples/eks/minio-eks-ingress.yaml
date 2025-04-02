@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-minio
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/group.name: currents
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:761136292957:certificate/0d3489f4-6b3e-4651-9538-4f6377fadeaa"
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
+    alb.ingress.kubernetes.io/success-codes: '200,403'
+spec:
+  ingressClassName: alb-currents
+  rules:
+    - host: storage.eks.currents-sandbox.work
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 443

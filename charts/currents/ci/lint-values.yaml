@@ -2,3 +2,7 @@ currents:
   mongoConnection:
     secretName: mongodb-currents-currents-user
     key: connectionString.standardSrv
+  elastic:
+    admin:
+      secretName: elasticsearch-es-elastic-user
+      secretKey: elastic
