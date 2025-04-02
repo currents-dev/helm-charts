@@ -15,7 +15,7 @@ currents:
   apiInternalToken:
     secretName: currents-api-internal-token
   gitlab:
-    callbackUrl: "http://currents-api.localhost/gitlab/callback"
+    callbackUrl: "http://currents-api.localhost/integrations/gitlab/callback"
     state:
       secretName: currents-gitlab-key 
       secretKey: gitlab-key.pem

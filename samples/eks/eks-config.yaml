@@ -1,0 +1,88 @@
+global:
+  imagePullPolicy: IfNotPresent
+  ingressClassName: alb-currents
+
+currents:
+  baseUrl: "https://currents-app.eks.currents-sandbox.work"
+  email:
+    smtp:
+      from: "Currents Report <report@currents-app.eks.currents-sandbox.work>"
+      host: smtp.mailgun.org
+      secretName: currents-email-smtp
+
+  apiJwtToken:
+    secretName: currents-api-jwt-token
+  apiInternalToken:
+    secretName: currents-api-internal-token
+  gitlab:
+    callbackUrl: "https://currents-api.eks.currents-sandbox.work/integrations/gitlab/callback"
+    state:
+      secretName: currents-gitlab-key 
+      secretKey: gitlab-key.pem
+  mongoConnection:
+    secretName: mongodb-currents-currents-user
+    key: connectionString.standardSrv
+  imageTag: staging-x86_64
+  elastic:
+    tls:
+      enabled: false
+    host: elasticsearch-es-http
+    admin:
+      secretName: elasticsearch-es-elastic-user 
+      secretKey: elastic
+    apiUser:
+      secretName: currents-es-api-key
+  objectStorage:
+    endpoint: https://storage.eks.currents-sandbox.work
+    internalEndpoint: https://minio
+    secretName: currents-minio-user
+    secretIdKey: CONSOLE_ACCESS_KEY
+    secretAccessKey: CONSOLE_SECRET_KEY
+    bucket: currents
+    pathStyle: true
+
+director:
+  ingress:
+    enabled: true
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/group.name: currents
+      alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:761136292957:certificate/0d3489f4-6b3e-4651-9538-4f6377fadeaa"
+      alb.ingress.kubernetes.io/target-type: ip
+    hosts:
+      - host: currents-api.eks.currents-sandbox.work
+        paths:
+          - path: /
+            pathType: Prefix
+server:
+  ingress:
+    enabled: true
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/group.name: currents
+      alb.ingress.kubernetes.io/conditions.auth-rule: > 
+        [{"field":"source-ip","sourceIpConfig":{"values":["64.180.20.242/32"]}}]
+      alb.ingress.kubernetes.io/actions.auth-rule: >
+        {"type":"forward","forwardConfig":{"targetGroups":[{"serviceName":"test-currents-server","servicePort":"http"}]}}
+      alb.ingress.kubernetes.io/actions.response-401: >
+        {"type":"fixed-response","fixedResponseConfig":{"contentType":"text/plain","statusCode":"401","messageBody":"401 Unauthorized"}}
+      alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:761136292957:certificate/0d3489f4-6b3e-4651-9538-4f6377fadeaa"
+      alb.ingress.kubernetes.io/target-type: ip
+    hosts:
+      - host: currents-app.eks.currents-sandbox.work
+        paths:
+          - path: /local-auth
+            pathType: Prefix
+            serviceName: auth-rule
+            servicePortName: use-annotation
+          - path: /local-auth
+            pathType: Prefix
+            serviceName: response-401
+            servicePortName: use-annotation
+          - path: /
+            pathType: Prefix
+
+redis:
+  enabled: true

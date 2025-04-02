@@ -37,9 +37,17 @@ spec:
             {{- end }}
             backend:
               service:
+                {{- if .serviceName }}
+                name: {{ .serviceName }}
+                {{- else }}
                 name: {{ include "currents.server.fullname" $ }}
+                {{- end }}
                 port:
+                  {{- if .servicePortName }}
+                  name: {{ .servicePortName }}
+                  {{- else }}
                   number: {{ $.Values.server.service.port }}
+                  {{- end }}
           {{- end }}
     {{- end }}
 {{- end }}
