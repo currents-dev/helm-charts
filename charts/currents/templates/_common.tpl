@@ -143,6 +143,17 @@ Create the name of the service account to use
 - name: FILE_STORAGE_INTERNAL_ENDPOINT
   value: {{ .Values.currents.objectStorage.internalEndpoint }}
 {{- end }}
+{{- if .Values.currents.logger.apiEndpoint }}
+- name: CORALOGIX_API_ENDPOINT
+  value: {{ .Values.currents.logger.apiEndpoint }}
+{{- end }}
+{{- if .Values.currents.logger.apiSecretName }}
+- name: CORALOGIX_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.currents.logger.apiSecretName }}
+      key: {{ .Values.currents.logger.apiSecretKey }}
+{{- end }}
 {{- end -}}
 
 {{- define "currents.URLConfigEnv" -}}
