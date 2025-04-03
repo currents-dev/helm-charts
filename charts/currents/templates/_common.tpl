@@ -149,7 +149,10 @@ Create the name of the service account to use
 {{- end }}
 {{- if .Values.currents.logger.apiKey }}
 - name: CORALOGIX_API_KEY
-  value: {{ .Values.currents.logger.apiKey }}
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.currents.logger.apiSecretName }}
+      key: {{ .Values.currents.logger.apiSecretKey }}
 {{- end }}
 {{- end -}}
 
