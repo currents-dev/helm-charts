@@ -130,7 +130,8 @@ currents:
     # pathStyle: false
   logger:
     apiEndpoint: ""
-    apiKey: ""
+    apiSecretName: ""
+    apiSecretKey: apiKey
   mongoConnection: {}
   gitlab:
     callbackUrl: ""
