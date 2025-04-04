@@ -4,6 +4,7 @@ metadata:
   name: elasticsearch
 spec:
   version: 8.17.3
+  volumeClaimDeletePolicy: DeleteOnScaledownOnly
   nodeSets:
   - name: default
     count: 1

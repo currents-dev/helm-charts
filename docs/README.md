@@ -2,6 +2,11 @@
 
 This guide provides step-by-step instructions to install the Currents Helm chart.
 
+## References
+
+- [Developer Guide](./developer-guide/README.md)
+- [EKS Quickstart](./eks/quickstart.md)
+
 ## Prerequisites
 
 1. **Kubernetes Cluster**: Ensure you have a running Kubernetes cluster.

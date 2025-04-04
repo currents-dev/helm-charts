@@ -9,6 +9,7 @@ global:
   ingressClassName: currents-nginx
 
 currents:
+  imageTag: staging-aarch64
   baseUrl: "http://currents-app.localhost"
   apiJwtToken:
     secretName: currents-api-jwt-token
@@ -22,7 +23,6 @@ currents:
   mongoConnection:
     secretName: mongodb-currents-currents-user
     key: connectionString.standardSrv
-  imageTag: staging-aarch64
   elastic:
     tls:
       enabled: false
