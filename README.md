@@ -16,10 +16,4 @@ $ helm repo add currents https://currents-dev.github.io/helm-charts
 
 > Note that the Currents containers are only available via a private registry to our OnPrem Beta Customers. Please context Currents Support for if you are interested in joining this program.
 
-The chart can be installed using:
-
-```
-helm upgrade --install  -f config.yaml currents currents/currents
-```
-
-Where `config.yaml` is your configuration file. See the [Chart Readme](https://github.com/currents-dev/helm-charts) for all configurations options.
+- [Chart Documentation](./docs/README.md)
