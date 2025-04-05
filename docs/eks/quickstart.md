@@ -147,10 +147,12 @@ This will setup a 1 node Elasticsearch cluster, requireing 2Gb of memory and usi
    ```
 
 5. Wait for the Elasticsearch pod to be available, then generate an api key:
+   <!-- {% raw %} -->
    ```sh
    PASSWORD=$(kubectl get secret elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
    kubectl exec elasticsearch-es-default-0 -- curl -u "elastic:$PASSWORD" -X POST -H "Content-Type: application/json" -d "{ \"name\": \"currents-key\" }"  "http://elasticsearch-es-http:9200/_security/api_key" > es-api.key.json
    ```
+   <!-- {% endraw %} -->
 
 6. Create a new secret with the api info from the key we just created (requires jq installed locally)
    ```sh
