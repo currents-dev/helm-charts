@@ -355,9 +355,9 @@ Configure and install the Currents Helm Chart once all the services are ready.
      domains:
        https: true
        # This is the domain you want to access the app via the webbrowser
-       appHost: currents-app.eks.currents-sandbox.work
+       appHost: currents.eks.currents-sandbox.work
        # This is the domain used to reach the director, called from the test reporters
-       apiHost: currents-api.eks.currents-sandbox.work
+       recordApiHost: currents-record.eks.currents-sandbox.work
      email:
        smtp:
          # The domain in the from address needs to be one your SMTP server is authorized to send from
@@ -414,8 +414,8 @@ Configure and install the Currents Helm Chart once all the services are ready.
          alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:"
          alb.ingress.kubernetes.io/target-type: ip
        hosts:
-         # Set the Director DNS name, often called API
-         - host: "{{ .Values.currents.domains.apiHost }}"
+         # Set the Director DNS name, often called the RECORD API
+         - host: "{{ .Values.currents.domains.recordApiHost }}"
            paths:
              - path: /
                pathType: Prefix
@@ -463,5 +463,5 @@ And you can have Currents Test reporters access the `director` DNS by setting th
 
 For example:
 ```sh
-CURRENTS_API_URL=https://currents-api.eks.example.com npx pwc --key <your-key> --project-id <your projectid>
+CURRENTS_API_URL=https://currents-record.eks.example.com npx pwc --key <your-key> --project-id <your projectid>
 ```

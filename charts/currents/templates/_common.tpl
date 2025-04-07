@@ -158,7 +158,7 @@ Create the name of the service account to use
 
 {{- define "currents.URLConfigEnv" -}}
 - name: GITLAB_REDIRECT_URL
-  value: {{ printf "%s/integrations/gitlab/callback" (include "currents.url" (dict "context" . "input" .Values.currents.domains.apiHost)) }}
+  value: {{ printf "%s/integrations/gitlab/callback" (include "currents.url" (dict "context" . "input" .Values.currents.domains.recordApiHost)) }}
 - name: APP_BASE_URL
   value: {{ include "currents.url" (dict "context" . "input"  .Values.currents.domains.appHost) }}
 - name: DASHBOARD_URL
