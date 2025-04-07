@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "currents.server.fullname" . }}
+  name: {{ include "currents.server.fullname" . }}
   labels:
     {{- include "currents.labels" (dict "context" . "component" .Values.server.name) | nindent 4 }}
 spec:
@@ -40,7 +40,7 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.server.image) }}
+          image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.server.image) }}
           imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.server.image.pullPolicy }}
           env:
             - name: INCLUDE_DASHBOARD
@@ -56,6 +56,8 @@ spec:
           {{- end }}
             - name: JWT_SECRET_EXPIRY
               value: {{ .Values.currents.apiJwtToken.expiry | quote }}
+            - name: ON_PREM_EMAIL
+              value: {{ tpl .Values.currents.rootUser.email . }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
           {{- include "currents.URLConfigEnv" . | nindent 12 }}
           {{- include "currents.elasticDataStreamsEnv" . | nindent 12 }}

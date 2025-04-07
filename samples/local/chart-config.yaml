@@ -9,14 +9,18 @@ global:
   ingressClassName: currents-nginx
 
 currents:
+  ingress:
+    enabled: true
+  domains:
+    https: false
+    appHost: currents-app.localhost
+    apiHost: currents-api.localhost
   imageTag: staging-aarch64
-  baseUrl: "http://currents-app.localhost"
   apiJwtToken:
     secretName: currents-api-jwt-token
   apiInternalToken:
     secretName: currents-api-internal-token
   gitlab:
-    callbackUrl: "http://currents-api.localhost/integrations/gitlab/callback"
     state:
       secretName: currents-gitlab-key 
       secretKey: gitlab-key.pem
@@ -40,23 +44,6 @@ currents:
     secretAccessKey: CONSOLE_SECRET_KEY
     bucket: currents
     pathStyle: true
-
-director:
-  ingress:
-    enabled: true
-    hosts:
-      - host: currents-api.localhost
-        paths:
-          - path: /
-            pathType: Prefix
-server:
-  ingress:
-    enabled: true
-    hosts:
-      - host: currents-app.localhost
-        paths:
-          - path: /
-            pathType: Prefix
 
 redis:
   enabled: true

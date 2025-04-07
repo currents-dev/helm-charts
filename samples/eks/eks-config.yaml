@@ -3,10 +3,13 @@ global:
   ingressClassName: alb-currents
 
 currents:
-  baseUrl: "https://currents-app.eks.currents-sandbox.work"
+  domains:
+    https: true
+    appHost: currents-app.eks.currents-sandbox.work
+    apiHost: currents-api.eks.currents-sandbox.work
   email:
     smtp:
-      from: "Currents Report <report@currents-app.eks.currents-sandbox.work>"
+      # from: "Currents Report <report@{{ .Values.currents.domains.appHost }}>"
       host: smtp.mailgun.org
       secretName: currents-email-smtp
 
@@ -15,7 +18,6 @@ currents:
   apiInternalToken:
     secretName: currents-api-internal-token
   gitlab:
-    callbackUrl: "https://currents-api.eks.currents-sandbox.work/integrations/gitlab/callback"
     state:
       secretName: currents-gitlab-key 
       secretKey: gitlab-key.pem
@@ -51,7 +53,7 @@ director:
       alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:761136292957:certificate/0d3489f4-6b3e-4651-9538-4f6377fadeaa"
       alb.ingress.kubernetes.io/target-type: ip
     hosts:
-      - host: currents-api.eks.currents-sandbox.work
+      - host: "{{ .Values.currents.domains.apiHost }}"
         paths:
           - path: /
             pathType: Prefix
@@ -71,7 +73,7 @@ server:
       alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:761136292957:certificate/0d3489f4-6b3e-4651-9538-4f6377fadeaa"
       alb.ingress.kubernetes.io/target-type: ip
     hosts:
-      - host: currents-app.eks.currents-sandbox.work
+      - host: "{{ .Values.currents.domains.appHost }}"
         paths:
           - path: /local-auth
             pathType: Prefix

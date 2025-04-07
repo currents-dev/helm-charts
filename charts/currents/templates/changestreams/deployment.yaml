@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "currents.changestreams.fullname" . }}
+  name: {{ include "currents.changestreams.fullname" . }}
   labels:
     {{- include "currents.labels" (dict "context" . "component" .Values.changestreams.name) | nindent 4 }}
 spec:
@@ -40,7 +40,7 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.changestreams.image) }}
+          image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.changestreams.image) }}
           imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.changestreams.image.pullPolicy }}
           env:
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}

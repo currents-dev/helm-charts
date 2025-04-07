@@ -74,15 +74,22 @@ global:
   affinity: {}
 
 currents:
+  domains:
+    https: true
+    # This is the host for the app
+    appHost: currents-app.localhost
+    # This is the host for the api
+    apiHost: currents-api.localhost
+  rootUser:
+    email: 'admin@{{ .Values.currents.domains.appHost }}'
   imageTag: staging-x86_64
-  baseUrl: "http://currents-app.localhost"
 
   email:
     smtp:
       port: 587
       secretUserKey: username
       secretPasswordKey: password
-      # from: "Currents Report <report@example.com>"
+      from: "Currents Report <report@{{ .Values.currents.domains.appHost }}>"
       # host: smtp.mailgun.org
       # secretName: currents-email-smtp
       # tls: false
@@ -134,7 +141,6 @@ currents:
     apiSecretKey: apiKey
   mongoConnection: {}
   gitlab:
-    callbackUrl: ""
     state: {}
       # secretName: ''
       # secretKey: ''
@@ -218,10 +224,10 @@ director:
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
-      # - host: currents-api.localhost
-      #   paths:
-      #     - path: /
-      #       pathType: Prefix
+      - host: "{{ .Values.currents.domains.apiHost }}"
+        paths:
+          - path: /
+            pathType: Prefix
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -305,10 +311,10 @@ server:
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
-      # - host: currents.localhost
-      #   paths:
-      #     - path: /
-      #       pathType: Prefix
+      - host: "{{ .Values.currents.domains.appHost }}"
+        paths:
+          - path: /
+            pathType: Prefix
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:

@@ -157,14 +157,12 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "currents.URLConfigEnv" -}}
-{{- if .Values.currents.gitlab.callbackUrl }}
 - name: GITLAB_REDIRECT_URL
-  value: {{ .Values.currents.gitlab.callbackUrl }}
-{{- end }}
+  value: {{ printf "%s/integrations/gitlab/callback" (include "currents.url" (dict "context" . "input" .Values.currents.domains.apiHost)) }}
 - name: APP_BASE_URL
-  value: {{ .Values.currents.baseUrl | quote }}
+  value: {{ include "currents.url" (dict "context" . "input"  .Values.currents.domains.appHost) }}
 - name: DASHBOARD_URL
-  value: {{ .Values.currents.baseUrl | quote }}
+  value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.appHost) }}
 {{- end -}}
 
 {{- define "currents.elasticDataStreamsEnv" -}}
@@ -212,9 +210,7 @@ Create the name of the service account to use
       key: {{ .Values.currents.email.smtp.secretPasswordKey }}
 {{- end }}
 - name: AUTOMATED_REPORTS_CURRENTS_DASHBOARD_HOSTNAME
-  value: {{ .Values.currents.baseUrl | quote }}
-{{- if .Values.currents.email.smtp.from }}
+  value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.appHost) }}
 - name: AUTOMATED_REPORTS_EMAIL_FROM
-  value: {{ .Values.currents.email.smtp.from }}
-{{- end }}
+  value: {{ tpl .Values.currents.email.smtp.from . }}
 {{- end -}}
