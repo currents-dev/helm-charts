@@ -62,7 +62,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | `global.tolerations` | Tolerations for pods | `[]` |
 | `global.affinity` | Affinity rules for pods | `{}` |
 | `currents.imageTag` | Image tag for Currents components | `staging-x86_64` |
-| `currents.domains.https` | Weather to use https protocol for links to the domains | `true` |
+| `currents.domains.https` | Whether to use https protocol for links to the domains | `true` |
 | `currents.domains.appHost` | Base domain for the application | `"http://currents-app.localhost"` |
 | `currents.domains.apiHost` | Base domain for the test reporter client api | `"http://currents-app.localhost"` |
 | `currents.email.smtp` | SMTP configuration for email | See `values.yaml` |
