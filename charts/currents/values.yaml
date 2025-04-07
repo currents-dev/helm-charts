@@ -89,7 +89,7 @@ currents:
       port: 587
       secretUserKey: username
       secretPasswordKey: password
-      from: "Currents Report <report@{{ .Values.currents.domains.appHost }}"
+      from: "Currents Report <report@{{ .Values.currents.domains.appHost }}>"
       # host: smtp.mailgun.org
       # secretName: currents-email-smtp
       # tls: false

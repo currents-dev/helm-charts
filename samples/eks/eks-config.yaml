@@ -9,7 +9,7 @@ currents:
     apiHost: currents-api.eks.currents-sandbox.work
   email:
     smtp:
-      # from: "Currents Report <report@{{ .Values.currents.domains.appHost }}"
+      # from: "Currents Report <report@{{ .Values.currents.domains.appHost }}>"
       host: smtp.mailgun.org
       secretName: currents-email-smtp
 
