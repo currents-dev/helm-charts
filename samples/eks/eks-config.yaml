@@ -5,8 +5,8 @@ global:
 currents:
   domains:
     https: true
-    appHost: currents-app.eks.currents-sandbox.work
-    apiHost: currents-api.eks.currents-sandbox.work
+    appHost: currents.eks.currents-sandbox.work
+    recordApiHost: currents-record.eks.currents-sandbox.work
   email:
     smtp:
       # from: "Currents Report <report@{{ .Values.currents.domains.appHost }}>"
@@ -53,7 +53,7 @@ director:
       alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:761136292957:certificate/0d3489f4-6b3e-4651-9538-4f6377fadeaa"
       alb.ingress.kubernetes.io/target-type: ip
     hosts:
-      - host: "{{ .Values.currents.domains.apiHost }}"
+      - host: "{{ .Values.currents.domains.recordApiHost }}"
         paths:
           - path: /
             pathType: Prefix

@@ -78,8 +78,8 @@ currents:
     https: true
     # This is the host for the app
     appHost: currents-app.localhost
-    # This is the host for the api
-    apiHost: currents-api.localhost
+    # This is the host for the recording endpoint that the test reporters communicate with
+    recordApiHost: currents-record.localhost
   rootUser:
     email: 'admin@{{ .Values.currents.domains.appHost }}'
   imageTag: staging-x86_64
@@ -224,7 +224,7 @@ director:
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
-      - host: "{{ .Values.currents.domains.apiHost }}"
+      - host: "{{ .Values.currents.domains.recordApiHost }}"
         paths:
           - path: /
             pathType: Prefix
