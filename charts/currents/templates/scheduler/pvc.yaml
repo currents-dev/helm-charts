@@ -2,7 +2,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ template "currents.scheduler.fullname" . }}-startup-tmp
+  name: {{ include "currents.scheduler.fullname" . }}-startup-tmp
   labels:
     {{- include "currents.labels" (dict "context" . "component" .Values.scheduler.name) | nindent 4 }}
 spec:

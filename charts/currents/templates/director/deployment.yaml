@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "currents.director.fullname" . }}
+  name: {{ include "currents.director.fullname" . }}
   labels:
     {{- include "currents.labels" (dict "context" . "component" .Values.director.name) | nindent 4 }}
 spec:
@@ -40,7 +40,7 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.director.image) }}
+          image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.director.image) }}
           imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.director.image.pullPolicy }}
           env:
             - name: ON_PREM_MODE

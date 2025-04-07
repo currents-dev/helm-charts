@@ -39,3 +39,11 @@ Create webhooks name and version as used by the chart label.
 {{- define "currents.webhooks.fullname" -}}
 {{- printf "%s-%s" (include "currents.fullname" .) .Values.webhooks.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- define "currents.url" -}}
+{{- if .context.Values.currents.domains.https -}}
+{{- printf "https://%s" .input -}}
+{{- else -}}
+{{- printf "http://%s" .input -}}
+{{- end -}}
+{{- end -}}

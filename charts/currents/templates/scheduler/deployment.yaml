@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "currents.scheduler.fullname" . }}
+  name: {{ include "currents.scheduler.fullname" . }}
   labels:
     {{- include "currents.labels" (dict "context" . "component" .Values.scheduler.name) | nindent 4 }}
 spec:
@@ -40,7 +40,7 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.scheduler.image) }}
+          image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.scheduler.image) }}
           imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.scheduler.image.pullPolicy }}
           env:
             - name: RUN_STARTUP_TASKS
@@ -85,7 +85,7 @@ spec:
             medium: "Memory"
         - name: startup
           persistentVolumeClaim:
-            claimName: {{ template "currents.scheduler.fullname" . }}-startup-tmp
+            claimName: {{ include "currents.scheduler.fullname" . }}-startup-tmp
       {{- with .Values.global.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

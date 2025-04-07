@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "currents.writer.fullname" . }}
+  name: {{ include "currents.writer.fullname" . }}
   labels:
     {{- include "currents.labels" (dict "context" . "component" .Values.writer.name) | nindent 4 }}
 spec:
@@ -40,7 +40,7 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: {{ template "currents.image" (dict "context" . "imageRoot" .Values.writer.image) }}
+          image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.writer.image) }}
           imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.writer.image.pullPolicy }}
           env:
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
