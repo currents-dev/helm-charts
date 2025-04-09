@@ -163,6 +163,8 @@ Create the name of the service account to use
   value: {{ include "currents.url" (dict "context" . "input"  .Values.currents.domains.appHost) }}
 - name: DASHBOARD_URL
   value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.appHost) }}
+- name: CURRENTS_RECORD_API_URL
+  value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.recordApiHost) }}
 {{- end -}}
 
 {{- define "currents.elasticDataStreamsEnv" -}}

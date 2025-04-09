@@ -45,6 +45,8 @@ spec:
           env:
             - name: ON_PREM_MODE
               value: "true"
+            - name: CURRENTS_ENV
+              value: "onprem"
           {{- if .Values.currents.gitlab.state.secretName }}
             - name: GITLAB_STATE_SECRET
               valueFrom:
