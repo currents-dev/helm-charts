@@ -332,10 +332,9 @@ Configure and install the Currents Helm Chart once all the services are ready.
 
    Be sure to customize the following:
    - `global.ingressClassName`
-   - `currents.baseUrl`
+   - `currents.domains`
    - `currents.email.from`
    - `currents.email.host`
-   - `currents.gitlab.callbackUrl`
    - `currents.objectStorage.endpoint`
    - `currents.objectStorage.bucket`
    - `director.ingress.annotations`
@@ -353,8 +352,12 @@ Configure and install the Currents Helm Chart once all the services are ready.
      ingressClassName: alb-currents
 
    currents:
-     # This needs to match the domain you want to access the app via the webbrowser
-     baseUrl: "https://currents-app.eks.example.com"
+     domains:
+       https: true
+       # This is the domain you want to access the app via the webbrowser
+       appHost: currents.eks.currents-sandbox.work
+       # This is the domain used to reach the director, called from the test reporters
+       recordApiHost: currents-record.eks.currents-sandbox.work
      email:
        smtp:
          # The domain in the from address needs to be one your SMTP server is authorized to send from
@@ -362,12 +365,6 @@ Configure and install the Currents Helm Chart once all the services are ready.
          # Enter your SMTP host
          host: smtp.mailgun.org
          secretName: currents-email-smtp
-     gitlab:
-       # The GitLab callback URL needs to be updated to use the domain for the Director service
-       callbackUrl: "https://currents-api.eks.example.com/integrations/gitlab/callback"
-       state:
-         secretName: currents-gitlab-key 
-         secretKey: gitlab-key.pem
      objectStorage:
        # Enter your storage provider endpoint
        endpoint: https://s3.us-east-1.amazonaws.com
@@ -383,7 +380,11 @@ Configure and install the Currents Helm Chart once all the services are ready.
        # secretAccessKey: CONSOLE_SECRET_KEY
        # bucket: currents
        # pathStyle: true
-     
+
+     gitlab:
+       state:
+         secretName: currents-gitlab-key 
+         secretKey: gitlab-key.pem 
      apiJwtToken:
        secretName: currents-api-jwt-token
      apiInternalToken:
@@ -413,8 +414,8 @@ Configure and install the Currents Helm Chart once all the services are ready.
          alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:"
          alb.ingress.kubernetes.io/target-type: ip
        hosts:
-         # Set the Director DNS name, often called API
-         - host: currents-api.eks.example.com
+         # Set the Director DNS name, often called the RECORD API
+         - host: "{{ .Values.currents.domains.recordApiHost }}"
            paths:
              - path: /
                pathType: Prefix
@@ -431,7 +432,7 @@ Configure and install the Currents Helm Chart once all the services are ready.
          alb.ingress.kubernetes.io/target-type: ip
        hosts:
          # Set the server DNS name, often called APP
-         - host: currents-app.eks.example.com
+         - host: "{{ .Values.currents.domains.appHost }}"
            paths:
              - path: /
                pathType: Prefix
@@ -462,5 +463,5 @@ And you can have Currents Test reporters access the `director` DNS by setting th
 
 For example:
 ```sh
-CURRENTS_API_URL=https://currents-api.eks.example.com npx pwc --key <your-key> --project-id <your projectid>
+CURRENTS_API_URL=https://currents-record.eks.example.com npx pwc --key <your-key> --project-id <your projectid>
 ```
