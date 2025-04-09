@@ -82,7 +82,7 @@ currents:
     recordApiHost: currents-record.localhost
   rootUser:
     email: 'admin@{{ .Values.currents.domains.appHost }}'
-  imageTag: staging-x86_64
+  imageTag: 2025-04-08-001
 
   email:
     smtp:
