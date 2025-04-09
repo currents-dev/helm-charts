@@ -43,6 +43,8 @@ spec:
           image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.scheduler.image) }}
           imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.scheduler.image.pullPolicy }}
           env:
+            - name: CURRENTS_ENV
+              value: "onprem"
             - name: RUN_STARTUP_TASKS
               value: "true"
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
