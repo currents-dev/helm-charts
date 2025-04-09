@@ -15,7 +15,7 @@ currents:
     https: false
     appHost: currents-app.localhost
     recordApiHost: currents-record.localhost
-  imageTag: staging-aarch64
+  imageTag: staging
   apiJwtToken:
     secretName: currents-api-jwt-token
   apiInternalToken:
