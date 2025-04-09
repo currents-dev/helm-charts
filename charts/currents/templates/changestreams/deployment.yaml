@@ -43,6 +43,8 @@ spec:
           image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.changestreams.image) }}
           imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.changestreams.image.pullPolicy }}
           env:
+            - name: CURRENTS_ENV
+              value: "onprem"
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
             {{- include "currents.URLConfigEnv" . | nindent 12 }}
             {{- include "currents.elasticDataStreamsEnv" . | nindent 12 }}
