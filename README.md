@@ -1,14 +1,5 @@
-# Currents Helm Charts
+# Currents On-Premise Repo
 
-This repo contains the Currents Helm Chart (in `charts/currents`) as well instructions for setting up the services the chart depends on.
+Currents on-premise installation is a series of microservices provided as container images that are installed into a Kubernetes Cluster using the Currents Helm Chart.
 
-## Resources
-
-- [🚀 Start Here: EKS Quickstart](/docs/eks/quickstart.md)
-- [Development Guide](/docs/developer-guide/README.md)
-- [Configuration Reference](/docs/configuration.md)
-
-## Additional Resources
-
-- [Helm Documentation](https://helm.sh/docs/)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
+Read the [documentation](./docs/README.md).

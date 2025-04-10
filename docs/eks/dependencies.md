@@ -2,7 +2,7 @@
 
 Currents depends on several third-party services that are not bundled with the Helm chart. You are responsible for allocating resources, installing, and maintaining these services. During the installation process, you’ll need to provide credentials so Currents can configure these services as needed.
 
-We provide a quick reference of how to create those services for your convenience.
+We provide a quick reference of how to create those services for your convenience. The documented configuration for the connected stateful services (mongo, elastic) are not definitive, and may not be adequate for all production setups.
 
 ### MongoDB
 
