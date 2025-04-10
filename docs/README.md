@@ -22,4 +22,4 @@ The Currents Helm Chart is stateless, so depends on being connected to stateful 
 - Not all the integrations are working, but may still be visible in the UI.
 - GitLab, Slack, and the Generic Webhooks are working
 - The documented configuration for the connected stateful services (mongo, elastic) are not definitive, and may not be adequate for all production setups.
-- In our cloud offering, [Currents.dev](https://currents.dev) relies on the production resources of the ElasticSearch, and MongoDD teams to run our stateful services. If you do not have the expertise in house for these services, Currents.dev is also not able to provide those resources, and you should instead consider getting support from the upstream service providers.
+- In our cloud offering, [Currents.dev](https://currents.dev) relies on the production resources of the ElasticSearch, and MongoDB teams to run our stateful services. If you do not have the expertise in house for these services, Currents.dev is also not able to provide those resources, and you should instead consider getting support from the upstream service providers.
