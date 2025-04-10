@@ -1,48 +1,4 @@
-# Currents Helm Chart Installation Guide
-
-This guide provides step-by-step instructions to install the Currents Helm chart.
-
-## References
-
-- [Developer Guide](./developer-guide/README.md)
-- [EKS Quickstart](./eks/quickstart.md)
-
-## Prerequisites
-
-1. **Kubernetes Cluster**: Ensure you have a running Kubernetes cluster.
-2. **Helm**: Install Helm (v3 or later). Refer to the [Helm installation guide](https://helm.sh/docs/intro/install/).
-3. **Namespace**: Create a namespace for the Currents application:
-   ```sh
-   kubectl create namespace currents
-   kubectl ns currents
-   ```
-
-## Installation Steps
-
-1. Add the Helm repository:
-   ```sh
-   helm repo add currents https://currents-dev.github.io/helm-charts
-   helm repo update
-   ```
-
-2. Install the chart:
-   ```sh
-   helm upgrade --install  -f config.yaml currents currents/currents
-   ```
-
-## Uninstallation
-
-To uninstall the Currents Helm chart, run:
-```sh
-helm uninstall currents --namespace currents
-```
-
-## Additional Resources
-
-- [Helm Documentation](https://helm.sh/docs/)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-
-## Configuration
+# Configuration Reference
 
 The following table lists the configurable parameters of the `currents` chart and their default values:
 
@@ -86,6 +42,3 @@ The following table lists the configurable parameters of the `currents` chart an
 | `redis.enabled` | Enable Redis | `false` |
 
 For detailed descriptions of each parameter, refer to the `values.yaml` file in the chart.
-
-
-
