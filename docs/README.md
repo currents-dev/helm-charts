@@ -1,91 +1,25 @@
-# Currents Helm Chart Installation Guide
+# Currents On-Premise Documentation
 
-This guide provides step-by-step instructions to install the Currents Helm chart.
+Currents on-premise installation is a series of microservices provided as container images that are installed into a Kubernetes Cluster using the Currents Helm Chart.
 
-## References
+The Currents Helm Chart is stateless, so depends on being connected to stateful services like a Database and Object Storage. These connected stateful services can be deployed inside the Kubernetes cluster alongside Currents, or outside the cluster.
 
-- [Developer Guide](./developer-guide/README.md)
-- [EKS Quickstart](./eks/quickstart.md)
+## Resources
 
-## Prerequisites
-
-1. **Kubernetes Cluster**: Ensure you have a running Kubernetes cluster.
-2. **Helm**: Install Helm (v3 or later). Refer to the [Helm installation guide](https://helm.sh/docs/intro/install/).
-3. **Namespace**: Create a namespace for the Currents application:
-   ```sh
-   kubectl create namespace currents
-   kubectl ns currents
-   ```
-
-## Installation Steps
-
-1. Add the Helm repository:
-   ```sh
-   helm repo add currents https://currents-dev.github.io/helm-charts
-   helm repo update
-   ```
-
-2. Install the chart:
-   ```sh
-   helm upgrade --install  -f config.yaml currents currents/currents
-   ```
-
-## Uninstallation
-
-To uninstall the Currents Helm chart, run:
-```sh
-helm uninstall currents --namespace currents
-```
+- [🚀 Start Here: EKS Quickstart](./eks/quickstart.md)
+- [Development Guide](./developer-guide/README.md)
+- [Configuration Reference](configuration.md)
 
 ## Additional Resources
 
 - [Helm Documentation](https://helm.sh/docs/)
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 
-## Configuration
+## Known Limitations
 
-The following table lists the configurable parameters of the `currents` chart and their default values:
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `global.imagePullSecrets` | Secrets for pulling images from private registries | `[]` |
-| `global.imagePullPolicy` | Image pull policy | `IfNotPresent` |
-| `global.additionalLabels` | Additional labels for all resources | `{}` |
-| `global.podAnnotations` | Annotations for pods | `{}` |
-| `global.env` | Global environment variables | `[]` |
-| `global.containerSecurityContext` | Security context for containers | See `values.yaml` |
-| `global.securityContext` | Security context for pods | See `values.yaml` |
-| `global.priorityClassName` | Priority class name for pods | `""` |
-| `global.volumes` | Additional volumes for pods | `[]` |
-| `global.volumeMounts` | Additional volume mounts for containers | `[]` |
-| `global.nodeSelector` | Node selector for pods | `{kubernetes.io/os: linux}` |
-| `global.tolerations` | Tolerations for pods | `[]` |
-| `global.affinity` | Affinity rules for pods | `{}` |
-| `currents.imageTag` | Image tag for Currents components | `staging-x86_64` |
-| `currents.domains.https` | Whether to use https protocol for links to the domains | `true` |
-| `currents.domains.appHost` | Base domain for the application | `"currents-app.localhost"` |
-| `currents.domains.recordApiHost` | Base domain for the test reporter client api | `"currents-record.localhost"` |
-| `currents.email.smtp` | SMTP configuration for email | See `values.yaml` |
-| `currents.rootUser.email` | Email address for the root org user | `root@currents.local` |
-| `currents.ingress.enabled` | Enable ingress for Currents | `false` |
-| `currents.apiJwtToken` | JWT token configuration | See `values.yaml` |
-| `currents.apiInternalToken` | Internal API token configuration | See `values.yaml` |
-| `currents.redis.host` | Redis host | `"{{ .Release.Name }}-redis-master"` |
-| `currents.elastic` | ElasticSearch configuration | See `values.yaml` |
-| `currents.objectStorage` | Object storage configuration | See `values.yaml` |
-| `currents.mongoConnection` | MongoDB connection configuration | `{}` |
-| `currents.gitlab` | GitLab integration configuration | See `values.yaml` |
-| `director` | Configuration for the Director component | See `values.yaml` |
-| `server` | Configuration for the Server component | See `values.yaml` |
-| `writer` | Configuration for the Writer component | See `values.yaml` |
-| `scheduler` | Configuration for the Scheduler component | See `values.yaml` |
-| `changestreams` | Configuration for the Change Streams component | See `values.yaml` |
-| `webhooks` | Configuration for the Webhooks component | See `values.yaml` |
-| `serviceAccount.create` | Create a service account | `true` |
-| `serviceAccount.name` | Name of the service account | `""` |
-| `redis.enabled` | Enable Redis | `false` |
-
-For detailed descriptions of each parameter, refer to the `values.yaml` file in the chart.
-
-
-
+- Currents On Premise does not have multi-user or any auth support at this time. It’s best deployed in a private network.
+- Coverage collection is currently not available
+- Not all the integrations are working, but may still be visible in the UI.
+- GitLab, Slack, and the Generic Webhooks are working
+- The documented configuration for the connected stateful services (mongo, elastic) are not definitive, and may not be adequate for all production setups.
+- In our cloud offering, [Currents.dev](https://currents.dev) relies on the production resources of the ElasticSearch, and MongoDD teams to run our stateful services. If you do not have the expertise in house for these services, Currents.dev is also not able to provide those resources, and you should instead consider getting support from the upstream service providers.
