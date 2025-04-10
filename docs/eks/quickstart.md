@@ -1,4 +1,4 @@
-# Quickstart for EKS
+# Quickstart: Installing Currents on EKS
 
 The QuickStart for installing the Currents Helm Chart on EKS runs through the commands to get the Currents App setup. This includes installing dependencies like MongoDB, Elasticsearch, and Minio into your Kubernetes namespace.
 
