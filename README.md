@@ -33,5 +33,5 @@ The release process for the Currents Helm Chart involves
 - Commit and push the branch up to GitHub, create a release PR
 - Merge the PR to `main` once the tests have passed
 - Trigger the `Release Charts` GitHub workflow action manually from the GitHub Actions UI
-  - This will package the chart and create a new GitHub release with it's artifact
+  - This will package the chart and create a new GitHub release with its artifact
   - This will also automatically update our Helm Chart repository index, making the new chart visible to users of our Helm repository   
