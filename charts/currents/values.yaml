@@ -13,30 +13,25 @@ global:
   #    - name: "image-pull-secret"
   imagePullSecrets: []
   imagePullPolicy: IfNotPresent
-
   # Labels to apply to all resources.
   additionalLabels: {}
-
   # This is for setting Kubernetes Annotations to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: {}
-
   # Additional environment variables to pass to binary.
   # For example:
   #  env:
   #  - name: SOME_VAR
   #    value: 'some value'
   env: []
-
   # Container Security Context to be set on the pods
   # For more information, see [Configure a Security Context for a Pod or Container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/).
   containerSecurityContext:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
-      - ALL
+        - ALL
     readOnlyRootFilesystem: true
-
   # Pod Security Context.
   # For more information, see [Configure a Security Context for a Pod or Container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/).
   securityContext:
@@ -46,13 +41,11 @@ global:
     fsGroupChangePolicy: "OnRootMismatch"
     seccompProfile:
       type: RuntimeDefault
-
   # The number of old ReplicaSets to retain to allow rollback (if not set, the default Kubernetes value is set to 10).
   # revisionHistoryLimit: 1
 
   # The optional priority class to be used for the currents pods.
   priorityClassName: ""
-
   # Additional volumes on the output Deployment definition.
   volumes: []
   # - name: foo
@@ -72,7 +65,6 @@ global:
     kubernetes.io/os: linux
   tolerations: []
   affinity: {}
-
 currents:
   domains:
     https: true
@@ -83,7 +75,6 @@ currents:
   rootUser:
     email: 'admin@{{ .Values.currents.domains.appHost }}'
   imageTag: 2025-04-08-001
-
   email:
     smtp:
       port: 587
@@ -93,10 +84,8 @@ currents:
       # host: smtp.mailgun.org
       # secretName: currents-email-smtp
       # tls: false
-
   ingress:
     enabled: false
-
   apiJwtToken:
     # secretName: currents-api-jwt-token
     key: token
@@ -104,7 +93,6 @@ currents:
   apiInternalToken:
     # secretName: currents-api-internal-token
     key: token
-
   redis:
     # -- set the redis hostname to talk to
     # @default -- `{{ .Release.Name }}-redis-master`
@@ -142,10 +130,8 @@ currents:
   mongoConnection: {}
   gitlab:
     state: {}
-      # secretName: ''
-      # secretKey: ''
-
-
+    # secretName: ''
+    # secretKey: ''
 director:
   name: director
   replicas: 1
@@ -153,10 +139,8 @@ director:
   image:
     # The container registry to pull the manager image from.
     registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
-
     # The container image for Currents Director.
     repository: currents/on-prem/director
-
     # Override the image tag to deploy by setting this variable.
     # If no value is set, the chart's appVersion is used.
     # tag: vX.Y.Z
@@ -166,7 +150,6 @@ director:
 
     # defaults to global.image.pullPolicy
     pullPolicy: ""
-
   # Deployment update strategy for Currents deployment.
   # For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
   #
@@ -200,29 +183,25 @@ director:
   # -- [Node selector]
   # @default -- `{}` (defaults to global.nodeSelector)
   nodeSelector: {}
-
   # -- [Tolerations] for use with node taints
   # @default -- `[]` (defaults to global.tolerations)
   tolerations: []
-
   # -- Assign custom [affinity] rules to the deployment
   # @default -- `{}` (defaults to the global.affinity preset)
   affinity: {}
-
   # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
   service:
     # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     type: ClusterIP
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
     port: 1234
-
   # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
   ingress:
     enabled: false
     # className: ""
     annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
     hosts:
       - host: "{{ .Values.currents.domains.recordApiHost }}"
         paths:
@@ -232,7 +211,6 @@ director:
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
-
 server:
   name: server
   replicas: 1
@@ -240,10 +218,8 @@ server:
   image:
     # The container registry to pull the manager image from.
     registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
-
     # The container image for Currents Server API.
     repository: currents/on-prem/api
-
     # Override the image tag to deploy by setting this variable.
     # If no value is set, the chart's appVersion is used.
     # tag: vX.Y.Z
@@ -253,7 +229,6 @@ server:
 
     # defaults to global.image.pullPolicy
     pullPolicy: ""
-
   # Deployment update strategy for Currents deployment.
   # For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
   #
@@ -287,29 +262,25 @@ server:
   # -- [Node selector]
   # @default -- `{}` (defaults to global.nodeSelector)
   nodeSelector: {}
-
   # -- [Tolerations] for use with node taints
   # @default -- `[]` (defaults to global.tolerations)
   tolerations: []
-
   # -- Assign custom [affinity] rules to the deployment
   # @default -- `{}` (defaults to the global.affinity preset)
   affinity: {}
-
   # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
   service:
     # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     type: ClusterIP
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
     port: 4000
-
   # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
   ingress:
     enabled: false
     # className: ""
     annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
     hosts:
       - host: "{{ .Values.currents.domains.appHost }}"
         paths:
@@ -319,7 +290,6 @@ server:
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
-
 writer:
   name: writer
   replicas: 1
@@ -327,10 +297,8 @@ writer:
   image:
     # The container registry to pull the manager image from.
     registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
-
     # The container image for Currents Server API.
     repository: currents/on-prem/writer
-
     # Override the image tag to deploy by setting this variable.
     # If no value is set, the chart's appVersion is used.
     # tag: vX.Y.Z
@@ -360,25 +328,20 @@ writer:
   # -- [Node selector]
   # @default -- `{}` (defaults to global.nodeSelector)
   nodeSelector: {}
-
   # -- [Tolerations] for use with node taints
   # @default -- `[]` (defaults to global.tolerations)
   tolerations: []
-
   # -- Assign custom [affinity] rules to the deployment
   # @default -- `{}` (defaults to the global.affinity preset)
   affinity: {}
-
 scheduler:
   name: scheduler
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
     # The container registry to pull the manager image from.
     registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
-
     # The container image for Currents Server API.
     repository: currents/on-prem/scheduler
-
     # Override the image tag to deploy by setting this variable.
     # If no value is set, the chart's appVersion is used.
     # tag: vX.Y.Z
@@ -397,7 +360,6 @@ scheduler:
       # volumeName:
       matchLabels: {}
       matchExpressions: []
-
   # Deployment update strategy for Currents deployment.
   # For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
   deploymentStrategy:
@@ -429,25 +391,20 @@ scheduler:
   # -- [Node selector]
   # @default -- `{}` (defaults to global.nodeSelector)
   nodeSelector: {}
-
   # -- [Tolerations] for use with node taints
   # @default -- `[]` (defaults to global.tolerations)
   tolerations: []
-
   # -- Assign custom [affinity] rules to the deployment
   # @default -- `{}` (defaults to the global.affinity preset)
   affinity: {}
-
 changestreams:
   name: change-streams
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
     # The container registry to pull the manager image from.
     registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
-
     # The container image for Currents Change Streams Image
     repository: currents/on-prem/change-streams
-
     # Override the image tag to deploy by setting this variable.
     # If no value is set, the chart's appVersion is used.
     # tag: vX.Y.Z
@@ -466,25 +423,20 @@ changestreams:
   # -- [Node selector]
   # @default -- `{}` (defaults to global.nodeSelector)
   nodeSelector: {}
-
   # -- [Tolerations] for use with node taints
   # @default -- `[]` (defaults to global.tolerations)
   tolerations: []
-
   # -- Assign custom [affinity] rules to the deployment
   # @default -- `{}` (defaults to the global.affinity preset)
   affinity: {}
-
 webhooks:
   name: webhooks
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
     # The container registry to pull the manager image from.
     registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
-
     # The container image for Currents Webhooks Image
     repository: currents/on-prem/webhooks
-
     # Override the image tag to deploy by setting this variable.
     # If no value is set, the chart's appVersion is used.
     # tag: vX.Y.Z
@@ -515,20 +467,16 @@ webhooks:
   # -- [Node selector]
   # @default -- `{}` (defaults to global.nodeSelector)
   nodeSelector: {}
-
   # -- [Tolerations] for use with node taints
   # @default -- `[]` (defaults to global.tolerations)
   tolerations: []
-
   # -- Assign custom [affinity] rules to the deployment
   # @default -- `{}` (defaults to the global.affinity preset)
   affinity: {}
-
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
-
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   # name: ""
@@ -541,8 +489,6 @@ serviceAccount:
 
   # Automatically mount a ServiceAccount's API credentials?
   automount: true
-
-
 # The included redis CAN be used in production, but you won't have high availability during version upgrades
 redis:
   # -- enable the Bitnami Redis chart. Refer to https://github.com/bitnami/charts/blob/main/bitnami/redis/ for possible values.
