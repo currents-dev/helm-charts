@@ -78,7 +78,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.email.smtp.from | tpl/string | `"Currents Report <report@{{ .Values.currents.domains.appHost }}>"` | The email address to send from |
 | currents.email.smtp.tls | bool | `false` | Whether the SMTP server uses TLS |
 | currents.ingress.enabled | bool | `false` | Whether to enable the both default ingresses (server, and director) |
-| currents.apiJwtToken.expiry | string | `"1d"` | How often to expire session tokens signed by the JWT token  |
+| currents.apiJwtToken.expiry | string | `"1d"` | How often to expire session tokens signed by the JWT token |
 | currents.redis.host | tpl | `{{ .Release.Name }}-redis-master` | set the redis hostname to talk to |
 | currents.elastic.datastreams.instances | string | `"currents_dev_instances"` | The elasticsearch index to use for instances |
 | currents.elastic.datastreams.tests | string | `"currents_dev_tests"` | The elasticsearch index to use for tests |
