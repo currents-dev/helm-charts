@@ -1,7 +1,9 @@
 name: Sync Docs to GH Pages
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   release:
