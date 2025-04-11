@@ -211,3 +211,5 @@ The following table lists the configurable parameters of the `currents` chart an
 | redis.metrics.resourcesPreset | string | `"none"` |  |
 | redis.volumePermissions.resourcesPreset | string | `"none"` |  |
 | redis.sysctl.resourcesPreset | string | `"none"` |  |
+
+[values.yaml]: https://github.com/currents-dev/helm-charts/blob/main/charts/currents/values.yaml
