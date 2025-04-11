@@ -51,7 +51,7 @@ currents:
     # -- The K8s secret key to use for the JWT token
     # @section -- Frequently Used
     key: token
-    # -- How often to expire session tokens signed by the JWT token 
+    # -- How often to expire session tokens signed by the JWT token
     expiry: 1d
   apiInternalToken:
     # -- The K8s secret to use for the internal API token
@@ -145,7 +145,7 @@ currents:
       secretKey: ""
 # END Currents App Configuration
 
-# Global Configuration 
+# Global Configuration
 # applied to all Chart resources
 global:
   # -- Reference to one or more secrets to be used when pulling images.
@@ -206,7 +206,7 @@ global:
     kubernetes.io/os: linux
   tolerations: []
   affinity: {}
-# END Global Configuration 
+# END Global Configuration
 
 # Director Configuration
 director:
