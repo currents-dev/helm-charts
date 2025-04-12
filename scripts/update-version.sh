@@ -35,3 +35,7 @@ if [ -n "$VERSION" ]; then
   yq -i ".version = \"$VERSION\"" charts/currents/Chart.yaml
   echo "Updated version to $VERSION"
 fi
+
+# Call build-docs.sh script using a relative path
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"$SCRIPT_DIR/build-docs.sh"

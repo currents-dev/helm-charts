@@ -60,6 +60,8 @@ Configure and install the Currents Helm Chart once all the services are ready.
    - `server.ingress.annotations`
    - `server.ingress.hosts`
 
+   Also see the full [Configuration Reference](../configuration.md)
+
    Here is the sample config file
 
    `currents-helm-config.yaml`
