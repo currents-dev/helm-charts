@@ -8,6 +8,7 @@ The Currents Helm Chart is stateless, so depends on being connected to stateful 
 
 - [🚀 Start Here: EKS Quickstart](./eks/quickstart.md)
 - [Development Guide](./developer-guide/README.md)
+- [Support Policy](./support.md)
 - [Configuration Reference](configuration.md)
 
 ## Additional Resources
