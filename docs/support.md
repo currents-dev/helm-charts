@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document outlines the support and maintenance policy for Currents. It is intended for customers deploying Currents in self-managed (on-prem) environments. The goal is to clearly define our responsibilities, provide guidance on components we support directly, and set expectations for areas where support is advisory or excluded.
+This document outlines Currents’ support and maintenance policy for customers deploying Currents in self-managed (on-premises) environments. It clearly defines our responsibilities, delineates the components we fully support, and sets expectations for areas where support is advisory or out of scope.
 
 This document may be shared with customers and incorporated into future support material and onboarding guides.
 
@@ -25,21 +25,18 @@ Once Currents is deployed and the correct setup is confirmed, Currents is respon
 - **Currents services running within the Kubernetes (K8S) cluster**
 - **Helm chart** configuration, parameters, and definitions
 - **Database configuration**:
-  - Indexes and query performance
-  - Data integrity and settings (e.g., backups, rollover policies)
-- **Redis configuration**:
+  - Index settings
+  - Query settings and performance
+- **Redis**:
   - Cache keys and content
   - LUA scripts
   - Associated application code
-- **Storage configuration**:
-  - Encryption
-  - Read/write access
-  - Secrets management
+
 - **K8S configuration**:
   - Service definitions
   - Inter-service communication
 
-> 🛠 For issues related to core components, please create a support ticket following the “Troubleshooting” section.
+> 🛠 For issues related to core components, please follow the “Troubleshooting” section.
 
 ---
 
@@ -55,13 +52,21 @@ Currents will provide **recommendations and minimal examples** for components in
   - Access from/to external services
 
 - **Storage Infrastructure** (e.g., S3 buckets)
+  - Provisioning access and capacity
+  - Data encryption
 
 - **Database Infrastructure**:
   - Resource allocation
   - Clustering and scaling
+  - Backups and recovery
+
+- **Secrets management**:
+  - Secrets encryption and provisioning
+  - Creating, syncing, or rotating secrets as needed
 
 - **Network Configuration**:
   - Connectivity between services
+  - Ingress/Egress configuration
 
 - **Instrumentation & Monitoring**:
   - Currents can provide example metrics for performance and health
@@ -104,17 +109,19 @@ Currents does **not** provide support for the following:
 
 ---
 
-## Troubleshooting Expectations
+## Troubleshooting
 
-To ensure efficient issue resolution, the following are required when submitting a support ticket:
+To ensure efficient issues resolution customer must provide certain technical information. We understand that some issues are complex in their nature and can be difficult to reproduce in a standalone form, however we expect customer representative to collaborate with our support team to gather as much information as possible in a timely manner.
 
 - Detailed logs
-- A standalone reproduction of the issue
+- A standalone example and reproduction steps
 - Timely responses during the troubleshooting process
 - Full breakdown of involved system setups:
   - Versions
   - Configuration files
-- It is **strongly recommended** to use a shared external logging provider (e.g., Coralogix) for log access
-- Incomplete information or lack of response may result in the ticket being closed
+- It is **recommended** to use a shared external logging provider (e.g., Coralogix) for log access
 - Feature requests are subject to our internal roadmap and will be prioritized based on availability, unless agreed otherwise in writing
 - Support hours and SLA terms are governed by the customer’s signed contract
+
+
+Failure to provide complete information or delayed responses may impact our ability to resolve issues effectively.
