@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## [currents-0.2.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.2.0) - 2025-04-09
 
 - [`f45ae1d`](https://github.com/currents-dev/helm-charts/commit/f45ae1d6b3239ba9e6b2383c8e30b507dc7e1670) fix: Point to the director url in the dashboard (#17)
