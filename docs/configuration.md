@@ -85,6 +85,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.elastic.datastreams.runs | string | `"currents_dev_runs"` | The elasticsearch index to use for runs |
 | currents.elastic.port | int | `9200` | The elasticsearch port to use |
 | currents.objectStorage.internalEndpoint | string | `""` | The object storage internal endpoint to use (for internal communication) |
+| currents.objectStorage.region | string | `""` | The region to use for the object storage |
 | currents.objectStorage.pathStyle | bool | `false` | Whether to use path style access for the object storage |
 | currents.logger.apiEndpoint | string | `""` | The coralogix API endpoint to use |
 | currents.logger.apiSecretName | string | `""` | The k8s secret to use for the coralogix private key |
