@@ -107,6 +107,8 @@ currents:
     endpoint: ""
     # -- The object storage internal endpoint to use (for internal communication)
     internalEndpoint: ""
+    # -- The region to use for the object storage
+    region: ""
     # -- The K8s secret to use for the object storage access key
     # @section -- Required
     secretName: ""
