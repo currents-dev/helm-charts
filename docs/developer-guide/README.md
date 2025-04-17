@@ -140,15 +140,9 @@ kubectl create secret docker-registry currents-pull-secret \
   kubectl apply -f -
 ```
 
-Create JWT secret
-
+Create required secrets for JWT auth and internal api
 ```sh
 kubectl create secret generic currents-api-jwt-token --from-literal=token=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
-```
-
-Create internal API secret
-
-```sh
 kubectl create secret generic currents-api-internal-token --from-literal=token=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
 ```
 

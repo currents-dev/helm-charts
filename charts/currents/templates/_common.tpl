@@ -123,6 +123,10 @@ Create the name of the service account to use
   value: {{ .Values.currents.objectStorage.bucket }}
 - name: FILE_STORAGE_ENDPOINT
   value: {{ .Values.currents.objectStorage.endpoint }}
+{{- if .Values.currents.objectStorage.region }}
+- name: FILE_STORAGE_REGION
+  value: {{ .Values.currents.objectStorage.region }}
+{{- end }}
 {{- if .Values.currents.objectStorage.secretName }}
 - name: FILE_STORAGE_ACCESS_KEY_ID
   valueFrom:
