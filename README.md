@@ -30,6 +30,7 @@ The release process for the Currents Helm Chart involves
 - Run:
   - `./scripts/update-version.sh -t <image tag name> -v <new chart version>`
   - Updates the appVersion and imageTag: ex: `./scripts/update-version.sh -t 2025-04-13-001 -v 0.2.2`
+- Update the `CHANGELOG.md` and change the `UNRELEASED` header to the appropriate version
 - Commit and push the branch up to GitHub, create a release PR
 - Merge the PR to `main` once the tests have passed
 - Trigger the `Release Charts` GitHub workflow action manually from the GitHub Actions UI

@@ -16,6 +16,11 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Update the changelog before any local changes are staged
+"$SCRIPT_DIR/update-changelog.sh" || true
+
 # Check if at least one of tag or version is provided
 if [ -z "$TAG" ] && [ -z "$VERSION" ]; then
   echo "Error: You must provide at least one of --tag or --version."
@@ -37,5 +42,4 @@ if [ -n "$VERSION" ]; then
 fi
 
 # Call build-docs.sh script using a relative path
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 "$SCRIPT_DIR/build-docs.sh"
