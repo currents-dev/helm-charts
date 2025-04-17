@@ -90,6 +90,8 @@ Configure and install the Currents Helm Chart once all the services are ready.
        endpoint: https://s3.us-east-1.amazonaws.com
        # Enter your bucket name
        bucket: currents-my-org-name
+       # Enter your region
+       region: us-east-1
        secretName: currents-storage-user
        # Use the following settings instead if you setup Minio
        # Set the endpoint to your Minio Route
