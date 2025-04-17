@@ -1,9 +1,11 @@
 name: Tag Changelog
 
 on:
-  push:
-    tags:        
-      - '*'
+  workflow_run:
+    workflows: [Release Charts]
+    types:
+      - completed
+  workflow_dispatch: 
 
 jobs:
   release:
