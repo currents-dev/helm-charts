@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## [currents-0.2.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.2.1) - 2025-04-17
+
+- [`6572449`](https://github.com/currents-dev/helm-charts/commit/65724496022119dd21084e36a2ea57d69275e2cb) fix: enable s3 region to be configured (#25)
+
 ## [currents-0.2.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.2.0) - 2025-04-09
 
 - [`f45ae1d`](https://github.com/currents-dev/helm-charts/commit/f45ae1d6b3239ba9e6b2383c8e30b507dc7e1670) fix: Point to the director url in the dashboard (#17)
@@ -16,8 +20,4 @@
 
 ## [currents-0.1.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.1.0) - 2025-03-27
 
-- [`dcf69ab`](https://github.com/currents-dev/helm-charts/commit/dcf69ab9e69f2f629b4d90d97debb3c062f89663) Merge pull request #3 from currents-dev/chore/add-releaser
-- [`a29b5b1`](https://github.com/currents-dev/helm-charts/commit/a29b5b13efc20d7e9bef50ae80c317cb3bbf338a) Merge pull request #2 from currents-dev/chore/add-helm-linting
-- [`e5bddc7`](https://github.com/currents-dev/helm-charts/commit/e5bddc7ae1f7d5f809413c2bc3a2c2728da052d3) Merge pull request #1 from currents-dev/feat/chart-initial
 - [`ece5a9d`](https://github.com/currents-dev/helm-charts/commit/ece5a9dbe3b3402503a6b73cee75e692bb7ec6f1) feat: initial chart
-- [`7eb6d37`](https://github.com/currents-dev/helm-charts/commit/7eb6d37253f7bc2840f498af17d283e6644cf13f) Initial commit

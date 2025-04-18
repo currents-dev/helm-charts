@@ -1,5 +1,4 @@
 changelog:
-  exclude:
-    - '^chore'
-    - ^docs
-    - ^ci
+  include:
+    - '^(\[.*\])?\s?fix'
+    - '^(\[.*\])?\s?feat'
