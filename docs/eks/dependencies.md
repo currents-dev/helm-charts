@@ -26,36 +26,36 @@ This will setup a 2-node Mongo Cluster, with each being 10Gb available for stora
    apiVersion: mongodbcommunity.mongodb.com/v1
    kind: MongoDBCommunity
    metadata:
-   name: mongodb
+     name: mongodb
    spec:
-   members: 2
-   type: ReplicaSet
-   version: "7.0.17"
-   security:
+     members: 2
+     type: ReplicaSet
+     version: "7.0.17"
+     security:
        authentication:
-       modes: ["SCRAM"]
-   users:
+         modes: ["SCRAM"]
+     users:
        - name: cluster-admin
-       db: admin
-       passwordSecretRef: # a reference to the secret that will be used to generate the user's password
+         db: admin
+         passwordSecretRef: # a reference to the secret that will be used to generate the user's password
            name: mongo-admin-password
-       roles:
+         roles:
            - name: clusterAdmin
-           db: admin
+             db: admin
            - name: userAdminAnyDatabase
-           db: admin
+             db: admin
            - name: dbAdminAnyDatabase
-           db: admin
-       scramCredentialsSecretName: admin-scram
+             db: admin
+         scramCredentialsSecretName: admin-scram
        - name: currents-user
-       db: currents
-       passwordSecretRef: # a reference to the secret that will be used to generate the user's password
+         db: currents
+         passwordSecretRef: # a reference to the secret that will be used to generate the user's password
            name: mongo-currents-password
-       roles:
+         roles:
            - name: dbOwner
-           db: currents
-       scramCredentialsSecretName: currents-scram
-   additionalMongodConfig:
+             db: currents
+         scramCredentialsSecretName: currents-scram
+     additionalMongodConfig:
        storage.wiredTiger.engineConfig.journalCompressor: zlib
    ```
 
@@ -138,14 +138,18 @@ This will setup a 1-node Elasticsearch cluster, requireing 2Gb of memory and usi
 
 Follow this step if you plan to use provider (S3, Cloudflare) object storage (recommended).
 
-1. Create a secret containing the access key and secret for the bucket you want to use for Currents 
+1. Ensure you have created an Object Storage bucket for Currents in your provider.
+
+2. If using S3, you can choose to setup IAM permissions for the Currents service account. If so, you can skip the rest of these steps, and setup the IAM access after installing the Helm chart.
+
+3. Create a secret containing the access key and secret for the bucket you want to use for Currents 
    ```sh
    AWS_ACCESS_KEY_ID=<replace-with-access-key-id>
    AWS_SECRET_ACCESS_KEY=<replace-with-secret-access-key>
    kubectl create secret generic currents-storage-user --from-literal=apiId=$AWS_ACCESS_KEY_ID --from-literal=keySecret=$AWS_SECRET_ACCESS_KEY
    ```
 
-2. You will configure the Currents Helm chart to use `currents-storage-user` and your Object Storage bucket later in these instructions.
+4. You will configure the Currents Helm chart to use `currents-storage-user` and your Object Storage bucket later in these instructions.
 
 ### Alternative Object Storage (in cluster)
 
