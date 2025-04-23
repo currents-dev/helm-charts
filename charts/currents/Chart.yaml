@@ -5,10 +5,10 @@ home: https://currents.dev
 type: application
 # The chart version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.1
+version: 0.3.0
 # Version number of the application being deployed.
 # Versions are not expected to follow Semantic Versioning. They should reflect the version the application is using.
-appVersion: "2025-04-08-001"
+appVersion: "2025-04-23-001"
 maintainers:
   - name: Currents-dev
     url: https://currents.dev
