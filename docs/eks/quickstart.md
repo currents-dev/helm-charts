@@ -92,6 +92,7 @@ Configure and install the Currents Helm Chart once all the services are ready.
        bucket: currents-my-org-name
        # Enter your region
        region: us-east-1
+       # If you created an Object Storage secret, set it here. If using IAM for S3, remove the secretName
        secretName: currents-storage-user
        # Use the following settings instead if you setup Minio
        # Set the endpoint to your Minio Route
@@ -170,9 +171,13 @@ Configure and install the Currents Helm Chart once all the services are ready.
    helm upgrade --install currents currents --repo https://currents-dev.github.io/helm-charts/ -f currents-helm-config.yaml 
    ```
 
+## Configure Service Account Access
+
+If you are using S3 Object Storage and plan to use IAM roles to grant the Pods access rather than a secret, now is the time to follow [Setting up IAM Roles for Accessing Object Storage](./iam.md#iam-resources-for-accessing-currents-docker-images)
+
 ## Configure DNS
 
-The previous step will have created a new load balancer which you can find in your ec2/LoadBalancers from the AWS console. 
+The Helm install step will have created a new load balancer which you can find in your ec2/LoadBalancers from the AWS console. 
 
 Configure your DNS to point the domains we used for Currents at the newly created balancer.
 
