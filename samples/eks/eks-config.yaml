@@ -24,7 +24,7 @@ currents:
   mongoConnection:
     secretName: mongodb-currents-currents-user
     key: connectionString.standardSrv
-  imageTag: staging-x86_64
+  imageTag: staging
   elastic:
     tls:
       enabled: false
