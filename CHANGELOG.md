@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## [currents-0.3.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.3.0) - 2025-04-23
+
+New release supports using IAM service account roles for EKS
+
+- [`9032de5`](https://github.com/currents-dev/helm-charts/commit/9032de5fa3bd814cb1cfe4600d4d747feafe01b2) feat: Update the image tag to 2025-04-23-001 (#29)
+
 ## [currents-0.2.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.2.1) - 2025-04-17
 
 - [`6572449`](https://github.com/currents-dev/helm-charts/commit/65724496022119dd21084e36a2ea57d69275e2cb) fix: enable s3 region to be configured (#25)
