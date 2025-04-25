@@ -4,10 +4,8 @@
 
 Currents Docker images are hosted in a private ECR registry. To gain access, follow these steps:
 
-- Create an IAM role with a policy that grants **ECR pull permissions** (see the policy below).
-- Send the Currents team your AWS ARN.
-
-## Reference Policy
+### 1. ✅ Create an IAM Role with Required Permissions
+Create an IAM role with the following policy attached:
 
 ```json
 {
@@ -45,6 +43,24 @@ Currents Docker images are hosted in a private ECR registry. To gain access, fol
   ]
 }
 ```
+
+### 2. 📩 Share Role ARN
+Send the ARN of the created IAM role to the Currents engineer so they can allow it to assume permissions on their side.
+
+### 3. 🔄 Assume the IAM Role (from your terminal)
+Use the AWS CLI to assume the role provided by Currents. Run:
+
+
+`aws sts assume-role --role-arn <ROLE_ARN> --role-session-name currents-access-session`
+
+Make sure to export the temporary credentials received (AccessKeyId, SecretAccessKey, SessionToken) into your environment variables for the session.
+
+### 4. 🧪 Verify Access to ECR
+Run the following to log in to ECR and pull the image:
+
+`aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 513558712013.dkr.ecr.us-east-1.amazonaws.com`
+
+`docker pull 513558712013.dkr.ecr.us-east-1.amazonaws.com/currents/on-prem/api:staging-aarch64`
 
 ## Using IAM Roles for Accessing Object Storage
 
