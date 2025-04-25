@@ -10,6 +10,7 @@ The Currents Helm Chart is stateless, so depends on being connected to stateful 
 - [Development Guide](./developer-guide/README.md)
 - [Support Policy](./support.md)
 - [Configuration Reference](configuration.md)
+- [IAM Eesources](iam.md)
 
 ## Additional Resources
 
