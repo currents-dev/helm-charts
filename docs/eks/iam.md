@@ -11,32 +11,38 @@ Currents Docker images are hosted in a private ECR registry. To gain access, fol
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "ecr:GetAuthorizationToken"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:BatchGetImage",
-                "ecr:GetDownloadUrlForLayer"
-            ],
-            "Resource": [
-                "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/api/*",
-                "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/change-streams/*",
-                "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/director/*",
-                "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/scheduler/*",
-                "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/writer/*",
-                "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/webhooks/*"
-            ]
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer"
+      ],
+      "Resource": [
+        "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/api/*",
+        "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/api",
+        "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/change-streams/*",
+        "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/change-streams",
+        "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/director/*",
+        "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/director",
+        "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/scheduler/*",
+        "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/scheduler",
+        "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/writer/*",
+        "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/writer",
+        "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/webhook/*",
+        "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/webhook"
+      ]
+    }
+  ]
 }
 ```
 
