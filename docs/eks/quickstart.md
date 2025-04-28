@@ -92,15 +92,26 @@ Configure and install the Currents Helm Chart once all the services are ready.
        bucket: currents-my-org-name
        # Enter your region
        region: us-east-1
-       # If you created an Object Storage secret, set it here. If using IAM for S3, remove the secretName
+
+       # AUTHENTICATION CONFIGURATION:
+       # Option 1: For IAM role-based authentication (recommended for AWS)
+       # If using IAM roles for S3 access, REMOVE the secretName line completely
+
+       # Option 2: For secret key-based authentication
+       # If using secret keys, you MUST create this secret before installation
        secretName: currents-storage-user
+
+       # NOTE: Choose either IAM (remove secretName) OR secret-based authentication.
+       # Do NOT leave secretName in your configuration if you haven't created the secret.
+
+       # Option 3: For minio deployed in the same K8s namespace
        # Use the following settings instead if you setup Minio
-       # Set the endpoint to your Minio Route
-       # endpoint: https://storage.eks.example.com
-       # internalEndpoint: https://minio
        # secretName: currents-minio-user
        # secretIdKey: CONSOLE_ACCESS_KEY
        # secretAccessKey: CONSOLE_SECRET_KEY
+       # Set the endpoint to your Minio Route
+       # endpoint: https://storage.eks.example.com
+       # internalEndpoint: https://minio
        # bucket: currents
        # pathStyle: true
 
