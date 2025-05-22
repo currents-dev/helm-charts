@@ -17,11 +17,16 @@ The Currents Helm Chart is stateless, so depends on being connected to stateful 
 - [Helm Documentation](https://helm.sh/docs/)
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 
+## Upstream Services
+
+- The self-hosted solution requires an existing Identity Provider for access provisioning.
+- The recommended configuration for the stateful services (MongoDB, ElasticSearch, Clickhouse) may not be adequate for all production loads.
+- Currents team doesn't provide support for the upstream services (MongoDB, ElasticSearch, Clickhouse), see [Support Policy](./support.md).
+
 ## Known Limitations
 
-- Currents On Premise does not have multi-user or any auth support at this time. It’s best deployed in a private network.
-- Coverage collection is currently not available
-- Not all the integrations are working, but may still be visible in the UI.
-- GitLab, Slack, and the Generic Webhooks are working
-- The documented configuration for the connected stateful services (mongo, elastic) are not definitive, and may not be adequate for all production setups.
-- In our cloud offering, [Currents.dev](https://currents.dev) relies on the production resources of the ElasticSearch, and MongoDB teams to run our stateful services. If you do not have the expertise in house for these services, Currents.dev is also not able to provide those resources, and you should instead consider getting support from the upstream service providers.
+The following features are not fully availabe for self-hosted version. If you need them let us know in advance:
+
+- Code coverage collection and reporting
+- BitBucket and MS Team integrations are still WIP
+  
