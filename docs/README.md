@@ -1,4 +1,4 @@
-# Currents On-Premise Documentation
+# Currents Self-Hosted Documentation
 
 Currents on-premise installation is a series of microservices provided as container images that are installed into a Kubernetes Cluster using the Currents Helm Chart.
 
