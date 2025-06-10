@@ -20,7 +20,7 @@ currents:
     # -- The email address of the root user
     email: 'admin@{{ .Values.currents.domains.appHost }}'
   # -- The image tag to use for the Currents images
-  imageTag: 2025-04-23-001
+  imageTag: 2025-06-10-001
   email:
     smtp:
       # -- The SMTP server port to use
