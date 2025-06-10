@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Update to the `2025-06-10-001` image version. Bringing in May 2025 updates.
+  - Batched Orchestration support ([details]((https://changelog.currents.dev/changelog/more-effective-ci-orchestration-currentsplaywright1130)))
+  - Error Explorer Improvements ([details](https://changelog.currents.dev/changelog/error-explorer-improvements))
+  - Improved Integrations UI ([details](https://changelog.currents.dev/changelog/improved-integrations))
+
 ## [currents-0.3.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.3.0) - 2025-04-23
 
 New release supports using IAM service account roles for EKS
