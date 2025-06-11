@@ -36,8 +36,8 @@ Create an IAM role with the following policy attached:
         "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/scheduler",
         "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/writer/*",
         "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/writer",
-        "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/webhook/*",
-        "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/webhook"
+        "arn:aws:ecr:us-east-1:513558712013:currents/on-prem/webhooks/*",
+        "arn:aws:ecr:us-east-1:513558712013:repository/currents/on-prem/webhooks"
       ]
     }
   ]
