@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-- Update to the `2025-10-02-001` image version. Bringing in Sept 2025 updates.
+## [currents-0.5.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.5.0) - 2025-10-02
+
+- [`4857485`](https://github.com/currents-dev/helm-charts/commit/485748546cfbcd966b73feb951cd24f3d224f3fd) fix: typo in iam doc permissions (#35)
+- [`dfc5f11`](https://github.com/currents-dev/helm-charts/commit/dfc5f112de338861878399548529f9a56f0c5d46) feat: Update the image tag to 2025-10-02-001 (#36)
   - Support for Tagging tests in Currents Actions ([details](https://currents.featurebase.app/changelog/action-engine-update-label-add-tags-error-condition))
   - A refreshed, more polished UI that brings consistent components, fonts and sizing among all the pages
   - Security updates to dependencies
