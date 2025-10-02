@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Update to the `2025-10-02-001` image version. Bringing in Sept 2025 updates.
+  - Support for Tagging tests in Currents Actions ([details](https://currents.featurebase.app/changelog/action-engine-update-label-add-tags-error-condition))
+  - A refreshed, more polished UI that brings consistent components, fonts and sizing among all the pages
+  - Security updates to dependencies
+
 ## [currents-0.4.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.4.0) - 2025-06-10
 
 - Update to the `2025-06-10-001` image version. Bringing in May 2025 updates.
