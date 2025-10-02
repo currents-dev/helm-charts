@@ -1,6 +1,6 @@
 # Configuration Reference
 
-![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2025-06-10-001](https://img.shields.io/badge/AppVersion-2025--06--10--001-informational?style=flat-square)
+![Version: 0.5.0](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2025-10-02-001](https://img.shields.io/badge/AppVersion-2025--10--02--001-informational?style=flat-square)
 
 ## Requirements
 
@@ -73,7 +73,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | currents.rootUser.email | string | `"admin@{{ .Values.currents.domains.appHost }}"` | The email address of the root user |
-| currents.imageTag | string | `"2025-06-10-001"` | The image tag to use for the Currents images |
+| currents.imageTag | string | `"2025-10-02-001"` | The image tag to use for the Currents images |
 | currents.email.smtp.port | int | `587` | The SMTP server port to use |
 | currents.email.smtp.from | tpl/string | `"Currents Report <report@{{ .Values.currents.domains.appHost }}>"` | The email address to send from |
 | currents.email.smtp.tls | bool | `false` | Whether the SMTP server uses TLS |
