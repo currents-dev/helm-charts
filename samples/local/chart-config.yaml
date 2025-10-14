@@ -27,15 +27,13 @@ currents:
   mongoConnection:
     secretName: mongodb-currents-currents-user
     key: connectionString.standardSrv
-  elastic:
+  clickhouse:
+    user:
+      secretName: clickhouse-currents-pass
+      secretPasswordKey: password
     tls:
       enabled: false
-    host: elasticsearch-es-http
-    admin:
-      secretName: elasticsearch-es-elastic-user 
-      secretKey: elastic
-    apiUser:
-      secretName: currents-es-api-key
+    host: clickhouse-clickhouse
   objectStorage:
     endpoint: http://minio.localhost
     internalEndpoint: https://minio

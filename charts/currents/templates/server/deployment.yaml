@@ -62,7 +62,6 @@ spec:
               value: {{ tpl .Values.currents.rootUser.email . }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
           {{- include "currents.URLConfigEnv" . | nindent 12 }}
-          {{- include "currents.elasticDataStreamsEnv" . | nindent 12 }}
           {{- include "currents.emailSMTPEnv" . | nindent 12 }}
           {{- if .Values.currents.apiJwtToken.secretName }}
             - name: JWT_SECRET

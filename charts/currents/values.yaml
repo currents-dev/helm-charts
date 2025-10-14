@@ -64,43 +64,29 @@ currents:
     # -- (tpl) set the redis hostname to talk to
     # @default -- `{{ .Release.Name }}-redis-master`
     host: "{{ .Release.Name }}-redis-master"
-  elastic:
-    datastreams:
-      # -- The elasticsearch index to use for instances
-      instances: currents_dev_instances
-      # -- The elasticsearch index to use for tests
-      tests: currents_dev_tests
-      # -- The elasticsearch index to use for runs
-      runs: currents_dev_runs
-    admin:
-      # -- The elasticsearch admin username (used to manage the indexes)
-      # @section -- Frequently Used
-      username: elastic
-      # -- The k8s secret to use for the admin password
+  clickhouse:
+    user:
+      # -- The clickhouse username to use
+      # @section -- Required
+      username: currents
+      # -- The k8s secret to use for the clickhouse password
       # @section -- Required
       secretName: ""
-      # -- The k8s secret key to use for the admin password
+      # -- The k8s secret key to use to access the clickhouse password
       # @section -- Required
-      secretKey: ""
-    apiUser:
-      # -- The k8s secret to use for the elasticsearch api key
+      secretPasswordKey: ""
+      # -- The k8s secret key to use to access the clickhouse access key
       # @section -- Required
-      secretName: ""
-      # -- The k8s secret key to use for the elasticsearch api ID
-      # @section -- Frequently Used
-      idKey: apiId
-      # -- The k8s secret key to use for the elasticsearch api key
-      # @section -- Frequently Used
-      secretKey: apiKey
+      secretAccessKey: ""
     tls:
-      # -- Whether to use TLS for the elasticsearch connection
+      # -- Whether to use TLS for the clickhouse connection
       # @section -- Frequently Used
       enabled: true
-    # -- The elasticsearch host to use
+    # -- The clickhouse host to use
     # @section -- Required
     host: ""
-    # -- The elasticsearch port to use
-    port: 9200
+    # -- The clickhouse port to use
+    port: 8123
   objectStorage:
     # -- The object storage endpoint to use
     # @section -- Required

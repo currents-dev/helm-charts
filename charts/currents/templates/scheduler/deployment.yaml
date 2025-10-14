@@ -48,13 +48,6 @@ spec:
             - name: RUN_STARTUP_TASKS
               value: "true"
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
-            - name: ELASTIC_USERNAME
-              value: {{ .Values.currents.elastic.admin.username | quote }}
-            - name: ELASTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.currents.elastic.admin.secretName }}
-                  key: {{ .Values.currents.elastic.admin.secretKey }}
             {{- with (concat .Values.global.env .Values.scheduler.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
