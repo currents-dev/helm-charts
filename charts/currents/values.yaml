@@ -66,26 +66,26 @@ currents:
     host: "{{ .Release.Name }}-redis-master"
   clickhouse:
     user:
-      # -- The clickhouse username to use
-      # @section -- Required
+      # -- The ClickHouse username to use
+      # @section -- Frequently Used
       username: currents
-      # -- The k8s secret to use for the clickhouse password
+      # -- The k8s secret to use for the ClickHouse password
       # @section -- Required
       secretName: ""
-      # -- The k8s secret key to use to access the clickhouse password
+      # -- The k8s secret key to use to access the ClickHouse password
       # @section -- Required
       secretPasswordKey: ""
-      # -- The k8s secret key to use to access the clickhouse access key
+      # -- The k8s secret key to use to access the ClickHouse access key
       # @section -- Required
       secretAccessKey: ""
     tls:
-      # -- Whether to use TLS for the clickhouse connection
+      # -- Whether to use TLS for the ClickHouse connection
       # @section -- Frequently Used
       enabled: true
-    # -- The clickhouse host to use
+    # -- The ClickHouse host to use
     # @section -- Required
     host: ""
-    # -- The clickhouse port to use
+    # -- The ClickHouse port to use
     port: 8123
   objectStorage:
     # -- The object storage endpoint to use
