@@ -33,8 +33,7 @@ helm upgrade --install ingress-nginx ingress-nginx \
 <summary>MongoDB</summary>
 
 ```sh
-helm repo add mongodb https://mongodb.github.io/helm-charts
-helm install community-operator mongodb/community-operator
+helm install community-operator community-operator --repo https://mongodb.github.io/helm-charts
 ```
 
 Edit the password in `samples/mongodb-community-replicaset.yml`
@@ -46,42 +45,20 @@ kubectl apply -f samples/mongodb-community-replicaset.yml
 </details>
 
 <details>
-<summary>Elasticsearch</summary>
+<summary>Clickhouse</summary>
 
-Advanced options avail at:
-(docs: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-install-helm.html )
-
+Create a secrets for user passwords
 
 ```sh
-helm repo add elastic https://helm.elastic.co
-helm install elastic-operator-crds elastic/eck-operator-crds
-helm install elastic-operator elastic/eck-operator  \
-  --set=installCRDs=false \
-  --set=managedNamespaces='{currents}' \
-  --set=createClusterScopedResources=false \
-  --set=webhook.enabled=false \
-  --set=config.validateStorageClass=false
+kubectl create secret generic clickhouse-default-pass --from-literal=password=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+kubectl create secret generic clickhouse-currents-pass --from-literal=password=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
 ```
-
-Install sample es cluster (docs: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html )
 
 ```sh
-kubectl apply -f samples/elasticsearch.yml
+helm install clickhouse clickhouse --repo https://helm.altinity.com \
+    --set=clickhouse.defaultUser.password_secret_name=clickhouse-default-pass \
+    --set-json='clickhouse.users=[{"name":"currents","password_secret_name":"clickhouse-currents-pass"}]'
 ```
-
-Wait for es to be available, then generate an api key by:
-
-```sh
-PASSWORD=$(kubectl get secret elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
-kubectl exec elasticsearch-es-default-0 -- curl -u "elastic:$PASSWORD" -X POST -H "Content-Type: application/json" -d "{ \"name\": \"currents-key\" }"  "http://elasticsearch-es-http:9200/_security/api_key" > es-api.key.json
-```
-
-Create a new secret with the api info from the key we just created (requires jq installed locally)
-
-```sh
-kubectl create secret generic currents-es-api-key --from-literal=apiId=$(jq -r .id es-api.key.json) --from-literal=apiKey=$(jq -r .api_key es-api.key.json)
-```
-
 </details>
 
 <details>
@@ -90,8 +67,8 @@ kubectl create secret generic currents-es-api-key --from-literal=apiId=$(jq -r .
 Add the minio operator
 
 ```sh
-helm repo add minio https://operator.min.io/
-helm install minio-operator minio/operator \
+helm install minio-operator operator \
+  --repo https://operator.min.io/ \
   --set operator.env\[0\].name=WATCHED_NAMESPACE \
   --set operator.env\[0\].value=currents \
   --set operator.replicaCount=1
@@ -112,7 +89,7 @@ kubectl create secret generic currents-minio-user --from-literal=CONSOLE_ACCESS_
 Create a minio tenant instance
 
 ```sh
-helm install tenant minio/tenant -f samples/minio-tenant-helm-config.yaml
+helm install tenant tenant --repo https://operator.min.io/ -f samples/minio-tenant-helm-config.yaml
 ```
 
 Create an ingress for minio

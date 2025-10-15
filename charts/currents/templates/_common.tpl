@@ -103,19 +103,25 @@ Create the name of the service account to use
       name: {{ .Values.currents.mongoConnection.secretName }}
       key: {{ .Values.currents.mongoConnection.key }}
 {{- end }}
-- name: ELASTIC_URI
-  value: {{ printf "%s://%s:%d" (.Values.currents.elastic.tls.enabled | ternary "https" "http") (tpl .Values.currents.elastic.host .) (.Values.currents.elastic.port | int) }}
-{{- if .Values.currents.elastic.apiUser.secretName }}
-- name: ELASTIC_API_ID
+- name: CLICKHOUSE_URL
+  value: {{ printf "%s://%s:%d" (.Values.currents.clickhouse.tls.enabled | ternary "https" "http") (tpl .Values.currents.clickhouse.host .) (.Values.currents.clickhouse.port | int) }}
+{{- if and .Values.currents.clickhouse.user.secretName .Values.currents.clickhouse.user.secretPasswordKey }}
+- name: CLICKHOUSE_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.currents.elastic.apiUser.secretName }}
-      key: {{ .Values.currents.elastic.apiUser.idKey }}
-- name: ELASTIC_API_KEY
+      name: {{ .Values.currents.clickhouse.user.secretName }}
+      key: {{ .Values.currents.clickhouse.user.secretPasswordKey }}
+  {{- if and .Values.currents.clickhouse.user.username }}
+- name: CLICKHOUSE_USERNAME
+  value: {{ .Values.currents.clickhouse.user.username }}
+  {{- end }}
+{{- end }}
+{{- if and .Values.currents.clickhouse.user.secretName .Values.currents.clickhouse.user.secretAccessTokenKey }}
+- name: CLICKHOUSE_ACCESS_TOKEN
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.currents.elastic.apiUser.secretName }}
-      key: {{ .Values.currents.elastic.apiUser.secretKey }}
+      name: {{ .Values.currents.clickhouse.user.secretName }}
+      key: {{ .Values.currents.clickhouse.user.secretAccessTokenKey }}
 {{- end }}
 - name: S3_BUCKET
   value: {{ .Values.currents.objectStorage.bucket }}
@@ -169,21 +175,6 @@ Create the name of the service account to use
   value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.appHost) }}
 - name: CURRENTS_RECORD_API_URL
   value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.recordApiHost) }}
-{{- end -}}
-
-{{- define "currents.elasticDataStreamsEnv" -}}
-{{- if .Values.currents.elastic.datastreams.tests }}
-- name: ELASTIC_DATASTREAM_TESTS
-  value: {{ .Values.currents.elastic.datastreams.tests }}
-{{- end }}
-{{- if .Values.currents.elastic.datastreams.runs }}
-- name: ELASTIC_DATASTREAM_RUNS
-  value: {{ .Values.currents.elastic.datastreams.runs }}
-{{- end }}
-{{- if .Values.currents.elastic.datastreams.instances }}
-- name: ELASTIC_DATASTREAM_INSTANCES
-  value: {{ .Values.currents.elastic.datastreams.instances }}
-{{- end }}
 {{- end -}}
 
 {{- define "currents.emailSMTPEnv" -}}

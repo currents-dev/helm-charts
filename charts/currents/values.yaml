@@ -64,43 +64,29 @@ currents:
     # -- (tpl) set the redis hostname to talk to
     # @default -- `{{ .Release.Name }}-redis-master`
     host: "{{ .Release.Name }}-redis-master"
-  elastic:
-    datastreams:
-      # -- The elasticsearch index to use for instances
-      instances: currents_dev_instances
-      # -- The elasticsearch index to use for tests
-      tests: currents_dev_tests
-      # -- The elasticsearch index to use for runs
-      runs: currents_dev_runs
-    admin:
-      # -- The elasticsearch admin username (used to manage the indexes)
+  clickhouse:
+    user:
+      # -- The ClickHouse username to use
       # @section -- Frequently Used
-      username: elastic
-      # -- The k8s secret to use for the admin password
+      username: currents
+      # -- The k8s secret to use for the ClickHouse password
       # @section -- Required
       secretName: ""
-      # -- The k8s secret key to use for the admin password
+      # -- The k8s secret key to use to access the ClickHouse password
       # @section -- Required
-      secretKey: ""
-    apiUser:
-      # -- The k8s secret to use for the elasticsearch api key
+      secretPasswordKey: ""
+      # -- The k8s secret key to use to access the ClickHouse access token
       # @section -- Required
-      secretName: ""
-      # -- The k8s secret key to use for the elasticsearch api ID
-      # @section -- Frequently Used
-      idKey: apiId
-      # -- The k8s secret key to use for the elasticsearch api key
-      # @section -- Frequently Used
-      secretKey: apiKey
+      secretAccessTokenKey: ""
     tls:
-      # -- Whether to use TLS for the elasticsearch connection
+      # -- Whether to use TLS for the ClickHouse connection
       # @section -- Frequently Used
       enabled: true
-    # -- The elasticsearch host to use
+    # -- The ClickHouse host to use
     # @section -- Required
     host: ""
-    # -- The elasticsearch port to use
-    port: 9200
+    # -- The ClickHouse port to use
+    port: 8123
   objectStorage:
     # -- The object storage endpoint to use
     # @section -- Required

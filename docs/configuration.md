@@ -22,10 +22,10 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.email.smtp.secretName | string | `""` | K8s secret to use for the SMTP username/password |
 | currents.apiJwtToken.secretName | string | `""` | The K8s secret to use for the JWT token |
 | currents.apiInternalToken.secretName | string | `""` | The K8s secret to use for the internal API token |
-| currents.elastic.admin.secretName | string | `""` | The k8s secret to use for the admin password |
-| currents.elastic.admin.secretKey | string | `""` | The k8s secret key to use for the admin password |
-| currents.elastic.apiUser.secretName | string | `""` | The k8s secret to use for the elasticsearch api key |
-| currents.elastic.host | string | `""` | The elasticsearch host to use |
+| currents.clickhouse.user.secretName | string | `""` | The k8s secret to use for the ClickHouse password |
+| currents.clickhouse.user.secretPasswordKey | string | `""` | The k8s secret key to use to access the ClickHouse password |
+| currents.clickhouse.user.secretAccessTokenKey | string | `""` | The k8s secret key to use to access the ClickHouse access token |
+| currents.clickhouse.host | string | `""` | The ClickHouse host to use |
 | currents.objectStorage.endpoint | string | `""` | The object storage endpoint to use |
 | currents.objectStorage.secretName | string | `""` | The K8s secret to use for the object storage access key |
 | currents.objectStorage.bucket | string | `""` | The object storage bucket to use |
@@ -44,10 +44,8 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.email.smtp.secretPasswordKey | string | `"password"` | The K8s secret key to use for the SMTP password |
 | currents.apiJwtToken.key | string | `"token"` | The K8s secret key to use for the JWT token |
 | currents.apiInternalToken.key | string | `"token"` | The K8s secret key to use for the internal API token |
-| currents.elastic.admin.username | string | `"elastic"` | The elasticsearch admin username (used to manage the indexes) |
-| currents.elastic.apiUser.idKey | string | `"apiId"` | The k8s secret key to use for the elasticsearch api ID |
-| currents.elastic.apiUser.secretKey | string | `"apiKey"` | The k8s secret key to use for the elasticsearch api key |
-| currents.elastic.tls.enabled | bool | `true` | Whether to use TLS for the elasticsearch connection |
+| currents.clickhouse.user.username | string | `"currents"` | The ClickHouse username to use |
+| currents.clickhouse.tls.enabled | bool | `true` | Whether to use TLS for the ClickHouse connection |
 | currents.objectStorage.secretIdKey | string | `"keyId"` | The K8s secret key to use for the object storage access key ID |
 | currents.objectStorage.secretAccessKey | string | `"keySecret"` | The K8s secret key to use for the object storage secret access key |
 | global.imagePullSecrets | list | `[]` | Reference to one or more secrets to be used when pulling images. [Pull an Image from a Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/). |
@@ -80,10 +78,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.ingress.enabled | bool | `false` | Whether to enable the both default ingresses (server, and director) |
 | currents.apiJwtToken.expiry | string | `"1d"` | How often to expire session tokens signed by the JWT token |
 | currents.redis.host | tpl | `{{ .Release.Name }}-redis-master` | set the redis hostname to talk to |
-| currents.elastic.datastreams.instances | string | `"currents_dev_instances"` | The elasticsearch index to use for instances |
-| currents.elastic.datastreams.tests | string | `"currents_dev_tests"` | The elasticsearch index to use for tests |
-| currents.elastic.datastreams.runs | string | `"currents_dev_runs"` | The elasticsearch index to use for runs |
-| currents.elastic.port | int | `9200` | The elasticsearch port to use |
+| currents.clickhouse.port | int | `8123` | The ClickHouse port to use |
 | currents.objectStorage.internalEndpoint | string | `""` | The object storage internal endpoint to use (for internal communication) |
 | currents.objectStorage.region | string | `""` | The region to use for the object storage |
 | currents.objectStorage.pathStyle | bool | `false` | Whether to use path style access for the object storage |
