@@ -75,9 +75,9 @@ currents:
       # -- The k8s secret key to use to access the ClickHouse password
       # @section -- Required
       secretPasswordKey: ""
-      # -- The k8s secret key to use to access the ClickHouse access key
+      # -- The k8s secret key to use to access the ClickHouse access token
       # @section -- Required
-      secretAccessKey: ""
+      secretAccessTokenKey: ""
     tls:
       # -- Whether to use TLS for the ClickHouse connection
       # @section -- Frequently Used

@@ -24,7 +24,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.apiInternalToken.secretName | string | `""` | The K8s secret to use for the internal API token |
 | currents.clickhouse.user.secretName | string | `""` | The k8s secret to use for the ClickHouse password |
 | currents.clickhouse.user.secretPasswordKey | string | `""` | The k8s secret key to use to access the ClickHouse password |
-| currents.clickhouse.user.secretAccessKey | string | `""` | The k8s secret key to use to access the ClickHouse access key |
+| currents.clickhouse.user.secretAccessTokenKey | string | `""` | The k8s secret key to use to access the ClickHouse access token |
 | currents.clickhouse.host | string | `""` | The ClickHouse host to use |
 | currents.objectStorage.endpoint | string | `""` | The object storage endpoint to use |
 | currents.objectStorage.secretName | string | `""` | The K8s secret to use for the object storage access key |

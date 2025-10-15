@@ -116,12 +116,12 @@ Create the name of the service account to use
   value: {{ .Values.currents.clickhouse.user.username }}
   {{- end }}
 {{- end }}
-{{- if and .Values.currents.clickhouse.user.secretName .Values.currents.clickhouse.user.secretAccessKey }}
-- name: CLICKHOUSE_ACCESS_KEY
+{{- if and .Values.currents.clickhouse.user.secretName .Values.currents.clickhouse.user.secretAccessTokenKey }}
+- name: CLICKHOUSE_ACCESS_TOKEN
   valueFrom:
     secretKeyRef:
       name: {{ .Values.currents.clickhouse.user.secretName }}
-      key: {{ .Values.currents.clickhouse.user.secretAccessKey }}
+      key: {{ .Values.currents.clickhouse.user.secretAccessTokenKey }}
 {{- end }}
 - name: S3_BUCKET
   value: {{ .Values.currents.objectStorage.bucket }}
