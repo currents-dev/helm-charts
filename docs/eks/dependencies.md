@@ -183,9 +183,8 @@ Creates a single Pod instance of Minio with 10Gb of storage.
    ```yaml
    tenant:
      name: currents-minio
-     configuration:
-       name: currents-minio-env-configuration
      configSecret:
+       name: currents-minio-env-configuration
        existingSecret: true
        accessKey: null
        secretKey: null
