@@ -25,15 +25,13 @@ currents:
     secretName: mongodb-currents-currents-user
     key: connectionString.standardSrv
   imageTag: staging
-  elastic:
+  clickhouse:
+    user:
+      secretName: clickhouse-currents-pass
+      secretPasswordKey: password
     tls:
       enabled: false
-    host: elasticsearch-es-http
-    admin:
-      secretName: elasticsearch-es-elastic-user 
-      secretKey: elastic
-    apiUser:
-      secretName: currents-es-api-key
+    host: clickhouse-clickhouse
   objectStorage:
     endpoint: https://storage.eks.currents-sandbox.work
     internalEndpoint: https://minio
