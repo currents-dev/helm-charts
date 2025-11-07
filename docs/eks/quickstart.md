@@ -126,15 +126,13 @@ Configure and install the Currents Helm Chart once all the services are ready.
      mongoConnection:
        secretName: mongodb-currents-currents-user
        key: connectionString.standardSrv
-     elastic:
+     clickhouse:
+       user:
+         secretName: clickhouse-currents-pass
+         secretPasswordKey: password
        tls:
          enabled: false
-       host: elasticsearch-es-http
-       admin:
-         secretName: elasticsearch-es-elastic-user 
-         secretKey: elastic
-       apiUser:
-         secretName: currents-es-api-key
+       host: clickhouse-clickhouse
 
    director:
      ingress:

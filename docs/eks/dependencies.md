@@ -2,7 +2,7 @@
 
 Currents depends on several third-party services that are not bundled with the Helm chart. You are responsible for allocating resources, installing, and maintaining these services. During the installation process, you’ll need to provide credentials so Currents can configure these services as needed.
 
-We provide a quick reference of how to create those services for your convenience. The documented configuration for the connected stateful services (mongo, elastic) are not definitive, and may not be adequate for all production setups.
+We provide a quick reference of how to create those services for your convenience. The documented configuration for the connected stateful services (mongo, clickhouse) are not definitive, and may not be adequate for all production setups.
 
 ### MongoDB
 
@@ -66,72 +66,38 @@ This will setup a 2-node Mongo Cluster, with each being 10Gb available for stora
    ```
 
 
-### Elasticsearch
+### ClickHouse
 
-Advanced options are available at:
-(docs: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html )
+For ClickHouse there are several production support options:
 
-This will setup a 1-node Elasticsearch cluster, requireing 2Gb of memory and using 5Gb of storage.
+- Sass Cloud instances (Via [ClickHouse Cloud](https://clickhouse.com/cloud) or [Altinity Cloud](https://docs.altinity.com/altinitycloud/))
+- Bring your own Cloud ([install ClickHouse Cloud in your AWS](https://clickhouse.com/docs/cloud/reference/byoc/overview))
+- On-Premises Kubernetes Deployments ([ClickHouse Private](https://clickhouse.com/docs/cloud/infrastructure/clickhouse-private) or [Altinity Operator](https://docs.altinity.com/altinitykubernetesoperator/))
 
-1. Install the Elasticsearch Operator
+For this guide we are going to install the open-source [Altinity Kubernetes Operator for ClickHouse](https://docs.altinity.com/altinitykubernetesoperator/)
+
+Advanced configuration available at:
+(docs: https://github.com/Altinity/helm-charts/blob/main/charts/clickhouse/README.md )
+
+This will setup a 1-node 1-shard ClickHouse Replicated Server (10Gb Storage)
+
+
+1. Create Secrets for the ClickHouse Users
    ```sh
-   helm install elastic-operator-crds eck-operator-crds --repo https://helm.elastic.co
-   helm install elastic-operator eck-operator  \
-     --repo https://helm.elastic.co \
-     --set=installCRDs=false \
-     --set=managedNamespaces='{currents}' \
-     --set=createClusterScopedResources=false \
-     --set=webhook.enabled=false \
-     --set=config.validateStorageClass=false
+    kubectl create secret generic clickhouse-default-pass --from-literal=password=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+    kubectl create secret generic clickhouse-currents-pass --from-literal=password=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+   ```
+2. Install the Altinity Kubernetes Operator
+   ```sh
+   helm install clickhouse-operator altinity-clickhouse-operator --repo https://docs.altinity.com/clickhouse-operator
    ```
 
-2. Create the Elasticsearch Resources file to apply.
-
-   `elasticsearch.yaml`
-   ```yaml
-   apiVersion: elasticsearch.k8s.elastic.co/v1
-   kind: Elasticsearch
-   metadata:
-     name: elasticsearch
-   spec:
-     version: 8.17.3
-     volumeClaimDeletePolicy: DeleteOnScaledownOnly
-     nodeSets:
-     - name: default
-       count: 1
-       config:
-         node.store.allow_mmap: false
-       volumeClaimTemplates:
-       - metadata:
-           name: elasticsearch-data # Do not change this name unless you set up a volume mount for the data path.
-         spec:
-           accessModes:
-           - ReadWriteOnce
-           resources:
-             requests:
-               storage: 5Gi
-     http:
-       tls:
-         selfSignedCertificate:
-           disabled: true
-   ```
-
-4. Apply the Elasticsearch Resource
+3. Install the Altinity Kubernetes Operator
    ```sh
-   kubectl apply -f elasticsearch.yaml
-   ```
-
-5. Wait for the Elasticsearch pod to be available, then generate an api key:
-   <!-- {% raw %} -->
-   ```sh
-   PASSWORD=$(kubectl get secret elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
-   kubectl exec elasticsearch-es-default-0 -- curl -u "elastic:$PASSWORD" -X POST -H "Content-Type: application/json" -d "{ \"name\": \"currents-key\" }"  "http://elasticsearch-es-http:9200/_security/api_key" > es-api.key.json
-   ```
-   <!-- {% endraw %} -->
-
-6. Create a new secret with the api info from the key we just created (requires jq installed locally)
-   ```sh
-   kubectl create secret generic currents-es-api-key --from-literal=apiId=$(jq -r .id es-api.key.json) --from-literal=apiKey=$(jq -r .api_key es-api.key.json)
+   helm install clickhouse clickhouse --repo https://helm.altinity.com \
+     --set=clickhouse.defaultUser.password_secret_name=clickhouse-default-pass \
+     --set-json='clickhouse.users=[{"name":"currents","password_secret_name":"clickhouse-currents-pass"}]' \
+     --set operator.enabled=false
    ```
 
 ### Object Storage (provider)
@@ -160,7 +126,7 @@ Creates a single Pod instance of Minio with 10Gb of storage.
 1. Add the minio operator
    ```sh
    helm install minio-operator operator \
-     --repo https://operator.min.io/
+     --repo https://operator.min.io/ \
      --set operator.env\[0\].name=WATCHED_NAMESPACE \
      --set operator.env\[0\].value=currents \
      --set operator.replicaCount=1
