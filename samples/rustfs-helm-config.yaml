@@ -1,0 +1,57 @@
+# RustFS Helm Chart Configuration for Currents Dev/Test
+# Standalone mode - single pod for development
+
+mode:
+  standalone:
+    enabled: true
+  distributed:
+    enabled: false
+
+# Use an existing secret for credentials
+secret:
+  existingSecret: "currents-rustfs-user"
+
+# Service configuration
+service:
+  type: ClusterIP
+  endpoint:
+    port: 9000
+  console:
+    port: 9001
+
+# Disable gateway API / TraefikService CRD creation
+gatewayApi:
+  gatewayClass: ""
+
+# Disable built-in ingress (customAnnotations only work with empty ingressClass)
+# We create our own ingress for full control
+ingress:
+  enabled: false
+
+# Storage configuration
+storageclass:
+  name: ""  # Uses default storage class
+  dataStorageSize: "10Gi"
+  logStorageSize: "256Mi"
+
+# Resource limits for dev/test
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 10001
+  runAsGroup: 10001
+  runAsUser: 10001
+
+containerSecurityContext:
+  runAsNonRoot: true
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL

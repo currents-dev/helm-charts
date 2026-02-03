@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rustfs
+  annotations:
+    # Set to 'internet-facing' to expose to the public
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/group.name: currents
+    # Set the ARN to a resource managed by AWS Certificate Manager
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:"
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/success-codes: '200'
+spec:
+  ingressClassName: alb-currents
+  rules:
+    # Set the storage DNS name
+    - host: storage.eks.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rustfs
+                port:
+                  number: 9000

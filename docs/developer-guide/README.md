@@ -64,41 +64,34 @@ helm install clickhouse clickhouse --repo https://helm.altinity.com \
 <details>
 <summary>Object Storage</summary>
 
-Add the minio operator
+Create a secret for RustFS credentials
 
 ```sh
-helm install minio-operator operator \
-  --repo https://operator.min.io/ \
-  --set operator.env\[0\].name=WATCHED_NAMESPACE \
-  --set operator.env\[0\].value=currents \
-  --set operator.replicaCount=1
+kubectl create secret generic currents-rustfs-user \
+  --from-literal=RUSTFS_ACCESS_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32) \
+  --from-literal=RUSTFS_SECRET_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
 ```
 
-Create the root user config (edit the username/password in samples/minio-config.env)
+Install RustFS
 
 ```sh
-kubectl create secret generic currents-minio-env-configuration --from-file=config.env=samples/minio-config.env
+helm install rustfs rustfs --repo https://charts.rustfs.com -f samples/rustfs-helm-config.yaml
 ```
 
-Create the additional users for currents
+Create the `currents` bucket
 
 ```sh
-kubectl create secret generic currents-minio-user --from-literal=CONSOLE_ACCESS_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | LC_ALL=C tr -dc 'a-zA-Z0-9'  | head -c 32) --from-literal=CONSOLE_SECRET_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+kubectl apply -f samples/rustfs-create-bucket-job.yaml
+kubectl wait --for=condition=complete job/rustfs-create-bucket --timeout=60s
 ```
 
-Create a minio tenant instance
+Create an ingress for RustFS
 
 ```sh
-helm install tenant tenant --repo https://operator.min.io/ -f samples/minio-tenant-helm-config.yaml
+kubectl apply -f samples/local/rustfs-ingress.yaml
 ```
 
-Create an ingress for minio
-
-```sh
-kubectl apply -f samples/local/minio-ingress.yaml
-```
-
-Note that you will need to add `mino.localhost` to your `/etc/hosts` file on the loopback
+Note that you will need to add `rustfs.localhost` to your `/etc/hosts` file on the loopback
 
 </details>
 
