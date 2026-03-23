@@ -24,6 +24,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: rustfs
+                name: rustfs-svc
                 port:
                   number: 9000
