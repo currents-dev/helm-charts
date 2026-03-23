@@ -34,10 +34,10 @@ currents:
     host: clickhouse-clickhouse
   objectStorage:
     endpoint: https://storage.eks.currents-sandbox.work
-    internalEndpoint: https://minio
-    secretName: currents-minio-user
-    secretIdKey: CONSOLE_ACCESS_KEY
-    secretAccessKey: CONSOLE_SECRET_KEY
+    internalEndpoint: http://rustfs
+    secretName: currents-rustfs-user
+    secretIdKey: RUSTFS_ACCESS_KEY
+    secretAccessKey: RUSTFS_SECRET_KEY
     bucket: currents
     pathStyle: true
 

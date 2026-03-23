@@ -35,11 +35,11 @@ currents:
       enabled: false
     host: clickhouse-clickhouse
   objectStorage:
-    endpoint: http://minio.localhost
-    internalEndpoint: https://minio
-    secretName: currents-minio-user
-    secretIdKey: CONSOLE_ACCESS_KEY
-    secretAccessKey: CONSOLE_SECRET_KEY
+    endpoint: http://rustfs.localhost
+    internalEndpoint: http://rustfs
+    secretName: currents-rustfs-user
+    secretIdKey: RUSTFS_ACCESS_KEY
+    secretAccessKey: RUSTFS_SECRET_KEY
     bucket: currents
     pathStyle: true
 

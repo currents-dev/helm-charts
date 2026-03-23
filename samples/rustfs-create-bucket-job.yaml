@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rustfs-create-bucket
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: mc
+          image: minio/mc:latest
+          env:
+            - name: RUSTFS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: currents-rustfs-user
+                  key: RUSTFS_ACCESS_KEY
+            - name: RUSTFS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: currents-rustfs-user
+                  key: RUSTFS_SECRET_KEY
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mc alias set rustfs http://rustfs-svc:9000 $RUSTFS_ACCESS_KEY $RUSTFS_SECRET_KEY
+              mc mb --ignore-existing rustfs/currents

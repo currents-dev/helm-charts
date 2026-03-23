@@ -119,105 +119,93 @@ Follow this step if you plan to use provider (S3, Cloudflare) object storage (re
 
 ### Alternative Object Storage (in cluster)
 
-Install Minio if you don't have access to an Object Storage provider (S3, Cloudflare). You will need an additional subdomain for Minio.
+Install RustFS if you don't have access to an Object Storage provider (S3, Cloudflare). You will need an additional subdomain for RustFS.
 
-Creates a single Pod instance of Minio with 10Gb of storage.
+Creates a single Pod instance of RustFS with 10Gi of storage.
 
-1. Add the minio operator
+1. Create a secret for RustFS credentials
    ```sh
-   helm install minio-operator operator \
-     --repo https://operator.min.io/ \
-     --set operator.env\[0\].name=WATCHED_NAMESPACE \
-     --set operator.env\[0\].value=currents \
-     --set operator.replicaCount=1
+   kubectl create secret generic currents-rustfs-user \
+     --from-literal=RUSTFS_ACCESS_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32) \
+     --from-literal=RUSTFS_SECRET_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
    ```
 
-2. Create the root user config environment
-   ```sh
-   printf 'export MINIO_ROOT_USER="%s"\nexport MINIO_ROOT_PASSWORD="%s"\n' $(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | LC_ALL=C tr -dc 'a-zA-Z0-[B9'  | head -c 32) $(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32) > minio-config.env
-   kubectl create secret generic currents-minio-env-configuration --from-file=config.env=minio-config.env
-   ```
+2. Create a RustFS values file
 
-3. Create the additional users for currents
-   ```sh
-   kubectl create secret generic currents-minio-user --from-literal=CONSOLE_ACCESS_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | LC_ALL=C tr -dc 'a-zA-Z0-9'  | head -c 32) --from-literal=CONSOLE_SECRET_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
-   ```
-
-4. Create a Minio Tenant Values file
-
-   `minio-tenant-helm-config.yaml`
+   `rustfs-helm-config.yaml`
    ```yaml
-   tenant:
-     name: currents-minio
-     configSecret:
-       name: currents-minio-env-configuration
-       existingSecret: true
-       accessKey: null
-       secretKey: null
-     pools:
-       - servers: 1
-         name: pool-0
-         volumesPerServer: 1
-         size: 10Gi
-         storageAnnotations: { }
-         storageLabels: { }
-         annotations: { }
-         labels: { }
-         tolerations: [ ]
-         nodeSelector: { }
-         affinity: { }
-         resources: { }
-         securityContext:
-           runAsUser: 1000
-           runAsGroup: 1000
-           fsGroup: 1000
-           fsGroupChangePolicy: "OnRootMismatch"
-           runAsNonRoot: true
-         containerSecurityContext:
-           runAsUser: 1000
-           runAsGroup: 1000
-           runAsNonRoot: true
-           allowPrivilegeEscalation: false
-           capabilities:
-             drop:
-               - ALL
-           seccompProfile:
-             type: RuntimeDefault
-         topologySpreadConstraints: [ ]
-     buckets:
-       - name: currents
-     users:
-       - name: currents-minio-user
+   # Standalone mode for dev/test - single pod
+   mode:
+     standalone:
+       enabled: true
+     distributed:
+       enabled: false
+
+   # Use the secret we created for credentials
+   secret:
+     existingSecret: "currents-rustfs-user"
+
+   # Service configuration
+   service:
+     type: ClusterIP
+     endpoint:
+       port: 9000
+     console:
+       port: 9001
+
+   # Disable gateway API / TraefikService CRD creation
+   gatewayApi:
+     gatewayClass: ""
+
+   # Disable built-in ingress (we create our own for full control)
+   ingress:
+     enabled: false
+
+   # Storage configuration
+   storageclass:
+     name: ""  # Uses default storage class
+     dataStorageSize: "10Gi"
+     logStorageSize: "256Mi"
+
+   # Resource limits
+   resources:
+     limits:
+       cpu: "500m"
+       memory: "512Mi"
+     requests:
+       cpu: "100m"
+       memory: "128Mi"
    ```
 
-5. Install the Minio Tenant Instance
+3. Install RustFS
    ```sh
-   helm install minio-tenant tenant --repo https://operator.min.io/  -f minio-tenant-helm-config.yaml
+   helm install rustfs rustfs --repo https://charts.rustfs.com -f rustfs-helm-config.yaml
    ```
 
-6. Create an Ingress Resource to expose the Minio S3 api
+4. Create an Ingress Resource to expose the RustFS S3 API
 
    Be sure to customize the following:
    - `alb.ingress.kubernetes.io/certificate-arn`
    - `spec.ingressClassName`
-   - `spec.rules.host`
+   - `spec.rules[0].host`
 
-   file: `minio-eks-ingress.yaml`
+   `rustfs-eks-ingress.yaml`
    ```yaml
    apiVersion: networking.k8s.io/v1
    kind: Ingress
    metadata:
-     name: ingress-minio
+     name: ingress-rustfs
      annotations:
        # Set to 'internet-facing' to expose to the public
        alb.ingress.kubernetes.io/scheme: internal
        alb.ingress.kubernetes.io/group.name: currents
-       # Set the ARN a resource managed by aws certificate manager, that matches the DNS host
+       # Set the ARN to a resource managed by AWS Certificate Manager
        alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:"
        alb.ingress.kubernetes.io/target-type: ip
-       alb.ingress.kubernetes.io/backend-protocol: HTTPS
-       alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
-       alb.ingress.kubernetes.io/success-codes: '200,403'
+       alb.ingress.kubernetes.io/backend-protocol: HTTP
+       alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+       alb.ingress.kubernetes.io/healthcheck-path: /health
+       alb.ingress.kubernetes.io/success-codes: '200'
    spec:
      ingressClassName: alb-currents
      rules:
@@ -229,14 +217,53 @@ Creates a single Pod instance of Minio with 10Gb of storage.
                pathType: Prefix
                backend:
                  service:
-                   name: minio
+                   name: rustfs
                    port:
-                     number: 443
+                     number: 9000
    ```
 
-7. Apply the Ingress file
    ```sh
-   kubectl apply -f minio-eks-ingress.yaml
+   kubectl apply -f rustfs-eks-ingress.yaml
+   ```
+
+5. Create the `currents` bucket by applying a Job that uses mc (MinIO client)
+
+   `rustfs-create-bucket-job.yaml`
+   ```yaml
+   apiVersion: batch/v1
+   kind: Job
+   metadata:
+     name: rustfs-create-bucket
+   spec:
+     ttlSecondsAfterFinished: 300
+     template:
+       spec:
+         restartPolicy: Never
+         containers:
+           - name: mc
+             image: minio/mc:latest
+             env:
+               - name: RUSTFS_ACCESS_KEY
+                 valueFrom:
+                   secretKeyRef:
+                     name: currents-rustfs-user
+                     key: RUSTFS_ACCESS_KEY
+               - name: RUSTFS_SECRET_KEY
+                 valueFrom:
+                   secretKeyRef:
+                     name: currents-rustfs-user
+                     key: RUSTFS_SECRET_KEY
+             command:
+               - /bin/sh
+               - -c
+               - |
+                 mc alias set rustfs http://rustfs-svc:9000 $RUSTFS_ACCESS_KEY $RUSTFS_SECRET_KEY
+                 mc mb --ignore-existing rustfs/currents
+   ```
+
+   ```sh
+   kubectl apply -f rustfs-create-bucket-job.yaml
+   kubectl wait --for=condition=complete job/rustfs-create-bucket --timeout=60s
    ```
 
 ### SMTP Email
