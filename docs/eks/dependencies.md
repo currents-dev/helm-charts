@@ -257,7 +257,7 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
                - /bin/sh
                - -c
                - |
-                 mc alias set rustfs http://rustfs:9000 $RUSTFS_ACCESS_KEY $RUSTFS_SECRET_KEY
+                 mc alias set rustfs http://rustfs-svc:9000 $RUSTFS_ACCESS_KEY $RUSTFS_SECRET_KEY
                  mc mb --ignore-existing rustfs/currents
    ```
 
