@@ -1,6 +1,6 @@
 # Quickstart: Installing Currents on EKS
 
-The QuickStart for installing the Currents Helm Chart on EKS runs through the commands to get the Currents App setup. This includes installing dependencies like MongoDB, Elasticsearch, and Minio into your Kubernetes namespace.
+The QuickStart for installing the Currents Helm Chart on EKS runs through the commands to get the Currents App setup. This includes installing dependencies like MongoDB, ClickHouse, and RustFS into your Kubernetes namespace.
 
 ## Accessing Currents Docker Images
 
@@ -104,14 +104,14 @@ Configure and install the Currents Helm Chart once all the services are ready.
        # NOTE: Choose either IAM (remove secretName) OR secret-based authentication.
        # Do NOT leave secretName in your configuration if you haven't created the secret.
 
-       # Option 3: For minio deployed in the same K8s namespace
-       # Use the following settings instead if you setup Minio
-       # secretName: currents-minio-user
-       # secretIdKey: CONSOLE_ACCESS_KEY
-       # secretAccessKey: CONSOLE_SECRET_KEY
-       # Set the endpoint to your Minio Route
+       # Option 3: For RustFS deployed in the same K8s namespace
+       # Use the following settings instead if you setup RustFS
+       # secretName: currents-rustfs-user
+       # secretIdKey: RUSTFS_ACCESS_KEY
+       # secretAccessKey: RUSTFS_SECRET_KEY
+       # Set the endpoint to your RustFS route
        # endpoint: https://storage.eks.example.com
-       # internalEndpoint: https://minio
+       # internalEndpoint: http://rustfs
        # bucket: currents
        # pathStyle: true
 
