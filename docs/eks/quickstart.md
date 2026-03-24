@@ -40,10 +40,20 @@ See [Currents Service Dependencies](./dependencies.md).
 
 Configure and install the Currents Helm Chart once all the services are ready.
 
-1. Create required secrets for JWT auth and internal api
+1. Create required secrets for authentication and internal API
    ```sh
-   kubectl create secret generic currents-api-jwt-token --from-literal=token=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
-   kubectl create secret generic currents-api-internal-token --from-literal=token=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+   # Better Auth secret (64 characters recommended)
+   kubectl create secret generic currents-better-auth --from-literal=secret=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 64)
+
+   # Internal API secret (for service-to-service auth)
+   kubectl create secret generic currents-api-internal-token --from-literal=token=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 64)
+
+   # Root user password (used for initial admin account)
+   # IMPORTANT: Save this password - you'll need it to log in the first time
+   kubectl create secret generic currents-root-user --from-literal=password=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+
+   # To retrieve the generated password later:
+   # kubectl get secret currents-root-user -o jsonpath='{.data.password}' | base64 -d
    ```
 
 2. Create a config file for the Currents Helm Charts values
@@ -115,14 +125,17 @@ Configure and install the Currents Helm Chart once all the services are ready.
        # bucket: currents
        # pathStyle: true
 
-     gitlab:
-       state:
-         secretName: currents-gitlab-key 
-         secretKey: gitlab-key.pem 
-     apiJwtToken:
-       secretName: currents-api-jwt-token
-     apiInternalToken:
-       secretName: currents-api-internal-token
+    gitlab:
+      state:
+        secretName: currents-gitlab-key 
+        secretKey: gitlab-key.pem 
+    betterAuth:
+      secretName: currents-better-auth
+    rootUser:
+      password:
+        secretName: currents-root-user
+    apiInternalToken:
+      secretName: currents-api-internal-token
      mongoConnection:
        secretName: mongodb-currents-currents-user
        key: connectionString.standardSrv

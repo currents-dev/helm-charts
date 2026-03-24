@@ -16,8 +16,11 @@ currents:
     appHost: currents-app.localhost
     recordApiHost: currents-record.localhost
   imageTag: staging
-  apiJwtToken:
-    secretName: currents-api-jwt-token
+  betterAuth:
+    secretName: currents-better-auth
+  rootUser:
+    password:
+      secretName: currents-root-user
   apiInternalToken:
     secretName: currents-api-internal-token
   gitlab:
