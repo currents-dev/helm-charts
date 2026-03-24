@@ -18,9 +18,10 @@ The following table lists the configurable parameters of the `currents` chart an
 |-----|------|---------|-------------|
 | currents.domains.appHost | string | `"currents-app.localhost"` | The host for the app |
 | currents.domains.recordApiHost | string | `"currents-record.localhost"` | The host for the recording endpoint that the test reporters communicate with |
+| currents.rootUser.password.secretName | string | `""` | The K8s secret containing the root user password. The password is used during initial setup only. |
 | currents.email.smtp.host | string | `""` | the SMTP server to use |
 | currents.email.smtp.secretName | string | `""` | K8s secret to use for the SMTP username/password |
-| currents.apiJwtToken.secretName | string | `""` | The K8s secret to use for the JWT token |
+| currents.betterAuth.secretName | string | `""` | The K8s secret containing the Better Auth secret |
 | currents.apiInternalToken.secretName | string | `""` | The K8s secret to use for the internal API token |
 | currents.clickhouse.user.secretName | string | `""` | The k8s secret to use for the ClickHouse password |
 | currents.clickhouse.user.secretPasswordKey | string | `""` | The k8s secret key to use to access the ClickHouse password |
@@ -40,9 +41,10 @@ The following table lists the configurable parameters of the `currents` chart an
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | currents.domains.https | bool | `true` | Whether to use https or http |
+| currents.rootUser.password.key | string | `"password"` | The K8s secret key for the root user password |
 | currents.email.smtp.secretUserKey | string | `"username"` | The K8s secret key to use for the SMTP username |
 | currents.email.smtp.secretPasswordKey | string | `"password"` | The K8s secret key to use for the SMTP password |
-| currents.apiJwtToken.key | string | `"token"` | The K8s secret key to use for the JWT token |
+| currents.betterAuth.key | string | `"secret"` | The K8s secret key for the Better Auth secret |
 | currents.apiInternalToken.key | string | `"token"` | The K8s secret key to use for the internal API token |
 | currents.clickhouse.user.username | string | `"currents"` | The ClickHouse username to use |
 | currents.clickhouse.tls.enabled | bool | `true` | Whether to use TLS for the ClickHouse connection |
@@ -75,8 +77,12 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.email.smtp.port | int | `587` | The SMTP server port to use |
 | currents.email.smtp.from | tpl/string | `"Currents Report <report@{{ .Values.currents.domains.appHost }}>"` | The email address to send from |
 | currents.email.smtp.tls | bool | `false` | Whether the SMTP server uses TLS |
+| currents.email.inviteFrom | tpl/string | `""` | The email address to send invitations from |
+| currents.email.inviteExpirationDays | string | `""` | Number of days before invitation links expire |
+| currents.email.reportsBcc | string | `""` | BCC address for automated report emails |
+| currents.email.inviteBcc | string | `""` | BCC address for invitation emails |
+| currents.email.linksBaseUrl | string | `""` | Base URL for links in emails (defaults to APP_BASE_URL if empty) |
 | currents.ingress.enabled | bool | `false` | Whether to enable the both default ingresses (server, and director) |
-| currents.apiJwtToken.expiry | string | `"1d"` | How often to expire session tokens signed by the JWT token |
 | currents.redis.host | tpl | `{{ .Release.Name }}-redis-master` | set the redis hostname to talk to |
 | currents.clickhouse.port | int | `8123` | The ClickHouse port to use |
 | currents.objectStorage.internalEndpoint | string | `""` | The object storage internal endpoint to use (for internal communication) |
