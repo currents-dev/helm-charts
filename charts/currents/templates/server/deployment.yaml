@@ -56,19 +56,26 @@ spec:
                   name: {{ .Values.currents.gitlab.state.secretName }}
                   key: {{ .Values.currents.gitlab.state.secretKey }}
           {{- end }}
-            - name: JWT_SECRET_EXPIRY
-              value: {{ .Values.currents.apiJwtToken.expiry | quote }}
+            - name: BETTER_AUTH_ENABLED
+              value: "true"
             - name: ON_PREM_EMAIL
               value: {{ tpl .Values.currents.rootUser.email . }}
+          {{- if .Values.currents.rootUser.password.secretName }}
+            - name: ON_PREM_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.currents.rootUser.password.secretName }}
+                  key: {{ .Values.currents.rootUser.password.key }}
+          {{- end }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
           {{- include "currents.URLConfigEnv" . | nindent 12 }}
           {{- include "currents.emailSMTPEnv" . | nindent 12 }}
-          {{- if .Values.currents.apiJwtToken.secretName }}
-            - name: JWT_SECRET
+          {{- if .Values.currents.betterAuth.secretName }}
+            - name: BETTER_AUTH_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.currents.apiJwtToken.secretName }}
-                  key: {{ .Values.currents.apiJwtToken.key }}
+                  name: {{ .Values.currents.betterAuth.secretName }}
+                  key: {{ .Values.currents.betterAuth.key }}
           {{- end }}
           {{- if .Values.currents.apiInternalToken.secretName }}
             - name: API_SECRET

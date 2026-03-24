@@ -19,6 +19,13 @@ currents:
   rootUser:
     # -- The email address of the root user
     email: 'admin@{{ .Values.currents.domains.appHost }}'
+    password:
+      # -- The K8s secret containing the root user password. The password is used during initial setup only.
+      # @section -- Required
+      secretName: ""
+      # -- The K8s secret key for the root user password
+      # @section -- Frequently Used
+      key: password
   # -- The image tag to use for the Currents images
   imageTag: 2025-10-02-001
   email:
@@ -41,18 +48,26 @@ currents:
       secretName: ""
       # -- Whether the SMTP server uses TLS
       tls: false
+    # -- (tpl/string) The email address to send invitations from
+    inviteFrom: ""
+    # -- Number of days before invitation links expire
+    inviteExpirationDays: ""
+    # -- BCC address for automated report emails
+    reportsBcc: ""
+    # -- BCC address for invitation emails
+    inviteBcc: ""
+    # -- Base URL for links in emails (defaults to APP_BASE_URL if empty)
+    linksBaseUrl: ""
   ingress:
     # -- Whether to enable the both default ingresses (server, and director)
     enabled: false
-  apiJwtToken:
-    # -- The K8s secret to use for the JWT token
+  betterAuth:
+    # -- The K8s secret containing the Better Auth secret
     # @section -- Required
     secretName: ""
-    # -- The K8s secret key to use for the JWT token
+    # -- The K8s secret key for the Better Auth secret
     # @section -- Frequently Used
-    key: token
-    # -- How often to expire session tokens signed by the JWT token
-    expiry: 1d
+    key: secret
   apiInternalToken:
     # -- The K8s secret to use for the internal API token
     # @section -- Required
