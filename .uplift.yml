@@ -1,4 +1,0 @@
-changelog:
-  include:
-    - '^(\[.*\])?\s?fix'
-    - '^(\[.*\])?\s?feat'
