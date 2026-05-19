@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased
+## [currents-0.6.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.6.0) - 2026-03-26
+
+
+### Features
+- [`5b1e3f9`](https://github.com/currents-dev/helm-charts/commit/5b1e3f91c7e2de4f7e93823dd596010136d5cbed) Replace elasticsearch with clickhouse in the EKS setup docs (#38)
+- [`be331f0`](https://github.com/currents-dev/helm-charts/commit/be331f0f74091f1240c7a06a3542f801588f3f8f) Swap minio for rustfs (#39)
+- [`6b5ff24`](https://github.com/currents-dev/helm-charts/commit/6b5ff24b89ec2696b5fbc8ea6da79f69fabe60c9) Better auth (#40)
+
 
 ## [currents-0.5.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.5.0) - 2025-10-02
 
