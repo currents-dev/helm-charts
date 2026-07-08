@@ -85,6 +85,7 @@ jobs:
           kubectl apply -n currents-ci -f .github/ci/dependencies.yaml
           kubectl -n currents-ci rollout status deploy/mongodb --timeout=180s
           kubectl -n currents-ci rollout status deploy/clickhouse --timeout=180s
+          kubectl -n currents-ci rollout status deploy/redis --timeout=180s
           # Initialise the single-node replica set (|| true: idempotent on re-run)
           kubectl -n currents-ci exec deploy/mongodb -- mongosh --quiet --eval \
             'rs.initiate({_id:"rs0",members:[{_id:0,host:"mongodb.currents-ci.svc.cluster.local:27017"}]})' || true
@@ -111,6 +112,8 @@ jobs:
             --from-literal=password="$(openssl rand -hex 16)"
           kubectl -n currents-ci create secret generic currents-api-internal-token \
             --from-literal=token="$(openssl rand -hex 32)"
+          kubectl -n currents-ci create secret generic currents-gitlab-key \
+            --from-literal=gitlab-key.pem="$(openssl genrsa 2048 2>/dev/null)"
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'

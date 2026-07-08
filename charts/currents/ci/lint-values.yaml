@@ -17,6 +17,11 @@ currents:
   apiInternalToken:
     secretName: currents-api-internal-token
     key: token
+  # The director validates GITLAB_STATE_SECRET is present at boot.
+  gitlab:
+    state:
+      secretName: currents-gitlab-key
+      secretKey: gitlab-key.pem
   mongoConnection:
     secretName: mongodb-currents-currents-user
     key: connectionString.standardSrv
@@ -29,6 +34,10 @@ currents:
       username: currents
       secretName: clickhouse-currents-pass
       secretPasswordKey: password
+  # Use the pre-started in-cluster Redis (see .github/ci/dependencies.yaml) rather
+  # than the Bitnami subchart, so Redis is Ready before the app pods start.
+  redis:
+    host: redis.currents-ci.svc.cluster.local
 
 # Reaches every component (all deployments append global.env); the chart only sets
 # MONGODB_URI, so name the database explicitly.
@@ -37,5 +46,6 @@ global:
     - name: MONGODB_DATABASE
       value: currents
 
+# Subchart Redis disabled — we run our own (deployed and waited-for before install).
 redis:
-  enabled: true
+  enabled: false
