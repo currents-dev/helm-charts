@@ -1,8 +1,41 @@
+# Values used by chart-testing for BOTH `ct lint` and the `ct install` gate.
+# The install gate (.github/workflows/lint-test.yaml) deploys MongoDB + ClickHouse
+# and creates the referenced secrets in the `currents-ci` namespace before running
+# `ct install --namespace currents-ci`, so these point at those in-cluster deps.
 currents:
+  # The API validates SMTP config exists; a dummy host is enough to boot.
+  email:
+    smtp:
+      host: localhost
+  rootUser:
+    password:
+      secretName: currents-root-user
+      key: password
+  betterAuth:
+    secretName: currents-better-auth
+    key: secret
+  apiInternalToken:
+    secretName: currents-api-internal-token
+    key: token
   mongoConnection:
     secretName: mongodb-currents-currents-user
     key: connectionString.standardSrv
   clickhouse:
+    host: clickhouse.currents-ci.svc.cluster.local
+    port: 8123
+    tls:
+      enabled: false
     user:
+      username: currents
       secretName: clickhouse-currents-pass
       secretPasswordKey: password
+
+# Reaches every component (all deployments append global.env); the chart only sets
+# MONGODB_URI, so name the database explicitly.
+global:
+  env:
+    - name: MONGODB_DATABASE
+      value: currents
+
+redis:
+  enabled: true

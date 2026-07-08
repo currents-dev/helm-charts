@@ -69,11 +69,49 @@ jobs:
             | awk '$1 == "image:" { print $2 }' | tr -d '"' | grep '513558712013' | sort -u)
           echo "Preloading images into kind:"
           echo "$images"
-          for img in $images; do
-            docker pull "$img"
-            kind load docker-image "$img" --name chart-testing
+          # Pull all images concurrently (the slow, network-bound part)
+          echo "$images" | xargs -P 0 -n 1 docker pull
+          # Side-load them in one invocation (avoids concurrent containerd imports)
+          kind load docker-image $images --name chart-testing
+
+      # The chart expects an external MongoDB (replica set — change streams need it)
+      # and ClickHouse. Stand up throwaway ones in-cluster so `ct install` can bring
+      # the app pods to readiness. They live in the `currents-ci` namespace that
+      # `ct install --namespace` targets, reachable via cluster DNS.
+      - name: Deploy test dependencies (MongoDB + ClickHouse)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          kubectl create namespace currents-ci
+          kubectl apply -n currents-ci -f .github/ci/dependencies.yaml
+          kubectl -n currents-ci rollout status deploy/mongodb --timeout=180s
+          kubectl -n currents-ci rollout status deploy/clickhouse --timeout=180s
+          # Initialise the single-node replica set (|| true: idempotent on re-run)
+          kubectl -n currents-ci exec deploy/mongodb -- mongosh --quiet --eval \
+            'rs.initiate({_id:"rs0",members:[{_id:0,host:"mongodb.currents-ci.svc.cluster.local:27017"}]})' || true
+          echo "Waiting for the replica set to elect a PRIMARY..."
+          for i in $(seq 1 30); do
+            if kubectl -n currents-ci exec deploy/mongodb -- mongosh --quiet --eval 'db.hello().isWritablePrimary' 2>/dev/null | grep -q true; then
+              echo "MongoDB replica set is PRIMARY"; break
+            fi
+            echo "  attempt $i/30..."; sleep 3
           done
+
+      # The chart reads these via secretKeyRef; they must exist in the install
+      # namespace. Values are throwaway CI credentials.
+      - name: Create chart secrets
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          kubectl -n currents-ci create secret generic mongodb-currents-currents-user \
+            --from-literal=connectionString.standardSrv='mongodb://mongodb.currents-ci.svc.cluster.local:27017/currents?replicaSet=rs0'
+          kubectl -n currents-ci create secret generic clickhouse-currents-pass \
+            --from-literal=password=currents
+          kubectl -n currents-ci create secret generic currents-better-auth \
+            --from-literal=secret="$(openssl rand -hex 32)"
+          kubectl -n currents-ci create secret generic currents-root-user \
+            --from-literal=password="$(openssl rand -hex 16)"
+          kubectl -n currents-ci create secret generic currents-api-internal-token \
+            --from-literal=token="$(openssl rand -hex 32)"
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct install --target-branch ${{ github.event.repository.default_branch }}
+        run: ct install --target-branch ${{ github.event.repository.default_branch }} --namespace currents-ci --helm-extra-args "--timeout 600s"
