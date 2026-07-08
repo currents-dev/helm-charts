@@ -239,7 +239,7 @@ Create the name of the service account to use
 - name: SSO_SAML_IDP_METADATA_FILE
   value: {{ printf "/etc/currents/sso/%s" .Values.currents.sso.saml.metadataKey | quote }}
 - name: SSO_SAML_ISSUER
-  value: {{ .Values.currents.sso.saml.issuer | quote }}
+  value: {{ required "currents.sso.saml.issuer is required when currents.sso.saml.enabled is true" .Values.currents.sso.saml.issuer | quote }}
 {{- if .Values.currents.sso.saml.providerId }}
 - name: SSO_SAML_PROVIDER_ID
   value: {{ .Values.currents.sso.saml.providerId | quote }}

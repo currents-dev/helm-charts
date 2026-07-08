@@ -125,7 +125,7 @@ spec:
       {{- if .Values.currents.sso.saml.enabled }}
         - name: sso-saml
           secret:
-            secretName: {{ .Values.currents.sso.saml.metadataSecretName }}
+            secretName: {{ required "currents.sso.saml.metadataSecretName is required when currents.sso.saml.enabled is true" .Values.currents.sso.saml.metadataSecretName }}
       {{- end }}
       {{- with .Values.global.volumes }}
         {{- toYaml . | nindent 8 }}

@@ -48,31 +48,9 @@ jobs:
           role-to-assume: arn:aws:iam::761136292957:role/GitHubActions-CurrentsDevDocker-ECRPull
           aws-region: us-east-1
 
-      - name: Login to Currents ECR
-        if: steps.list-changed.outputs.changed == 'true'
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          registries: "513558712013"
-
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1.14.0
-
-      # The chart pulls private images from Currents' ECR. kind nodes don't share
-      # the runner's registry auth, so pull on the runner (authenticated above) and
-      # side-load into the cluster. imagePullPolicy defaults to IfNotPresent, so the
-      # pods use these preloaded images without needing an in-cluster pull secret.
-      - name: Preload Currents images into kind
-        if: steps.list-changed.outputs.changed == 'true'
-        run: |
-          images=$(helm template ct-release charts/currents -f charts/currents/ci/lint-values.yaml \
-            | awk '$1 == "image:" { print $2 }' | tr -d '"' | grep '513558712013' | sort -u)
-          echo "Preloading images into kind:"
-          echo "$images"
-          # Pull all images concurrently (the slow, network-bound part)
-          echo "$images" | xargs -P 0 -n 1 docker pull
-          # Side-load them in one invocation (avoids concurrent containerd imports)
-          kind load docker-image $images --name chart-testing
 
       # The chart expects an external MongoDB (replica set — change streams need it)
       # and ClickHouse. Stand up throwaway ones in-cluster so `ct install` can bring
@@ -90,12 +68,18 @@ jobs:
           kubectl -n currents-ci exec deploy/mongodb -- mongosh --quiet --eval \
             'rs.initiate({_id:"rs0",members:[{_id:0,host:"mongodb.currents-ci.svc.cluster.local:27017"}]})' || true
           echo "Waiting for the replica set to elect a PRIMARY..."
+          primary=false
           for i in $(seq 1 30); do
             if kubectl -n currents-ci exec deploy/mongodb -- mongosh --quiet --eval 'db.hello().isWritablePrimary' 2>/dev/null | grep -q true; then
-              echo "MongoDB replica set is PRIMARY"; break
+              primary=true; echo "MongoDB replica set is PRIMARY"; break
             fi
             echo "  attempt $i/30..."; sleep 3
           done
+          if [ "$primary" != true ]; then
+            echo "::error::MongoDB replica set did not reach PRIMARY after 30 attempts"
+            kubectl -n currents-ci exec deploy/mongodb -- mongosh --quiet --eval 'rs.status()' || true
+            exit 1
+          fi
 
       # The chart reads these via secretKeyRef; they must exist in the install
       # namespace. Values are throwaway CI credentials.
@@ -114,6 +98,12 @@ jobs:
             --from-literal=token="$(openssl rand -hex 32)"
           kubectl -n currents-ci create secret generic currents-gitlab-key \
             --from-literal=gitlab-key.pem="$(openssl genrsa 2048 2>/dev/null)"
+          # Short-lived ECR pull token (valid ~12h) so kind's kubelet pulls the
+          # private images directly, instead of duplicating a runner pull + kind load.
+          kubectl -n currents-ci create secret docker-registry ecr-creds \
+            --docker-server=513558712013.dkr.ecr.us-east-1.amazonaws.com \
+            --docker-username=AWS \
+            --docker-password="$(aws ecr get-login-password --region us-east-1)"
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'

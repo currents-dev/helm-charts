@@ -42,6 +42,10 @@ currents:
 # Reaches every component (all deployments append global.env); the chart only sets
 # MONGODB_URI, so name the database explicitly.
 global:
+  # kind pulls the private ECR images directly using this pre-created secret
+  # (see the "Create chart secrets" step in .github/workflows/lint-test.yaml).
+  imagePullSecrets:
+    - name: ecr-creds
   env:
     - name: MONGODB_DATABASE
       value: currents
