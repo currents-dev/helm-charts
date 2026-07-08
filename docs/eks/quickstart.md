@@ -214,3 +214,53 @@ For example:
 ```sh
 CURRENTS_API_URL=https://currents-record.eks.example.com npx pwc --key <your-key> --project-id <your projectid>
 ```
+
+## Enable SAML SSO (optional)
+
+Delegate sign-in to your SAML 2.0 identity provider (Okta, Microsoft Entra ID, etc.). Users sign in **email-first** — they enter their email, are redirected to your IdP to authenticate, and are auto-provisioned into your organization on return. SMTP must be configured (used for provisioning and invitations).
+
+1. **Create the SAML app in your IdP.** Using Okta as the example, set:
+   - **Single Sign-On / ACS URL:** `https://<appHost>/api/auth/sso/saml2/callback/okta`
+     — the last segment is your `providerId`; `<appHost>` is your `currents.domains.appHost`.
+   - **Audience / SP Entity ID:** `currents-onprem:your-org` — a stable opaque identifier, **not a URL**.
+   - **Name ID format:** `Persistent`
+   - **Application username:** Email
+
+   Then download the app's **IdP metadata XML** (it contains the IdP sign-on URL, entity ID, and signing certificate).
+
+2. **Create a secret from the metadata file:**
+   ```sh
+   kubectl create secret generic currents-sso-saml --from-file=idp-metadata.xml=./idp-metadata.xml
+   ```
+
+3. **Enable SSO in your values file** (`currents-helm-config.yaml`, under `currents:`):
+   ```yaml
+   currents:
+     sso:
+       saml:
+         enabled: true
+         # Must match the Audience / SP Entity ID in your IdP (opaque, not a URL)
+         issuer: "currents-onprem:your-org"
+         # Your IdP name; the last path segment of the ACS callback URL
+         providerId: okta
+         metadataSecretName: currents-sso-saml
+         # Optional:
+         # defaultRole: member
+         # allowedDomains: "acme.com,acme.io"
+   ```
+
+4. **Apply:**
+   ```sh
+   helm upgrade --install currents currents --repo https://currents-dev.github.io/helm-charts/ -f currents-helm-config.yaml
+   ```
+
+Sign in from the dashboard by entering your email — you'll be redirected to your IdP. New SSO users join your organization automatically with the role from `defaultRole` (default `member`); the root admin continues to sign in with email + password.
+
+To rotate the IdP signing certificate, replace the secret with the refreshed metadata and restart the server pod:
+```sh
+kubectl create secret generic currents-sso-saml --from-file=idp-metadata.xml=./idp-metadata.xml \
+  --dry-run=client -o yaml | kubectl apply -f -
+kubectl rollout restart deploy -l app.kubernetes.io/component=server
+```
+
+See the [Configuration Reference](../configuration.md#saml-sso) for all SSO values.

@@ -70,6 +70,7 @@ spec:
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
           {{- include "currents.URLConfigEnv" . | nindent 12 }}
           {{- include "currents.emailSMTPEnv" . | nindent 12 }}
+          {{- include "currents.samlSSOEnv" . | nindent 12 }}
           {{- if .Values.currents.betterAuth.secretName }}
             - name: BETTER_AUTH_SECRET
               valueFrom:
@@ -94,6 +95,11 @@ spec:
           volumeMounts:
             - name: pm2-data
               mountPath: /home/node/.pm2
+          {{- if .Values.currents.sso.saml.enabled }}
+            - name: sso-saml
+              mountPath: /etc/currents/sso
+              readOnly: true
+          {{- end }}
           {{- with .Values.server.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -116,6 +122,11 @@ spec:
         - name: pm2-data
           emptyDir:
             medium: "Memory"
+      {{- if .Values.currents.sso.saml.enabled }}
+        - name: sso-saml
+          secret:
+            secretName: {{ .Values.currents.sso.saml.metadataSecretName }}
+      {{- end }}
       {{- with .Values.global.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

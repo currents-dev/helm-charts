@@ -68,6 +68,38 @@ currents:
     # -- The K8s secret key for the Better Auth secret
     # @section -- Frequently Used
     key: secret
+  sso:
+    saml:
+      # -- Enable SAML SSO. Requires `issuer` and `metadataSecretName` below (a K8s secret holding your IdP metadata XML). Turns on email-first SSO login.
+      # @section -- SAML SSO
+      enabled: false
+      # -- SP entityID / audience presented to your IdP. A stable opaque identifier (e.g. `currents-onprem:your-org`), NOT a URL. Must match the Audience / SP Entity ID configured in your IdP.
+      # @section -- SAML SSO
+      issuer: ""
+      # -- Provider id; recommend your IdP service name (e.g. `okta`). Becomes the last path segment of the ACS callback URL.
+      # @section -- SAML SSO
+      providerId: onprem-saml
+      # -- K8s secret holding the IdP metadata XML (and any SP cert/key). Mounted read-only at /etc/currents/sso. See the SAML SSO guide for how to create it.
+      # @section -- SAML SSO
+      metadataSecretName: ""
+      # -- The secret key (file name) of the IdP metadata XML
+      # @section -- SAML SSO
+      metadataKey: idp-metadata.xml
+      # -- Role granted to auto-provisioned SSO users
+      # @section -- SAML SSO
+      defaultRole: member
+      # -- Comma-separated email domains allowed to sign in via SSO (optional allow-list)
+      # @section -- SAML SSO
+      allowedDomains: ""
+      # -- Sign outbound AuthnRequests. Requires the SP cert/key (below) to be present in the same secret.
+      # @section -- SAML SSO
+      authnRequestsSigned: false
+      # -- Secret key (file name) of the SP certificate PEM (only when authnRequestsSigned=true)
+      # @section -- SAML SSO
+      spCertKey: sp-cert.pem
+      # -- Secret key (file name) of the SP private key PEM (only when authnRequestsSigned=true)
+      # @section -- SAML SSO
+      spKeyKey: sp-key.pem
   apiInternalToken:
     # -- The K8s secret to use for the internal API token
     # @section -- Required

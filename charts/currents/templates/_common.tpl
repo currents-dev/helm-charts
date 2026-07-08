@@ -233,3 +233,32 @@ Create the name of the service account to use
   value: {{ .Values.currents.email.linksBaseUrl }}
 {{- end }}
 {{- end -}}
+
+{{- define "currents.samlSSOEnv" -}}
+{{- if .Values.currents.sso.saml.enabled }}
+- name: SSO_SAML_IDP_METADATA_FILE
+  value: {{ printf "/etc/currents/sso/%s" .Values.currents.sso.saml.metadataKey | quote }}
+- name: SSO_SAML_ISSUER
+  value: {{ .Values.currents.sso.saml.issuer | quote }}
+{{- if .Values.currents.sso.saml.providerId }}
+- name: SSO_SAML_PROVIDER_ID
+  value: {{ .Values.currents.sso.saml.providerId | quote }}
+{{- end }}
+{{- if .Values.currents.sso.saml.defaultRole }}
+- name: SSO_SAML_DEFAULT_ROLE
+  value: {{ .Values.currents.sso.saml.defaultRole | quote }}
+{{- end }}
+{{- if .Values.currents.sso.saml.allowedDomains }}
+- name: SSO_ALLOWED_DOMAINS
+  value: {{ .Values.currents.sso.saml.allowedDomains | quote }}
+{{- end }}
+{{- if .Values.currents.sso.saml.authnRequestsSigned }}
+- name: SSO_SAML_AUTHN_REQUESTS_SIGNED
+  value: "true"
+- name: SSO_SAML_SP_CERT_FILE
+  value: {{ printf "/etc/currents/sso/%s" .Values.currents.sso.saml.spCertKey | quote }}
+- name: SSO_SAML_SP_KEY_FILE
+  value: {{ printf "/etc/currents/sso/%s" .Values.currents.sso.saml.spKeyKey | quote }}
+{{- end }}
+{{- end }}
+{{- end -}}
