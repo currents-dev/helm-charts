@@ -17,6 +17,13 @@ currents:
     secretName: currents-api-jwt-token
   apiInternalToken:
     secretName: currents-api-internal-token
+  # SAML SSO (optional) — see docs/eks/quickstart.md#enable-saml-sso-optional
+  # sso:
+  #   saml:
+  #     enabled: true
+  #     issuer: "currents-onprem:your-org"   # opaque id, must match the IdP Audience / SP Entity ID
+  #     providerId: okta                      # your IdP name; last segment of the ACS callback URL
+  #     metadataSecretName: currents-sso-saml # kubectl create secret generic ... --from-file=idp-metadata.xml=...
   gitlab:
     state:
       secretName: currents-gitlab-key 

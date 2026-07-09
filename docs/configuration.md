@@ -1,6 +1,6 @@
 # Configuration Reference
 
-![Version: 0.6.0](https://img.shields.io/badge/Version-0.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-01-26-001](https://img.shields.io/badge/AppVersion-2026--01--26--001-informational?style=flat-square)
+![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-01-26-001](https://img.shields.io/badge/AppVersion-2026--01--26--001-informational?style=flat-square)
 
 ## Requirements
 
@@ -67,6 +67,21 @@ The following table lists the configurable parameters of the `currents` chart an
 | scheduler.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
 | changestreams.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
 | webhooks.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+
+### SAML SSO
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| currents.sso.saml.enabled | bool | `false` | Enable SAML SSO. Requires `issuer` and `metadataSecretName` below (a K8s secret holding your IdP metadata XML). Turns on email-first SSO login. |
+| currents.sso.saml.issuer | string | `""` | SP entityID / audience presented to your IdP. A stable opaque identifier (e.g. `currents-onprem:your-org`), NOT a URL. Must match the Audience / SP Entity ID configured in your IdP. |
+| currents.sso.saml.providerId | string | `"onprem-saml"` | Provider id; recommend your IdP service name (e.g. `okta`). Becomes the last path segment of the ACS callback URL. |
+| currents.sso.saml.metadataSecretName | string | `""` | K8s secret holding the IdP metadata XML (and any SP cert/key). Mounted read-only at /etc/currents/sso. See the SAML SSO guide for how to create it. |
+| currents.sso.saml.metadataKey | string | `"idp-metadata.xml"` | The secret key (file name) of the IdP metadata XML |
+| currents.sso.saml.defaultRole | string | `"member"` | Role granted to auto-provisioned SSO users |
+| currents.sso.saml.allowedDomains | string | `""` | Comma-separated email domains allowed to sign in via SSO (optional allow-list) |
+| currents.sso.saml.authnRequestsSigned | bool | `false` | Sign outbound AuthnRequests. Requires the SP cert/key (below) to be present in the same secret. |
+| currents.sso.saml.spCertKey | string | `"sp-cert.pem"` | Secret key (file name) of the SP certificate PEM (only when authnRequestsSigned=true) |
+| currents.sso.saml.spKeyKey | string | `"sp-key.pem"` | Secret key (file name) of the SP private key PEM (only when authnRequestsSigned=true) |
 
 ### Other Values
 
