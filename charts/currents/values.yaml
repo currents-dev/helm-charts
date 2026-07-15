@@ -27,7 +27,7 @@ currents:
       # @section -- Frequently Used
       key: password
   # -- The image tag to use for the Currents images
-  imageTag: 2026-01-26-001
+  imageTag: 2026-07-15-001
   email:
     smtp:
       # -- The SMTP server port to use

@@ -1,5 +1,13 @@
 # Changelog
 
+## [currents-0.7.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.0) - 2026-07-15
+
+
+### Features
+- [`ad3c86d`](https://github.com/currents-dev/helm-charts/commit/ad3c86d398787e36f790457c8a72edbde2acbe5c) [ENG-715] feat: Update workflows and add SAML SSO support (#42)
+- Bump to the July 15 2026 image release of Currents
+
+
 ## [currents-0.6.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.6.0) - 2026-03-26
 
 

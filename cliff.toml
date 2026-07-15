@@ -14,11 +14,11 @@ footer = ""
 trim = false
 
 [git]
-conventional_commits = true
+conventional_commits = false
 filter_unconventional = true
 commit_parsers = [
-  { message = "^feat", group = "Features" },
-  { message = "^fix", group = "Bug Fixes" },
+  { message = "^(\\[.*\\]\\s*)?feat", group = "Features" },
+  { message = "^(\\[.*\\]\\s*)?fix", group = "Bug Fixes" },
 ]
 filter_commits = true
 tag_pattern = "currents-[0-9].*"
