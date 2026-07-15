@@ -215,6 +215,10 @@ For example:
 CURRENTS_API_URL=https://currents-record.eks.example.com npx pwc --key <your-key> --project-id <your projectid>
 ```
 
+## Upgrade Existing Installations
+
+When you need to move to a newer Currents release, follow the dedicated [EKS Upgrade Guide](./upgrading.md).
+
 ## Enable SAML SSO (optional)
 
 Delegate sign-in to your SAML 2.0 identity provider (Okta, Microsoft Entra ID, etc.). Users sign in **email-first** — they enter their email, are redirected to your IdP to authenticate, and are auto-provisioned into your organization on return. SMTP must be configured (used for provisioning and invitations).
