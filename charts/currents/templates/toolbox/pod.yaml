@@ -1,0 +1,98 @@
+{{- if .Values.toolbox.enabled }}
+{{/*
+Toolbox pod — a gated, manually-driven pod for the org import (ENG-912/913).
+
+Single container on the onPrem scheduler image, which now carries BOTH the org-import
+CLIs (baked in at /app/packages/scheduler/dist/orgImport) and `mongorestore`. So the whole
+import runs here with nothing kubectl-cp'd: the operator copies in a small download.json
+and runs `currents-import`.
+
+It runs `sleep infinity` and does nothing on its own.
+*/}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "currents.toolbox.fullname" . }}
+  labels:
+    {{- include "currents.labels" (dict "context" . "component" .Values.toolbox.name) | nindent 4 }}
+  {{- with .Values.global.podAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  # A bare Pod, not a Job: the import is operator-driven and must never auto-retry.
+  restartPolicy: Never
+  {{- with .Values.global.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  serviceAccountName: {{ include "currents.serviceAccountName" . }}
+  {{- /* fsGroup makes the PVC writable by the non-root container user. */}}
+  {{- with .Values.global.securityContext }}
+  securityContext:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.global.priorityClassName }}
+  priorityClassName: {{ . }}
+  {{- end }}
+  containers:
+    - name: toolbox
+      {{- with .Values.global.containerSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # The onPrem scheduler image: node + @currents/* + the org-import CLIs + mongorestore.
+      image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.scheduler.image) }}
+      imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.scheduler.image.pullPolicy }}
+      # Override the image's pm2 entrypoint — nothing runs on its own here.
+      command: ["sleep", "infinity"]
+      env:
+        - name: CURRENTS_ENV
+          value: "onprem"
+        # node/mongorestore write config under $HOME; the root FS is read-only, so point it
+        # at the PVC.
+        - name: HOME
+          value: /data
+        {{- /* A bulk merge INSERT … SELECT into test_metric_v2 (+ its rollup MVs) can run for
+               minutes with no bytes on the socket; raise the client's request timeout past the
+               30s default so it doesn't trip mid-insert. Matches ch-import's max_execution_time. */}}
+        - name: CLICKHOUSE_REQUEST_TIMEOUT_MS
+          value: {{ .Values.toolbox.clickhouseRequestTimeoutMs | default 3600000 | int64 | quote }}
+        {{- include "currents.connectionConfigEnv" . | nindent 8 }}
+        {{- /* The importer refuses a ClickHouse import unless it sees this — safe only
+               because the same helper sets it on the change-streams deployment. */}}
+        {{- include "currents.clickhouseRestoreModeEnv" . | nindent 8 }}
+        {{- with (concat .Values.global.env .Values.toolbox.env) }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      volumeMounts:
+        - name: data
+          mountPath: /data
+        # Writable /tmp for the local merge FIFOs (the transformed BSON flows through the
+        # kernel pipe, not to disk). Needed because the root FS is read-only.
+        - name: tmp
+          mountPath: /tmp
+      {{- with .Values.toolbox.resources }}
+      resources:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: {{ include "currents.toolbox.fullname" . }}-data
+    - name: tmp
+      emptyDir:
+        medium: Memory
+  {{- with .Values.toolbox.nodeSelector | default .Values.global.nodeSelector }}
+  nodeSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.toolbox.tolerations | default .Values.global.tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.toolbox.affinity | default .Values.global.affinity }}
+  affinity:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

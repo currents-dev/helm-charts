@@ -1,0 +1,36 @@
+{{- if .Values.toolbox.enabled }}
+{{/*
+Scratch space for the toolbox pod.
+
+For an org import this holds the export artifact (*.bson, *.native,
+manifest.json) plus the exactly-once import state file, so size it at roughly
+1.5x the export's manifest.totals.exportedBytes + clickhouseTotals.exportedBytes.
+
+It deliberately outlives individual exec sessions: the ClickHouse import records
+which tables it has already inserted in /data/.import-state.json, and that record
+is what prevents a re-run from double-counting the AggregatingMergeTree rollups.
+Deleting this volume mid-import destroys that guard.
+*/}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "currents.toolbox.fullname" . }}-data
+  labels:
+    {{- include "currents.labels" (dict "context" . "component" .Values.toolbox.name) | nindent 4 }}
+  annotations:
+    # Keep the volume (and the import state file) if the release is uninstalled
+    # while an import is in flight.
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    - {{ .Values.toolbox.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.toolbox.persistence.size | quote }}
+{{- if .Values.toolbox.persistence.volumeName }}
+  volumeName: {{ .Values.toolbox.persistence.volumeName }}
+{{- end }}
+{{- if .Values.toolbox.persistence.storageClass }}
+  storageClassName: "{{ .Values.toolbox.persistence.storageClass }}"
+{{- end }}
+{{- end }}
