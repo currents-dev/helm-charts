@@ -213,6 +213,15 @@ The following table lists the configurable parameters of the `currents` chart an
 | webhooks.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
 | webhooks.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | webhooks.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
+| toolbox.enabled | bool | `false` | Create the toolbox pod and its scratch PVC. Leave disabled for normal installs — with this off, nothing in this section renders. |
+| toolbox.name | string | `"toolbox"` |  |
+| toolbox.persistence | object | See [values.yaml] for default values | Scratch space for artifacts and the import state file. Size it at ~1.5x the export's total bytes (manifest totals.exportedBytes + clickhouseTotals.exportedBytes). |
+| toolbox.env | list | `[]` | Additional environment variables for toolbox containers. |
+| toolbox.clickhouseRequestTimeoutMs | int | `3600000` | ClickHouse client per-request socket timeout (ms) for the import. |
+| toolbox.resources | object | `{}` | Resource limits for the toolbox containers. A large import is IO-bound; give it enough memory to stream comfortably. |
+| toolbox.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] for the toolbox pod |
+| toolbox.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| toolbox.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the pod |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | If not set and create is true, a name is generated using the fullname template | The name of the service account to use. |
 | serviceAccount.annotations | object | `{}` | Optional additional annotations to add to the Service Account. Templates are allowed for both keys and values. |
@@ -228,5 +237,6 @@ The following table lists the configurable parameters of the `currents` chart an
 | redis.metrics.resourcesPreset | string | `"none"` |  |
 | redis.volumePermissions.resourcesPreset | string | `"none"` |  |
 | redis.sysctl.resourcesPreset | string | `"none"` |  |
+| maintenance.clickhouseRestoreMode | bool | `false` | Suppress change-stream-driven ClickHouse sync while an organization's ClickHouse data is restored from an external export (see scripts/org-import in the currents repo). Enable it together with `toolbox.enabled` for a Mongo + ClickHouse restore, then turn both off again.  Without it, restoring documents into Mongo makes change-streams re-derive ClickHouse rows on top of the ones the import writes directly, permanently double-counting the hourly materialized views.  Leave this OFF for a Mongo-only restore: there, change-streams re-deriving the restored documents is exactly how ClickHouse gets populated.  NOTE: while this is on, NO org gets new ClickHouse metrics — the install keeps recording to Mongo while dashboards quietly stop updating. It is not a setting to leave enabled. |
 
 [values.yaml]: https://github.com/currents-dev/helm-charts/blob/main/charts/currents/values.yaml
