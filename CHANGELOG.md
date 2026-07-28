@@ -1,5 +1,13 @@
 # Changelog
 
+## [currents-0.7.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.1) - 2026-07-28
+
+
+### Features
+- [`00cb7eb`](https://github.com/currents-dev/helm-charts/commit/00cb7eb80bfda08281269a3bdde4874520d1282f) feat: Add a data importer for bringing cloud data into onPrem (#44)
+- [`021d5b5`](https://github.com/currents-dev/helm-charts/commit/021d5b52677ab563e35b74e2ee5a9cb999181de4) feat: bump image to the July 26 2026 release to include data importer
+
+
 ## [currents-0.7.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.0) - 2026-07-15
 
 
