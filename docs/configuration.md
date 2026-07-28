@@ -216,7 +216,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | toolbox.enabled | bool | `false` | Create the toolbox pod and its scratch PVC. Leave disabled for normal installs — with this off, nothing in this section renders. |
 | toolbox.name | string | `"toolbox"` |  |
 | toolbox.persistence | object | See [values.yaml] for default values | Scratch space for artifacts and the import state file. Size it at ~1.5x the export's total bytes (manifest totals.exportedBytes + clickhouseTotals.exportedBytes). |
-| toolbox.env | list | `[]` | Additional environment variables for both toolbox containers. |
+| toolbox.env | list | `[]` | Additional environment variables for toolbox containers. |
 | toolbox.clickhouseRequestTimeoutMs | int | `3600000` | ClickHouse client per-request socket timeout (ms) for the import. |
 | toolbox.resources | object | `{}` | Resource limits for the toolbox containers. A large import is IO-bound; give it enough memory to stream comfortably. |
 | toolbox.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] for the toolbox pod |

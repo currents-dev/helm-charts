@@ -176,7 +176,7 @@ kubectl exec ${POD#pod/} -- \
   --merge --targetOrgId=<24-hex-target-org> --dir=/data/export
 
 # fresh (use the source org id, shown in the import logs / manifest):
-kubectlexec ${POD#pod/} -- \
+kubectl exec ${POD#pod/} -- \
   node /app/packages/scheduler/dist/orgImport/cli.js ch-import \
   --orgId=<24-hex-source-org> --dir=/data/export
 ```

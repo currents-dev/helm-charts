@@ -684,7 +684,7 @@ toolbox:
     storageClass: ""
     ## if volumeName is set, use this existing PersistentVolume
     # volumeName:
-  # -- Additional environment variables for both toolbox containers.
+  # -- Additional environment variables for toolbox containers.
   env: []
   # -- ClickHouse client per-request socket timeout (ms) for the import.
   clickhouseRequestTimeoutMs: 3600000
