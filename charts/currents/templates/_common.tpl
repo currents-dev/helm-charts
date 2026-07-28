@@ -166,6 +166,19 @@ Create the name of the service account to use
 {{- end }}
 {{- end -}}
 
+{{/*
+ClickHouse restore mode.
+
+Suppresses change-stream-driven ClickHouse sync while an organization's
+ClickHouse data is loaded from an external export (scripts/org-import).
+*/}}
+{{- define "currents.clickhouseRestoreModeEnv" -}}
+{{- if (.Values.maintenance).clickhouseRestoreMode }}
+- name: CURRENTS_CLICKHOUSE_RESTORE_MODE
+  value: "true"
+{{- end }}
+{{- end -}}
+
 {{- define "currents.URLConfigEnv" -}}
 - name: GITLAB_REDIRECT_URL
   value: {{ printf "%s/integrations/gitlab/callback" (include "currents.url" (dict "context" . "input" .Values.currents.domains.recordApiHost)) }}

@@ -47,6 +47,7 @@ spec:
               value: "onprem"
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
             {{- include "currents.URLConfigEnv" . | nindent 12 }}
+            {{- include "currents.clickhouseRestoreModeEnv" . | nindent 12 }}
             {{- with (concat .Values.global.env .Values.changestreams.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}

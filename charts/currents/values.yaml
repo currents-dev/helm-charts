@@ -665,6 +665,43 @@ webhooks:
   affinity: {}
 # END Webhooks Configuration
 
+# Toolbox Configuration
+# An optional, manually-driven pod for one-off operational work (data import,
+# ad-hoc maintenance). It runs `sleep infinity` and does nothing on its own —
+# an operator execs in and drives it, then disables it again.
+toolbox:
+  # -- Create the toolbox pod and its scratch PVC. Leave disabled for normal
+  # installs — with this off, nothing in this section renders.
+  enabled: false
+  name: toolbox
+  # -- Scratch space for artifacts and the import state file. Size it at ~1.5x
+  # the export's total bytes (manifest totals.exportedBytes +
+  # clickhouseTotals.exportedBytes).
+  # @default -- See [values.yaml] for default values
+  persistence:
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    storageClass: ""
+    ## if volumeName is set, use this existing PersistentVolume
+    # volumeName:
+  # -- Additional environment variables for toolbox containers.
+  env: []
+  # -- ClickHouse client per-request socket timeout (ms) for the import.
+  clickhouseRequestTimeoutMs: 3600000
+  # -- Resource limits for the toolbox containers. A large import is IO-bound;
+  # give it enough memory to stream comfortably.
+  resources: {}
+  # -- [Node selector] for the toolbox pod
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+  # -- [Tolerations] for use with node taints
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
+  # -- Assign custom [affinity] rules to the pod
+  # @default -- `{}` (defaults to the global.affinity preset)
+  affinity: {}
+# END Toolbox Configuration
+
 # Service Account Configuration
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
@@ -709,3 +746,26 @@ redis:
   sysctl:
     resourcesPreset: "none"
 # END Redis Configuration
+
+# Maintenance Configuration
+# Special-purpose switches for one-off operational procedures. Everything here is
+# expected to be OFF during normal operation — turn it on for the duration of a
+# procedure, then turn it back off.
+maintenance:
+  # -- Suppress change-stream-driven ClickHouse sync while an organization's
+  # ClickHouse data is restored from an external export (see scripts/org-import
+  # in the currents repo). Enable it together with `toolbox.enabled` for a
+  # Mongo + ClickHouse restore, then turn both off again.
+  #
+  # Without it, restoring documents into Mongo makes change-streams re-derive
+  # ClickHouse rows on top of the ones the import writes directly, permanently
+  # double-counting the hourly materialized views.
+  #
+  # Leave this OFF for a Mongo-only restore: there, change-streams re-deriving
+  # the restored documents is exactly how ClickHouse gets populated.
+  #
+  # NOTE: while this is on, NO org gets new ClickHouse metrics — the install
+  # keeps recording to Mongo while dashboards quietly stop updating. It is not
+  # a setting to leave enabled.
+  clickhouseRestoreMode: false
+# END Maintenance Configuration
