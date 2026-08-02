@@ -29,6 +29,19 @@ currents:
   # -- The image tag to use for the Currents images
   imageTag: 2026-07-26-001
   email:
+    # -- Which transport to send outgoing email through: `smtp` or `ses`.
+    # With `ses` the SMTP settings are ignored and no SMTP credentials are
+    # needed — the AWS SDK resolves credentials from the pod itself, so grant
+    # the Currents service account permission to send. See
+    # [Using IAM Roles for Sending Email with SES](./eks/iam.md#using-iam-roles-for-sending-email-with-ses).
+    transporter: smtp
+    # -- (tpl/string) The email address to send from. Defaults to
+    # `currents.email.smtp.from` when unset, which is retained for compatibility.
+    from: ""
+    ses:
+      # -- The AWS region to send through. Required when `transporter` is `ses`,
+      # and the `from` address must be a verified identity in that region.
+      region: ""
     smtp:
       # -- The SMTP server port to use
       port: 587
@@ -40,10 +53,11 @@ currents:
       secretPasswordKey: password
       # -- (tpl/string) The email address to send from
       from: "Currents Report <report@{{ .Values.currents.domains.appHost }}>"
-      # -- the SMTP server to use
+      # -- the SMTP server to use. Required unless `transporter` is `ses`.
       # @section -- Required
       host: ""
-      # -- K8s secret to use for the SMTP username/password
+      # -- K8s secret to use for the SMTP username/password. Required unless
+      # `transporter` is `ses`.
       # @section -- Required
       secretName: ""
       # -- Whether the SMTP server uses TLS

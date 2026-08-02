@@ -192,39 +192,51 @@ ClickHouse data is loaded from an external export (scripts/org-import).
   value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.recordApiHost) }}
 {{- end -}}
 
-{{- define "currents.emailSMTPEnv" -}}
+{{- define "currents.emailEnv" -}}
+{{- $email := .Values.currents.email -}}
+{{- $transporter := $email.transporter | default "smtp" -}}
+{{- if not (has $transporter (list "smtp" "ses")) -}}
+{{- fail (printf "currents.email.transporter must be either \"smtp\" or \"ses\", got %q" $transporter) -}}
+{{- end -}}
 - name: EMAIL_TRANSPORTER
-  value: smtp
-{{- if .Values.currents.email.smtp.host }}
+  value: {{ $transporter | quote }}
+{{- if eq $transporter "ses" }}
+{{- /* Credentials are resolved by the AWS SDK from the pod itself (IRSA on EKS),
+       so there is no secret to wire up here — only the region. */}}
+- name: SES_REGION
+  value: {{ required "currents.email.ses.region is required when currents.email.transporter is \"ses\"" $email.ses.region | quote }}
+{{- else }}
+{{- if $email.smtp.host }}
 - name: SMTP_HOST
-  value: {{ .Values.currents.email.smtp.host }}
+  value: {{ $email.smtp.host }}
 {{- end }}
-{{- if .Values.currents.email.smtp.port }}
+{{- if $email.smtp.port }}
 - name: SMTP_PORT
-  value: {{ .Values.currents.email.smtp.port | toString | quote }}
+  value: {{ $email.smtp.port | toString | quote }}
 {{- end }}
-{{- if .Values.currents.email.smtp.tls }}
+{{- if $email.smtp.tls }}
 - name: SMTP_SECURE
   value: "true"
 {{- end }}
-{{- if .Values.currents.email.smtp.secretName }}
+{{- if $email.smtp.secretName }}
 - name: SMTP_USER
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.currents.email.smtp.secretName }}
-      key: {{ .Values.currents.email.smtp.secretUserKey }}
+      name: {{ $email.smtp.secretName }}
+      key: {{ $email.smtp.secretUserKey }}
 {{- end }}
-{{- if .Values.currents.email.smtp.secretName }}
+{{- if $email.smtp.secretName }}
 - name: SMTP_PASS
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.currents.email.smtp.secretName }}
-      key: {{ .Values.currents.email.smtp.secretPasswordKey }}
+      name: {{ $email.smtp.secretName }}
+      key: {{ $email.smtp.secretPasswordKey }}
+{{- end }}
 {{- end }}
 - name: AUTOMATED_REPORTS_CURRENTS_DASHBOARD_HOSTNAME
   value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.appHost) }}
 - name: AUTOMATED_REPORTS_EMAIL_FROM
-  value: {{ tpl .Values.currents.email.smtp.from . }}
+  value: {{ tpl (default $email.smtp.from $email.from) . }}
 {{- if .Values.currents.email.inviteFrom }}
 - name: INVITE_EMAIL_FROM
   value: {{ tpl .Values.currents.email.inviteFrom . }}
