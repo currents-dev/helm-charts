@@ -1,5 +1,12 @@
 # Changelog
 
+## [currents-0.7.2](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.2) - 2026-08-02
+
+
+### Bug Fixes
+- [`cd03b76`](https://github.com/currents-dev/helm-charts/commit/cd03b761370a9f75a0d52cb98f5012eedf79a935) fix: expose the ses email transporter so smtp isn't hardcoded (#46)
+
+
 ## [currents-0.7.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.1) - 2026-07-28
 
 
