@@ -27,7 +27,7 @@ currents:
       # @section -- Frequently Used
       key: password
   # -- The image tag to use for the Currents images
-  imageTag: 2026-07-26-001
+  imageTag: 2026-07-26-002
   email:
     # -- Which transport to send outgoing email through: `smtp` or `ses`.
     # With `ses` the SMTP settings are ignored and no SMTP credentials are

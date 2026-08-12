@@ -1,6 +1,6 @@
 # Configuration Reference
 
-![Version: 0.7.2](https://img.shields.io/badge/Version-0.7.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-001](https://img.shields.io/badge/AppVersion-2026--07--26--001-informational?style=flat-square)
+![Version: 0.7.3](https://img.shields.io/badge/Version-0.7.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-002](https://img.shields.io/badge/AppVersion-2026--07--26--002-informational?style=flat-square)
 
 ## Requirements
 
@@ -88,7 +88,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | currents.rootUser.email | string | `"admin@{{ .Values.currents.domains.appHost }}"` | The email address of the root user |
-| currents.imageTag | string | `"2026-07-26-001"` | The image tag to use for the Currents images |
+| currents.imageTag | string | `"2026-07-26-002"` | The image tag to use for the Currents images |
 | currents.email.transporter | string | `"smtp"` | Which transport to send outgoing email through: `smtp` or `ses`. With `ses` the SMTP settings are ignored and no SMTP credentials are needed — the AWS SDK resolves credentials from the pod itself, so grant the Currents service account permission to send. See [Using IAM Roles for Sending Email with SES](./eks/iam.md#using-iam-roles-for-sending-email-with-ses). |
 | currents.email.from | tpl/string | `""` | The email address to send from. Defaults to `currents.email.smtp.from` when unset, which is retained for compatibility. |
 | currents.email.ses.region | string | `""` | The AWS region to send through. Required when `transporter` is `ses`, and the `from` address must be a verified identity in that region. |
