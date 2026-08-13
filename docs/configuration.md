@@ -1,6 +1,6 @@
 # Configuration Reference
 
-![Version: 0.7.3](https://img.shields.io/badge/Version-0.7.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-002](https://img.shields.io/badge/AppVersion-2026--07--26--002-informational?style=flat-square)
+![Version: 0.7.4](https://img.shields.io/badge/Version-0.7.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-003](https://img.shields.io/badge/AppVersion-2026--07--26--003-informational?style=flat-square)
 
 ## Requirements
 
@@ -88,7 +88,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | currents.rootUser.email | string | `"admin@{{ .Values.currents.domains.appHost }}"` | The email address of the root user |
-| currents.imageTag | string | `"2026-07-26-002"` | The image tag to use for the Currents images |
+| currents.imageTag | string | `"2026-07-26-003"` | The image tag to use for the Currents images |
 | currents.email.transporter | string | `"smtp"` | Which transport to send outgoing email through: `smtp` or `ses`. With `ses` the SMTP settings are ignored and no SMTP credentials are needed — the AWS SDK resolves credentials from the pod itself, so grant the Currents service account permission to send. See [Using IAM Roles for Sending Email with SES](./eks/iam.md#using-iam-roles-for-sending-email-with-ses). |
 | currents.email.from | tpl/string | `""` | The email address to send from. Defaults to `currents.email.smtp.from` when unset, which is retained for compatibility. |
 | currents.email.ses.region | string | `""` | The AWS region to send through. Required when `transporter` is `ses`, and the `from` address must be a verified identity in that region. |
@@ -221,6 +221,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | toolbox.persistence | object | See [values.yaml] for default values | Scratch space for artifacts and the import state file. Size it at ~1.5x the export's total bytes (manifest totals.exportedBytes + clickhouseTotals.exportedBytes). |
 | toolbox.env | list | `[]` | Additional environment variables for toolbox containers. |
 | toolbox.clickhouseRequestTimeoutMs | int | `3600000` | ClickHouse client per-request socket timeout (ms) for the import. |
+| toolbox.clickhouseInsertBlockRows | int | `65536` | Rows per block the import inserts into ClickHouse. Each block is aggregated by `test_metric_v2`'s two materialized views, so this sets the insert's peak memory on the ClickHouse server: measured against the real schema, 1M rows (the ClickHouse default) peaks at ~3.1 GiB and 65536 at ~1.3 GiB. Lower it if ClickHouse has less than 8 GiB or an insert fails with MEMORY_LIMIT_EXCEEDED. |
 | toolbox.resources | object | `{}` | Resource limits for the toolbox containers. A large import is IO-bound; give it enough memory to stream comfortably. |
 | toolbox.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] for the toolbox pod |
 | toolbox.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
