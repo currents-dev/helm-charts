@@ -1,5 +1,12 @@
 # Changelog
 
+## [currents-0.7.4](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.4) - 2026-08-13
+
+
+### Bug Fixes
+- [`a999e30`](https://github.com/currents-dev/helm-charts/commit/a999e301c82246f5ab35aae77e13427a97fe1b25) fix: bump version to 0.7.4 and update app version to 2026-07-26-003 (#50)
+
+
 ## [currents-0.7.3](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.3) - 2026-08-12
 
 
