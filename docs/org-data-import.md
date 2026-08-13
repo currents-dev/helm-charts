@@ -28,6 +28,15 @@ You need:
 - Enough free space on the toolbox volume: roughly **1.5×** the export's total
   size. Support can tell you the artifact size; set it with
   `toolbox.persistence.size` (see step 1).
+- **At least 8 GiB of memory for ClickHouse**, with a memory limit actually set on
+  it. The import's heaviest step inserts into ClickHouse's largest table, and each
+  inserted block is aggregated into the hourly rollups as it lands. The commands
+  below cap that block size at 65,536 rows, which keeps the insert's peak around
+  1.3 GiB instead of the ~3.1 GiB ClickHouse's own default would use.
+
+> A ClickHouse pod with **no** memory limit is worse than one with a limit: with no
+> limit it sizes itself against the whole node, never trips its own memory guard, and
+> gets killed by the kernel mid-import instead of failing one query cleanly.
 
 The commands below use `<release>` for your Helm release name and `<ns>` for its
 namespace. Set a shell variable for the pod once it exists:
@@ -95,15 +104,24 @@ these steps).
 
 ```bash
 kubectl exec ${POD#pod/} -- \
-  currents-import --mode=fresh --download=/data/download.json
+  currents-import --mode=fresh --download=/data/download.json \
+  --insert-block-rows=65536
 ```
 
 **Merge** (into an existing organization — note the target org id):
 
 ```bash
 kubectl exec ${POD#pod/} -- \
-  currents-import --mode=merge --targetOrgId=<24-hex-target-org> --download=/data/download.json
+  currents-import --mode=merge --targetOrgId=<24-hex-target-org> --download=/data/download.json \
+  --insert-block-rows=65536
 ```
+
+`--insert-block-rows` is the ClickHouse memory cap described in
+[Before you start](#before-you-start). The chart already sets the same value on the
+toolbox pod, so the flag is belt-and-braces — pass a **lower** number (halve it) if
+ClickHouse has less than 8 GiB, and see
+[the import failed with MEMORY_LIMIT_EXCEEDED](#the-clickhouse-step-failed-with-memory_limit_exceeded)
+if an insert still runs out of memory.
 
 It streams progress to the logs — per collection and per ClickHouse table — and
 finishes with `import complete`. Depending on size this takes from a few minutes
@@ -138,7 +156,8 @@ use **`--mode=incremental`** with the **same target organization id**:
 
 ```bash
 kubectl -n <ns> exec ${POD#pod/} -- \
-  currents-import --mode=incremental --targetOrgId=<24-hex-target-org> --download=/data/delta.json
+  currents-import --mode=incremental --targetOrgId=<24-hex-target-org> --download=/data/delta.json \
+  --insert-block-rows=65536
 ```
 
 The delta is imported and verified in full before the command returns, exactly like
@@ -173,17 +192,49 @@ loaded and re-runs only what's missing:
 # merge:
 kubectl exec ${POD#pod/} -- \
   node /app/packages/scheduler/dist/orgImport/cli.js ch-import \
-  --merge --targetOrgId=<24-hex-target-org> --dir=/data/export
+  --merge --targetOrgId=<24-hex-target-org> --dir=/data/export --insert-block-rows=65536
 
 # fresh (use the source org id, shown in the import logs / manifest):
 kubectl exec ${POD#pod/} -- \
   node /app/packages/scheduler/dist/orgImport/cli.js ch-import \
-  --orgId=<24-hex-source-org> --dir=/data/export
+  --orgId=<24-hex-source-org> --dir=/data/export --insert-block-rows=65536
 ```
 
 This is safe to run repeatedly: completed tables are skipped, and the re-inserted
 table only adds rows it hasn't already inserted, so the rollup totals stay correct
 **without any manual rebuild**.
+
+### The ClickHouse step failed with MEMORY_LIMIT_EXCEEDED
+
+```
+ClickHouseError: (total) memory limit exceeded: would use 21.74 GiB …
+  code: '241', type: 'MEMORY_LIMIT_EXCEEDED'
+```
+
+The first thing to try is a **smaller block size** — halve `--insert-block-rows` (to
+`32768`, then `16384`) on the resume command above. From 65,536 downward each halving
+roughly halves the insert's peak memory, and it costs no meaningful time.
+
+If halving it changes nothing — the insert fails at the **same** size no matter what
+you pass — the block size is not what's running out of memory, and there is no value
+low enough to fix it. On an **incremental** import, the other large allocation is the
+check that skips rows already imported, either give ClickHouse more memory for the duration of the cutover, or ask
+support to run a recovery step that loads that one table a different way.
+
+### The MongoDB restore reports "N document(s) failed to restore"
+
+Duplicate-key errors like this are **expected** when you re-run an import that already
+restored MongoDB:
+
+```
+continuing through error: E11000 duplicate key error collection: currents.tests …
+0 document(s) restored successfully. 1906389 document(s) failed to restore.
+```
+
+Every "failure" is a document that is **already** in your database, which is why the
+verification step immediately after it passes. It is not data loss and it does not
+need a retry. If the MongoDB verify step *fails*, that is a different problem — send
+support the logs.
 
 ### Re-running `currents-import` says the org already exists / project already exists
 
@@ -218,3 +269,6 @@ If you're stuck, send Currents support:
 - the **mode** and (for merge) the **target org id** you used,
 - the `currents-import` (or `ch-import`) **logs**, and
 - the output of `kubectl get pods`.
+
+For anything ClickHouse-related, also include its **memory limit** and the
+`--insert-block-rows` you passed — those two decide most import memory failures.

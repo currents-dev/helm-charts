@@ -27,7 +27,7 @@ currents:
       # @section -- Frequently Used
       key: password
   # -- The image tag to use for the Currents images
-  imageTag: 2026-07-26-002
+  imageTag: 2026-07-26-003
   email:
     # -- Which transport to send outgoing email through: `smtp` or `ses`.
     # With `ses` the SMTP settings are ignored and no SMTP credentials are
@@ -702,6 +702,12 @@ toolbox:
   env: []
   # -- ClickHouse client per-request socket timeout (ms) for the import.
   clickhouseRequestTimeoutMs: 3600000
+  # -- Rows per block the import inserts into ClickHouse. Each block is aggregated
+  # by `test_metric_v2`'s two materialized views, so this sets the insert's peak
+  # memory on the ClickHouse server: measured against the real schema, 1M rows (the
+  # ClickHouse default) peaks at ~3.1 GiB and 65536 at ~1.3 GiB. Lower it if
+  # ClickHouse has less than 8 GiB or an insert fails with MEMORY_LIMIT_EXCEEDED.
+  clickhouseInsertBlockRows: 65536
   # -- Resource limits for the toolbox containers. A large import is IO-bound;
   # give it enough memory to stream comfortably.
   resources: {}

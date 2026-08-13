@@ -58,6 +58,12 @@ spec:
                30s default so it doesn't trip mid-insert. Matches ch-import's max_execution_time. */}}
         - name: CLICKHOUSE_REQUEST_TIMEOUT_MS
           value: {{ .Values.toolbox.clickhouseRequestTimeoutMs | default 3600000 | int64 | quote }}
+        {{- /* Caps how many rows ClickHouse squashes into one inserted block. Every block is
+               aggregated by test_metric_v2's two materialized views, so an unset value (the
+               server's 1M-row default) peaks around 3.1 GiB on the ClickHouse server and OOMs
+               a small one. ch-import reads this; --insert-block-rows overrides it. */}}
+        - name: CLICKHOUSE_MIN_INSERT_BLOCK_SIZE_ROWS
+          value: {{ .Values.toolbox.clickhouseInsertBlockRows | default 65536 | int64 | quote }}
         {{- include "currents.connectionConfigEnv" . | nindent 8 }}
         {{- /* The importer refuses a ClickHouse import unless it sees this — safe only
                because the same helper sets it on the change-streams deployment. */}}
