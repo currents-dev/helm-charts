@@ -1,5 +1,13 @@
 # Changelog
 
+## [currents-0.7.5](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.5) - 2026-09-09
+
+
+### Bug Fixes
+- [`910a572`](https://github.com/currents-dev/helm-charts/commit/910a572f324aed82806971258599a311615671a5) fix: Bring in new patched images to fix a IRSA memory leak
+- [`910a572`](https://github.com/currents-dev/helm-charts/commit/910a572f324aed82806971258599a311615671a5) fix: stop the default probes and pm2 log storage from restarting pods (#52)
+
+
 ## [currents-0.7.4](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.4) - 2026-08-13
 
 
