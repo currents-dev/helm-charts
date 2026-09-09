@@ -1,6 +1,6 @@
 # Configuration Reference
 
-![Version: 0.7.4](https://img.shields.io/badge/Version-0.7.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-003](https://img.shields.io/badge/AppVersion-2026--07--26--003-informational?style=flat-square)
+![Version: 0.7.5](https://img.shields.io/badge/Version-0.7.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-004](https://img.shields.io/badge/AppVersion-2026--07--26--004-informational?style=flat-square)
 
 ## Requirements
 
@@ -88,7 +88,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | currents.rootUser.email | string | `"admin@{{ .Values.currents.domains.appHost }}"` | The email address of the root user |
-| currents.imageTag | string | `"2026-07-26-003"` | The image tag to use for the Currents images |
+| currents.imageTag | string | `"2026-07-26-004"` | The image tag to use for the Currents images |
 | currents.email.transporter | string | `"smtp"` | Which transport to send outgoing email through: `smtp` or `ses`. With `ses` the SMTP settings are ignored and no SMTP credentials are needed — the AWS SDK resolves credentials from the pod itself, so grant the Currents service account permission to send. See [Using IAM Roles for Sending Email with SES](./eks/iam.md#using-iam-roles-for-sending-email-with-ses). |
 | currents.email.from | tpl/string | `""` | The email address to send from. Defaults to `currents.email.smtp.from` when unset, which is retained for compatibility. |
 | currents.email.ses.region | string | `""` | The AWS region to send through. Required when `transporter` is `ses`, and the `from` address must be a verified identity in that region. |
@@ -133,8 +133,9 @@ The following table lists the configurable parameters of the `currents` chart an
 | director.env | list | `[]` | Env variables to pass to the container |
 | director.volumes | list | `[]` | Additional volumes on the output Deployment definition. |
 | director.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition. |
-| director.livenessProbe | object | `{"httpGet":{"path":"/","port":"http"}}` | Liveness probe to check if the container is alive |
-| director.readinessProbe | object | `{"httpGet":{"path":"/","port":"http"}}` | Readiness probe to check if the container is ready |
+| director.startupProbe | object | `{"failureThreshold":30,"httpGet":{"path":"/","port":"http"},"periodSeconds":10,"timeoutSeconds":5}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| director.livenessProbe | object | `{"failureThreshold":6,"httpGet":{"path":"/","port":"http"},"periodSeconds":20,"timeoutSeconds":10}` | Liveness probe to check if the container is alive. `timeoutSeconds` is set explicitly: Kubernetes defaults it to 1 second, and a service that is merely busy answers more slowly than that under load, which turns a slow pod into a restarting one. |
+| director.readinessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/","port":"http"},"periodSeconds":10,"timeoutSeconds":5}` | Readiness probe to check if the container is ready |
 | director.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
 | director.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | director.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
@@ -150,8 +151,10 @@ The following table lists the configurable parameters of the `currents` chart an
 | server.env | list | `[]` | Env variables to pass to the container |
 | server.volumes | list | `[]` | Additional volumes on the output Deployment definition |
 | server.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
-| server.livenessProbe | object | `{"httpGet":{"path":"/","port":"http"}}` | Liveness probe to check if the container is alive |
-| server.readinessProbe | object | `{"httpGet":{"path":"/","port":"http"}}` | Readiness probe to check if the container is ready |
+| server.pm2HomeSizeLimit | string | `"256Mi"` | Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's sockets and, for services started from an ecosystem file, its log files. Disk-backed on purpose: on a memory-backed volume those log files count against the pod's memory limit and the container is OOMKilled under load. |
+| server.startupProbe | object | `{"failureThreshold":30,"httpGet":{"path":"/","port":"http"},"periodSeconds":10,"timeoutSeconds":5}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| server.livenessProbe | object | `{"failureThreshold":6,"httpGet":{"path":"/","port":"http"},"periodSeconds":20,"timeoutSeconds":10}` | Liveness probe to check if the container is alive. `timeoutSeconds` is set explicitly: Kubernetes defaults it to 1 second, and a service that is merely busy answers more slowly than that under load, which turns a slow pod into a restarting one. |
+| server.readinessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/","port":"http"},"periodSeconds":10,"timeoutSeconds":5}` | Readiness probe to check if the container is ready |
 | server.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
 | server.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | server.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
@@ -167,8 +170,11 @@ The following table lists the configurable parameters of the `currents` chart an
 | writer.env | list | `[]` | Env variables to pass to the container |
 | writer.volumes | list | `[]` | Additional volumes on the output Deployment definition |
 | writer.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
-| writer.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","writer-service"]}}` | Liveness probe to check if the container is alive |
-| writer.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","writer-service"]}}` | Readiness probe to check if the container is ready |
+| writer.pm2Instances | int | `2` | Node processes pm2 runs per writer pod. Each is single threaded, so a pod with more than one core does no more work until this is raised. Matches the value the hosted service runs. |
+| writer.pm2HomeSizeLimit | string | `"256Mi"` | Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's sockets and, for services started from an ecosystem file, its log files. Disk-backed on purpose: on a memory-backed volume those log files count against the pod's memory limit and the container is OOMKilled under load. |
+| writer.startupProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","writer-service"]},"failureThreshold":30,"periodSeconds":10,"timeoutSeconds":15}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| writer.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","writer-service"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Liveness probe to check if the container is alive. The command forks a Node CLI, which cannot finish within the 1 second Kubernetes defaults `timeoutSeconds` to while the container is under CPU pressure. Timed-out probe processes then accumulate and make the pressure worse. |
+| writer.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","writer-service"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Readiness probe to check if the container is ready |
 | writer.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
 | writer.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | writer.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
@@ -183,8 +189,10 @@ The following table lists the configurable parameters of the `currents` chart an
 | scheduler.env | list | `[]` | Env variables to pass to the container |
 | scheduler.volumes | list | `[]` | Additional volumes on the output Deployment definition |
 | scheduler.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
-| scheduler.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]}}` | Liveness probe to check if the container is alive |
-| scheduler.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]}}` | Readiness probe to check if the container is ready |
+| scheduler.pm2HomeSizeLimit | string | `"256Mi"` | Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's sockets and, for services started from an ecosystem file, its log files. Disk-backed on purpose: on a memory-backed volume those log files count against the pod's memory limit and the container is OOMKilled under load. |
+| scheduler.startupProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":30,"periodSeconds":10,"timeoutSeconds":15}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| scheduler.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Liveness probe to check if the container is alive. The command forks a Node CLI, which cannot finish within the 1 second Kubernetes defaults `timeoutSeconds` to while the container is under CPU pressure. Timed-out probe processes then accumulate and make the pressure worse. |
+| scheduler.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Readiness probe to check if the container is ready |
 | scheduler.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
 | scheduler.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | scheduler.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
@@ -211,8 +219,10 @@ The following table lists the configurable parameters of the `currents` chart an
 | webhooks.env | list | `[]` | Env variables to pass to the container |
 | webhooks.volumes | list | `[]` | Additional volumes on the output Deployment definition |
 | webhooks.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
-| webhooks.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]}}` | Liveness probe to check if the container is alive |
-| webhooks.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]}}` | Readiness probe to check if the container is ready |
+| webhooks.pm2HomeSizeLimit | string | `"256Mi"` | Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's sockets and, for services started from an ecosystem file, its log files. Disk-backed on purpose: on a memory-backed volume those log files count against the pod's memory limit and the container is OOMKilled under load. |
+| webhooks.startupProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":30,"periodSeconds":10,"timeoutSeconds":15}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| webhooks.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Liveness probe to check if the container is alive. The command forks a Node CLI, which cannot finish within the 1 second Kubernetes defaults `timeoutSeconds` to while the container is under CPU pressure. Timed-out probe processes then accumulate and make the pressure worse. |
+| webhooks.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Readiness probe to check if the container is ready |
 | webhooks.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
 | webhooks.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | webhooks.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
@@ -236,6 +246,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | redis.architecture | string | `"standalone"` |  |
 | redis.auth.enabled | bool | `false` |  |
 | redis.master.resourcesPreset | string | `"none"` |  |
+| redis.master.resources | object | `{"requests":{"cpu":"500m","memory":"1Gi"}}` | Requests without limits, deliberately. With neither, the Redis pod is BestEffort and is the first thing the kubelet evicts under node memory pressure, which drops every service's queue connection at once. No limit is set so a queue backlog cannot turn into an OOMKill instead. Size this to your queue depth. |
 | redis.replica.resourcesPreset | string | `"none"` |  |
 | redis.sentinel.resourcesPreset | string | `"none"` |  |
 | redis.metrics.resourcesPreset | string | `"none"` |  |

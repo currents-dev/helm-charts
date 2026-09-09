@@ -100,6 +100,10 @@ spec:
               mountPath: /etc/currents/sso
               readOnly: true
           {{- end }}
+          {{- with .Values.server.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.server.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -121,7 +125,7 @@ spec:
       volumes:
         - name: pm2-data
           emptyDir:
-            medium: "Memory"
+            sizeLimit: {{ .Values.server.pm2HomeSizeLimit }}
       {{- if .Values.currents.sso.saml.enabled }}
         - name: sso-saml
           secret:

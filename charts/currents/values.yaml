@@ -27,7 +27,7 @@ currents:
       # @section -- Frequently Used
       key: password
   # -- The image tag to use for the Currents images
-  imageTag: 2026-07-26-003
+  imageTag: 2026-07-26-004
   email:
     # -- Which transport to send outgoing email through: `smtp` or `ses`.
     # With `ses` the SMTP settings are ignored and no SMTP credentials are
@@ -290,16 +290,34 @@ director:
   volumes: []
   # -- Additional volumeMounts on the output Deployment definition.
   volumeMounts: []
-  # -- Liveness probe to check if the container is alive
+  # -- Startup probe. While it is running the liveness and readiness probes are
+  # held off, so a slow start is not mistaken for an unhealthy container.
+  startupProbe:
+    httpGet:
+      path: /
+      port: http
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+  # -- Liveness probe to check if the container is alive. `timeoutSeconds` is
+  # set explicitly: Kubernetes defaults it to 1 second, and a service that is
+  # merely busy answers more slowly than that under load, which turns a slow
+  # pod into a restarting one.
   livenessProbe:
     httpGet:
       path: /
       port: http
+    periodSeconds: 20
+    timeoutSeconds: 10
+    failureThreshold: 6
   # -- Readiness probe to check if the container is ready
   readinessProbe:
     httpGet:
       path: /
       port: http
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
   # -- Resources to provide
   # [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
   # @section -- Frequently Used
@@ -384,16 +402,39 @@ server:
   volumes: []
   # -- Additional volumeMounts on the output Deployment definition
   volumeMounts: []
-  # -- Liveness probe to check if the container is alive
+  # -- Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's
+  # sockets and, for services started from an ecosystem file, its log files.
+  # Disk-backed on purpose: on a memory-backed volume those log files count
+  # against the pod's memory limit and the container is OOMKilled under load.
+  pm2HomeSizeLimit: 256Mi
+  # -- Startup probe. While it is running the liveness and readiness probes are
+  # held off, so a slow start is not mistaken for an unhealthy container.
+  startupProbe:
+    httpGet:
+      path: /
+      port: http
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+  # -- Liveness probe to check if the container is alive. `timeoutSeconds` is
+  # set explicitly: Kubernetes defaults it to 1 second, and a service that is
+  # merely busy answers more slowly than that under load, which turns a slow
+  # pod into a restarting one.
   livenessProbe:
     httpGet:
       path: /
       port: http
+    periodSeconds: 20
+    timeoutSeconds: 10
+    failureThreshold: 6
   # -- Readiness probe to check if the container is ready
   readinessProbe:
     httpGet:
       path: /
       port: http
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
   # -- Resources to provide
   # [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
   # @section -- Frequently Used
@@ -445,7 +486,7 @@ server:
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
-# Server Configuration
+# END Server Configuration
 
 # Writer Configuration
 writer:
@@ -479,13 +520,39 @@ writer:
   volumes: []
   # -- Additional volumeMounts on the output Deployment definition
   volumeMounts: []
-  # -- Liveness probe to check if the container is alive
+  # -- Node processes pm2 runs per writer pod. Each is single threaded, so a
+  # pod with more than one core does no more work until this is raised. Matches
+  # the value the hosted service runs.
+  pm2Instances: 2
+  # -- Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's
+  # sockets and, for services started from an ecosystem file, its log files.
+  # Disk-backed on purpose: on a memory-backed volume those log files count
+  # against the pod's memory limit and the container is OOMKilled under load.
+  pm2HomeSizeLimit: 256Mi
+  # -- Startup probe. While it is running the liveness and readiness probes are
+  # held off, so a slow start is not mistaken for an unhealthy container.
+  startupProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - writer-service
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 30
+  # -- Liveness probe to check if the container is alive. The command forks a
+  # Node CLI, which cannot finish within the 1 second Kubernetes defaults
+  # `timeoutSeconds` to while the container is under CPU pressure. Timed-out
+  # probe processes then accumulate and make the pressure worse.
   livenessProbe:
     exec:
       command:
         - ./node_modules/.bin/pm2
         - show
         - writer-service
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 5
   # -- Readiness probe to check if the container is ready
   readinessProbe:
     exec:
@@ -493,6 +560,9 @@ writer:
         - ./node_modules/.bin/pm2
         - show
         - writer-service
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 5
   # -- Resources to provide
   # [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
   # @section -- Frequently Used
@@ -547,13 +617,35 @@ scheduler:
   volumes: []
   # -- Additional volumeMounts on the output Deployment definition
   volumeMounts: []
-  # -- Liveness probe to check if the container is alive
+  # -- Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's
+  # sockets and, for services started from an ecosystem file, its log files.
+  # Disk-backed on purpose: on a memory-backed volume those log files count
+  # against the pod's memory limit and the container is OOMKilled under load.
+  pm2HomeSizeLimit: 256Mi
+  # -- Startup probe. While it is running the liveness and readiness probes are
+  # held off, so a slow start is not mistaken for an unhealthy container.
+  startupProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - dist
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 30
+  # -- Liveness probe to check if the container is alive. The command forks a
+  # Node CLI, which cannot finish within the 1 second Kubernetes defaults
+  # `timeoutSeconds` to while the container is under CPU pressure. Timed-out
+  # probe processes then accumulate and make the pressure worse.
   livenessProbe:
     exec:
       command:
         - ./node_modules/.bin/pm2
         - show
         - dist
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 5
   # -- Readiness probe to check if the container is ready
   readinessProbe:
     exec:
@@ -561,6 +653,9 @@ scheduler:
         - ./node_modules/.bin/pm2
         - show
         - dist
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 5
   # -- Resources to provide
   # [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
   # @section -- Frequently Used
@@ -648,13 +743,35 @@ webhooks:
   volumes: []
   # -- Additional volumeMounts on the output Deployment definition
   volumeMounts: []
-  # -- Liveness probe to check if the container is alive
+  # -- Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's
+  # sockets and, for services started from an ecosystem file, its log files.
+  # Disk-backed on purpose: on a memory-backed volume those log files count
+  # against the pod's memory limit and the container is OOMKilled under load.
+  pm2HomeSizeLimit: 256Mi
+  # -- Startup probe. While it is running the liveness and readiness probes are
+  # held off, so a slow start is not mistaken for an unhealthy container.
+  startupProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - dist
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 30
+  # -- Liveness probe to check if the container is alive. The command forks a
+  # Node CLI, which cannot finish within the 1 second Kubernetes defaults
+  # `timeoutSeconds` to while the container is under CPU pressure. Timed-out
+  # probe processes then accumulate and make the pressure worse.
   livenessProbe:
     exec:
       command:
         - ./node_modules/.bin/pm2
         - show
         - dist
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 5
   # -- Readiness probe to check if the container is ready
   readinessProbe:
     exec:
@@ -662,6 +779,9 @@ webhooks:
         - ./node_modules/.bin/pm2
         - show
         - dist
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 5
   # -- Liveness probe to check if the container is alive
   # -- Resources to provide
   # [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
@@ -755,6 +875,15 @@ redis:
     enabled: false
   master:
     resourcesPreset: "none"
+    # -- Requests without limits, deliberately. With neither, the Redis pod is
+    # BestEffort and is the first thing the kubelet evicts under node memory
+    # pressure, which drops every service's queue connection at once. No limit
+    # is set so a queue backlog cannot turn into an OOMKill instead. Size this
+    # to your queue depth.
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
   replica:
     resourcesPreset: "none"
   sentinel:

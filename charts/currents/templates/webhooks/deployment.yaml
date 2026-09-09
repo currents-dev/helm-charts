@@ -53,6 +53,10 @@ spec:
           volumeMounts:
             - name: pm2-data
               mountPath: /home/node/.pm2
+          {{- with .Values.webhooks.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.webhooks.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -74,7 +78,7 @@ spec:
       volumes:
         - name: pm2-data
           emptyDir:
-            medium: "Memory"
+            sizeLimit: {{ .Values.webhooks.pm2HomeSizeLimit }}
       {{- with .Values.global.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
