@@ -2,6 +2,25 @@ apiVersion: v1
 entries:
   currents:
   - apiVersion: v2
+    appVersion: 2026-07-26-004
+    created: "2026-09-09T19:03:25.045309324Z"
+    dependencies:
+    - condition: redis.enabled
+      name: redis
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 20.2.1
+    description: A Helm chart for Deploying Currents
+    digest: 6960ad67171b4eb07b00291837016d29e229b2206b4bcca5e4de80db2d3c5258
+    home: https://currents.dev
+    maintainers:
+    - name: Currents-dev
+      url: https://currents.dev
+    name: currents
+    type: application
+    urls:
+    - https://github.com/currents-dev/helm-charts/releases/download/currents-0.7.5/currents-0.7.5.tgz
+    version: 0.7.5
+  - apiVersion: v2
     appVersion: 2026-07-26-003
     created: "2026-08-13T23:14:42.164547447Z"
     dependencies:
@@ -248,4 +267,4 @@ entries:
     urls:
     - https://github.com/currents-dev/helm-charts/releases/download/currents-0.1.0/currents-0.1.0.tgz
     version: 0.1.0
-generated: "2026-08-13T23:14:42.164681267Z"
+generated: "2026-09-09T19:03:25.045392365Z"
