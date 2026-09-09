@@ -56,6 +56,10 @@ spec:
               mountPath: /home/node/.pm2
             - name: startup
               mountPath: /app/packages/scheduler/dist/.startup
+          {{- with .Values.scheduler.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.scheduler.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -77,7 +81,7 @@ spec:
       volumes:
         - name: pm2-data
           emptyDir:
-            medium: "Memory"
+            sizeLimit: {{ .Values.scheduler.pm2HomeSizeLimit }}
         - name: startup
           persistentVolumeClaim:
             claimName: {{ include "currents.scheduler.fullname" . }}-startup-tmp

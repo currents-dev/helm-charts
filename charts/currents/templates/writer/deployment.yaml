@@ -45,6 +45,8 @@ spec:
           env:
             - name: CURRENTS_ENV
               value: "onprem"
+            - name: PM2_INSTANCES
+              value: {{ .Values.writer.pm2Instances | quote }}
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
             {{- include "currents.URLConfigEnv" . | nindent 12 }}
             {{- include "currents.emailEnv" . | nindent 12 }}
@@ -54,6 +56,10 @@ spec:
           volumeMounts:
             - name: pm2-data
               mountPath: /home/node/.pm2
+          {{- with .Values.writer.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.writer.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -75,7 +81,7 @@ spec:
       volumes:
         - name: pm2-data
           emptyDir:
-            medium: "Memory"
+            sizeLimit: {{ .Values.writer.pm2HomeSizeLimit }}
       {{- with .Values.global.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

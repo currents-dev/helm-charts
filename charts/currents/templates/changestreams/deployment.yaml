@@ -51,6 +51,10 @@ spec:
             {{- with (concat .Values.global.env .Values.changestreams.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
+          {{- with .Values.changestreams.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.changestreams.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
