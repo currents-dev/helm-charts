@@ -122,9 +122,30 @@ currents:
     # @section -- Frequently Used
     key: token
   redis:
-    # -- (tpl) set the redis hostname to talk to
+    # -- (tpl) set the redis hostname to talk to. The default names the bundled Redis's service,
+    # which only exists when `redis.enabled` is true — point this at your own server otherwise.
     # @default -- `{{ .Release.Name }}-redis-master`
     host: "{{ .Release.Name }}-redis-master"
+    # -- (tpl) hostname for read-only traffic. A managed Redis usually publishes a separate
+    # reader endpoint; leaving this empty sends reads to `host`, which is the primary.
+    readerHost: ""
+    # -- The port to connect on
+    port: 6379
+    tls:
+      # -- Connect with `rediss://`. Set this for a managed Redis with encryption in transit.
+      enabled: false
+    # -- Read the connection URI from a K8s secret instead of composing it from the fields
+    # above. Needed for any Redis that requires credentials: the composed URI is rendered
+    # into the pod spec, so an AUTH token set that way would be readable by anyone who can
+    # describe a pod. Leave unset to use the bundled Redis.
+    # @section -- Frequently Used
+    connection:
+      # -- Secret holding the full URI, e.g. `rediss://:<auth-token>@host:6379`
+      secretName: ""
+      # -- Secret key for the primary URI
+      key: uri
+      # -- Secret key for the read-only URI. Defaults to `key` when unset.
+      readerKey: ""
   clickhouse:
     user:
       # -- The ClickHouse username to use
