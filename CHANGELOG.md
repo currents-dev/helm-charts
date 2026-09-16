@@ -1,5 +1,12 @@
 # Changelog
 
+## [currents-0.8.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.8.0) - 2026-09-16
+
+
+### Features
+- [`dc36a35`](https://github.com/currents-dev/helm-charts/commit/dc36a35b3ee48a9545d5d68600e9c987bf2e4ef7) feat: allow an external Redis, with credentials from a secret (#54)
+
+
 ## [currents-0.7.5](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.7.5) - 2026-09-09
 
 
