@@ -1,6 +1,6 @@
 # Configuration Reference
 
-![Version: 0.7.5](https://img.shields.io/badge/Version-0.7.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-004](https://img.shields.io/badge/AppVersion-2026--07--26--004-informational?style=flat-square)
+![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-004](https://img.shields.io/badge/AppVersion-2026--07--26--004-informational?style=flat-square)
 
 ## Requirements
 
@@ -46,6 +46,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.email.smtp.secretPasswordKey | string | `"password"` | The K8s secret key to use for the SMTP password |
 | currents.betterAuth.key | string | `"secret"` | The K8s secret key for the Better Auth secret |
 | currents.apiInternalToken.key | string | `"token"` | The K8s secret key to use for the internal API token |
+| currents.redis.connection | object | `{"key":"uri","readerKey":"","secretName":""}` | Read the connection URI from a K8s secret instead of composing it from the fields above. Needed for any Redis that requires credentials: the composed URI is rendered into the pod spec, so an AUTH token set that way would be readable by anyone who can describe a pod. Leave unset to use the bundled Redis. |
 | currents.clickhouse.user.username | string | `"currents"` | The ClickHouse username to use |
 | currents.clickhouse.tls.enabled | bool | `true` | Whether to use TLS for the ClickHouse connection |
 | currents.objectStorage.secretIdKey | string | `"keyId"` | The K8s secret key to use for the object storage access key ID |
@@ -102,6 +103,12 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.email.linksBaseUrl | string | `""` | Base URL for links in emails (defaults to APP_BASE_URL if empty) |
 | currents.ingress.enabled | bool | `false` | Whether to enable the both default ingresses (server, and director) |
 | currents.redis.host | tpl | `{{ .Release.Name }}-redis-master` | set the redis hostname to talk to |
+| currents.redis.readerHost | tpl | `""` | hostname for read-only traffic. A managed Redis usually publishes a separate reader endpoint; leaving this empty sends reads to `host`, which is the primary. |
+| currents.redis.port | int | `6379` | The port to connect on |
+| currents.redis.tls.enabled | bool | `false` | Connect with `rediss://`. Set this for a managed Redis with encryption in transit. |
+| currents.redis.connection.secretName | string | `""` | Secret holding the full URI, e.g. `rediss://:<auth-token>@host:6379` |
+| currents.redis.connection.key | string | `"uri"` | Secret key for the primary URI |
+| currents.redis.connection.readerKey | string | `""` | Secret key for the read-only URI. Defaults to `key` when unset. |
 | currents.clickhouse.port | int | `8123` | The ClickHouse port to use |
 | currents.objectStorage.internalEndpoint | string | `""` | The object storage internal endpoint to use (for internal communication) |
 | currents.objectStorage.region | string | `""` | The region to use for the object storage |

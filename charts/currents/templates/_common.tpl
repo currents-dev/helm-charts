@@ -92,10 +92,26 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "currents.connectionConfigEnv" -}}
+{{- $redis := .Values.currents.redis }}
+{{- if $redis.connection.secretName }}
 - name: REDIS_URI
-  value: {{ printf "redis://%s:6379"  (tpl .Values.currents.redis.host .) }}
+  valueFrom:
+    secretKeyRef:
+      name: {{ $redis.connection.secretName }}
+      key: {{ $redis.connection.key }}
 - name: REDIS_URI_SLAVE
-  value: {{ printf "redis://%s:6379"  (tpl .Values.currents.redis.host .) }}
+  valueFrom:
+    secretKeyRef:
+      name: {{ $redis.connection.secretName }}
+      key: {{ $redis.connection.readerKey | default $redis.connection.key }}
+{{- else }}
+{{- $scheme := ternary "rediss" "redis" $redis.tls.enabled }}
+{{- $reader := default $redis.host $redis.readerHost }}
+- name: REDIS_URI
+  value: {{ printf "%s://%s:%v" $scheme (tpl $redis.host .) $redis.port | quote }}
+- name: REDIS_URI_SLAVE
+  value: {{ printf "%s://%s:%v" $scheme (tpl $reader .) $redis.port | quote }}
+{{- end }}
 {{- if .Values.currents.mongoConnection.secretName }}
 - name: MONGODB_URI
   valueFrom:

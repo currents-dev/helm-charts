@@ -100,6 +100,56 @@ This will setup a 1-node 1-shard ClickHouse Replicated Server (10Gb Storage)
      --set operator.enabled=false
    ```
 
+### Redis (optional — bundled by default)
+
+The chart ships a Redis and uses it unless you point it elsewhere, so there is nothing to do
+here for a standard install. Replace it if you would rather not operate it yourself.
+
+**What the replacement has to provide.** Currents stores orchestration state as JSON documents
+and reads them from inside Lua scripts, so the server must support the `JSON.GET` / `JSON.SET`
+commands. On ElastiCache that means **Redis 6.2.6 or newer, or Valkey**; older engines will start
+the app but fail spec claiming under load. Run a real test run against it before cutting over, not
+just a health check.
+
+Use a **replication group with a primary and a replica**, not cluster mode. Currents runs multi-key
+Lua scripts, and cluster mode rejects those when the keys land in different slots. This is the
+topology the hosted service runs.
+
+**Authentication is an AUTH token supplied in the URI.** IAM authentication is not supported —
+the client takes a static credential and has nothing to refresh a short-lived one.
+
+1. Create the secret holding the connection URI. Keep the token here rather than in your values
+   file: a URI composed from plain values is rendered into the pod spec, where anyone who can
+   describe a pod can read it.
+
+   ```sh
+   kubectl create secret generic currents-redis \
+     --from-literal=uri="rediss://:<auth-token>@master.<id>.cache.amazonaws.com:6379" \
+     --from-literal=readerUri="rediss://:<auth-token>@replica.<id>.cache.amazonaws.com:6379"
+   ```
+
+   `rediss://` selects encryption in transit. Use `redis://` only if the group has it disabled.
+
+2. Point the chart at it and turn the bundled Redis off:
+
+   ```yaml
+   redis:
+     enabled: false
+
+   currents:
+     redis:
+       connection:
+         secretName: currents-redis
+         key: uri
+         readerKey: readerUri
+   ```
+
+   `readerKey` is optional. Without it, read-only traffic goes to the primary; with it, to the
+   reader endpoint.
+
+For a Redis that needs no credentials, `currents.redis.host`, `readerHost`, `port` and
+`tls.enabled` compose the URI directly and no secret is required.
+
 ### Object Storage (provider)
 
 Follow this step if you plan to use provider (S3, Cloudflare) object storage (recommended).
