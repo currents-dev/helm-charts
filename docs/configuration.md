@@ -102,7 +102,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.email.inviteBcc | string | `""` | BCC address for invitation emails |
 | currents.email.linksBaseUrl | string | `""` | Base URL for links in emails (defaults to APP_BASE_URL if empty) |
 | currents.ingress.enabled | bool | `false` | Whether to enable the both default ingresses (server, and director) |
-| currents.redis.host | tpl | `{{ .Release.Name }}-redis-master` | set the redis hostname to talk to |
+| currents.redis.host | tpl | `{{ .Release.Name }}-redis-master` | set the redis hostname to talk to. The default names the bundled Redis's service, which only exists when `redis.enabled` is true — point this at your own server otherwise. |
 | currents.redis.readerHost | tpl | `""` | hostname for read-only traffic. A managed Redis usually publishes a separate reader endpoint; leaving this empty sends reads to `host`, which is the primary. |
 | currents.redis.port | int | `6379` | The port to connect on |
 | currents.redis.tls.enabled | bool | `false` | Connect with `rediss://`. Set this for a managed Redis with encryption in transit. |

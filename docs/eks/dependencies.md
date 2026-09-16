@@ -100,12 +100,21 @@ This will setup a 1-node 1-shard ClickHouse Replicated Server (10Gb Storage)
      --set operator.enabled=false
    ```
 
-### Redis (optional — bundled by default)
+### Redis
 
-The chart ships a Redis and uses it unless you point it elsewhere, so there is nothing to do
-here for a standard install. Replace it if you would rather not operate it yourself.
+Redis is required, and the chart does not deploy one unless you ask it to. Pick one of:
 
-**What the replacement has to provide.** Currents stores orchestration state as JSON documents
+- **Bundled** — set `redis.enabled: true`, as the [quickstart](./quickstart.md) does. Convenient,
+  and usable in production, but it has no high availability during a version upgrade.
+- **Your own** — leave `redis.enabled` at its default of `false` and point the chart at an
+  existing server, as below. This is the option to take if you already operate Redis, or would
+  rather not operate one at all.
+
+`currents.redis.host` defaults to the bundled Redis's service name, so it only resolves when
+`redis.enabled` is `true`. Setting one without the other leaves the install pointed at a service
+that was never deployed.
+
+**What your own Redis has to provide.** Currents stores orchestration state as JSON documents
 and reads them from inside Lua scripts, so the server must support the `JSON.GET` / `JSON.SET`
 commands. On ElastiCache that means **Redis 6.2.6 or newer, or Valkey**; older engines will start
 the app but fail spec claiming under load. Run a real test run against it before cutting over, not
@@ -130,7 +139,8 @@ the client takes a static credential and has nothing to refresh a short-lived on
 
    `rediss://` selects encryption in transit. Use `redis://` only if the group has it disabled.
 
-2. Point the chart at it and turn the bundled Redis off:
+2. Point the chart at it, leaving the bundled Redis off (set it explicitly if you previously
+   turned it on):
 
    ```yaml
    redis:

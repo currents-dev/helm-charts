@@ -122,7 +122,8 @@ currents:
     # @section -- Frequently Used
     key: token
   redis:
-    # -- (tpl) set the redis hostname to talk to
+    # -- (tpl) set the redis hostname to talk to. The default names the bundled Redis's service,
+    # which only exists when `redis.enabled` is true — point this at your own server otherwise.
     # @default -- `{{ .Release.Name }}-redis-master`
     host: "{{ .Release.Name }}-redis-master"
     # -- (tpl) hostname for read-only traffic. A managed Redis usually publishes a separate
