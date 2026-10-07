@@ -249,11 +249,11 @@ The following table lists the configurable parameters of the `currents` chart an
 | serviceAccount.automount | bool | `true` | Automatically mount a ServiceAccount's API credentials? |
 | redis.image.repository | string | `"redis/redis-stack-server"` |  |
 | redis.image.tag | string | `"7.2.0-v15"` |  |
-| redis.commonConfiguration | string | `"loadmodule /opt/redis-stack/lib/rejson.so"` |  |
+| redis.commonConfiguration | string | `"loadmodule /opt/redis-stack/lib/rejson.so\nstop-writes-on-bgsave-error no"` | Redis server configuration. Setting this replaces the whole value, so keep these lines when adding your own. Redis snapshots to disk on its default `save` schedule: it holds in-progress runs and queued jobs that nothing recreates after a restart. With the Redis default of `stop-writes-on-bgsave-error yes`, one failed snapshot (a full disk, or the snapshot's fork killed for memory) makes Redis reject every write and ingestion stops until a snapshot succeeds. Keep writes on and watch `rdb_last_bgsave_status` in `INFO persistence` instead. |
 | redis.architecture | string | `"standalone"` |  |
 | redis.auth.enabled | bool | `false` |  |
 | redis.master.resourcesPreset | string | `"none"` |  |
-| redis.master.resources | object | `{"requests":{"cpu":"500m","memory":"1Gi"}}` | Requests without limits, deliberately. With neither, the Redis pod is BestEffort and is the first thing the kubelet evicts under node memory pressure, which drops every service's queue connection at once. No limit is set so a queue backlog cannot turn into an OOMKill instead. Size this to your queue depth. |
+| redis.master.resources | object | `{"requests":{"cpu":"500m","memory":"1Gi"}}` | Requests without limits, deliberately. With neither, the Redis pod is BestEffort and is the first thing the kubelet evicts under node memory pressure, which drops every service's queue connection at once. No limit is set so a queue backlog cannot turn into an OOMKill instead. Size this to your queue depth, plus headroom for snapshots: the forked process that writes one can grow to the size of the dataset under heavy writes. |
 | redis.replica.resourcesPreset | string | `"none"` |  |
 | redis.sentinel.resourcesPreset | string | `"none"` |  |
 | redis.metrics.resourcesPreset | string | `"none"` |  |

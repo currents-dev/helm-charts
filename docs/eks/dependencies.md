@@ -110,6 +110,19 @@ Redis is required, and the chart does not deploy one unless you ask it to. Pick 
   existing server, as below. This is the option to take if you already operate Redis, or would
   rather not operate one at all.
 
+**Sizing the bundled Redis.** It snapshots its data to `/data` on Redis's default `save`
+schedule, and each snapshot needs spare memory and disk:
+
+- Memory: the forked process that writes a snapshot can grow to the size of the dataset under
+  heavy writes. If the pod has a memory limit, set it to about twice `used_memory` from
+  `INFO memory`, or the fork is killed and the snapshot fails.
+- Disk: the new snapshot is written next to the previous one, so size
+  `redis.master.persistence.size` to at least twice the snapshot file.
+
+A failed snapshot does not stop writes (`stop-writes-on-bgsave-error no` in
+`redis.commonConfiguration`), but until one succeeds a Redis restart loses everything written
+since the last good one. Alert on `rdb_last_bgsave_status:err` in `INFO persistence`.
+
 `currents.redis.host` defaults to the bundled Redis's service name, so it only resolves when
 `redis.enabled` is `true`. Setting one without the other leaves the install pointed at a service
 that was never deployed.
