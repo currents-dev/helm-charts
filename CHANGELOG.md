@@ -1,5 +1,13 @@
 # Changelog
 
+## [currents-0.8.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.8.1) - 2026-10-07
+
+
+### Bug Fixes
+- [`a2ee577`](https://github.com/currents-dev/helm-charts/commit/a2ee577c872c5b75728427c4dde63e9c1961d24b) fix: update the images to 2026-07-26-006, so the director returns an error instead of restarting when Redis rejects a write, the writer no longer fills its PM2_HOME volume with log files, the dashboard no longer sends errors to Currents' Sentry, and two Redis caches expire sooner
+- [`a2ee577`](https://github.com/currents-dev/helm-charts/commit/a2ee577c872c5b75728427c4dde63e9c1961d24b) fix: keep the bundled Redis accepting writes when a snapshot fails [ENG-1707] (#56)
+
+
 ## [currents-0.8.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.8.0) - 2026-09-16
 
 
