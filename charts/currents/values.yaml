@@ -27,7 +27,7 @@ currents:
       # @section -- Frequently Used
       key: password
   # -- The image tag to use for the Currents images
-  imageTag: 2026-07-26-004
+  imageTag: 2026-07-26-006
   email:
     # -- Which transport to send outgoing email through: `smtp` or `ses`.
     # With `ses` the SMTP settings are ignored and no SMTP credentials are
@@ -889,8 +889,17 @@ redis:
   image:
     repository: redis/redis-stack-server
     tag: 7.2.0-v15
+  # -- Redis server configuration. Setting this replaces the whole value, so keep
+  # these lines when adding your own. Redis snapshots to disk on its default
+  # `save` schedule: it holds in-progress runs and queued jobs that nothing
+  # recreates after a restart. With the Redis default of
+  # `stop-writes-on-bgsave-error yes`, one failed snapshot (a full disk, or the
+  # snapshot's fork killed for memory) makes Redis reject every write and
+  # ingestion stops until a snapshot succeeds. Keep writes on and watch
+  # `rdb_last_bgsave_status` in `INFO persistence` instead.
   commonConfiguration: |-
     loadmodule /opt/redis-stack/lib/rejson.so
+    stop-writes-on-bgsave-error no
   architecture: standalone
   auth:
     enabled: false
@@ -900,7 +909,8 @@ redis:
     # BestEffort and is the first thing the kubelet evicts under node memory
     # pressure, which drops every service's queue connection at once. No limit
     # is set so a queue backlog cannot turn into an OOMKill instead. Size this
-    # to your queue depth.
+    # to your queue depth, plus headroom for snapshots: the forked process that
+    # writes one can grow to the size of the dataset under heavy writes.
     resources:
       requests:
         cpu: 500m

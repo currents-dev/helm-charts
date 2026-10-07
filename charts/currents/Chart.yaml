@@ -8,7 +8,7 @@ type: application
 version: 0.8.0
 # Version number of the application being deployed.
 # Versions are not expected to follow Semantic Versioning. They should reflect the version the application is using.
-appVersion: "2026-07-26-004"
+appVersion: "2026-07-26-006"
 maintainers:
   - name: Currents-dev
     url: https://currents.dev
