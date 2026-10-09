@@ -295,7 +295,7 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
                pathType: Prefix
                backend:
                  service:
-                   name: rustfs
+                   name: rustfs-svc
                    port:
                      number: 9000
    ```
