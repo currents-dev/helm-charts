@@ -121,7 +121,7 @@ Configure and install the Currents Helm Chart once all the services are ready.
        # secretAccessKey: RUSTFS_SECRET_KEY
        # Set the endpoint to your RustFS route
        # endpoint: https://storage.eks.example.com
-       # internalEndpoint: http://rustfs
+       # internalEndpoint: http://rustfs-svc:9000
        # bucket: currents
        # pathStyle: true
 

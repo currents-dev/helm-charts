@@ -46,7 +46,7 @@ currents:
     host: clickhouse-clickhouse
   objectStorage:
     endpoint: http://rustfs.localhost
-    internalEndpoint: http://rustfs
+    internalEndpoint: http://rustfs-svc:9000
     secretName: currents-rustfs-user
     secretIdKey: RUSTFS_ACCESS_KEY
     secretAccessKey: RUSTFS_SECRET_KEY

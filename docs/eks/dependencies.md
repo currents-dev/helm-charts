@@ -218,6 +218,11 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
    secret:
      existingSecret: "currents-rustfs-user"
 
+   # Let the dashboard and trace.playwright.dev fetch objects from the browser
+   extraEnv:
+     - name: RUSTFS_CORS_ALLOWED_ORIGINS
+       value: "*"
+
    # Service configuration
    service:
      type: ClusterIP
@@ -250,9 +255,9 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
        memory: "128Mi"
    ```
 
-3. Install RustFS
+3. Install RustFS. The chart version also sets the RustFS image version.
    ```sh
-   helm install rustfs rustfs --repo https://charts.rustfs.com -f rustfs-helm-config.yaml
+   helm install rustfs rustfs --repo https://charts.rustfs.com --version 1.0.1 -f rustfs-helm-config.yaml
    ```
 
 4. Create an Ingress Resource to expose the RustFS S3 API
@@ -290,7 +295,7 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
                pathType: Prefix
                backend:
                  service:
-                   name: rustfs
+                   name: rustfs-svc
                    port:
                      number: 9000
    ```
@@ -299,7 +304,7 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
    kubectl apply -f rustfs-eks-ingress.yaml
    ```
 
-5. Create the `currents` bucket by applying a Job that uses mc (MinIO client)
+5. Create the `currents` bucket by applying a Job that uses the AWS CLI
 
    `rustfs-create-bucket-job.yaml`
    ```yaml
@@ -313,30 +318,33 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
        spec:
          restartPolicy: Never
          containers:
-           - name: mc
-             image: minio/mc:latest
+           - name: aws-cli
+             image: amazon/aws-cli:2.32.31
              env:
-               - name: RUSTFS_ACCESS_KEY
+               - name: AWS_ACCESS_KEY_ID
                  valueFrom:
                    secretKeyRef:
                      name: currents-rustfs-user
                      key: RUSTFS_ACCESS_KEY
-               - name: RUSTFS_SECRET_KEY
+               - name: AWS_SECRET_ACCESS_KEY
                  valueFrom:
                    secretKeyRef:
                      name: currents-rustfs-user
                      key: RUSTFS_SECRET_KEY
+               - name: AWS_DEFAULT_REGION
+                 value: us-east-1
+               - name: AWS_ENDPOINT_URL
+                 value: http://rustfs-svc:9000
              command:
                - /bin/sh
                - -c
                - |
-                 mc alias set rustfs http://rustfs-svc:9000 $RUSTFS_ACCESS_KEY $RUSTFS_SECRET_KEY
-                 mc mb --ignore-existing rustfs/currents
+                 aws s3api head-bucket --bucket currents 2>/dev/null || aws s3 mb s3://currents
    ```
 
    ```sh
    kubectl apply -f rustfs-create-bucket-job.yaml
-   kubectl wait --for=condition=complete job/rustfs-create-bucket --timeout=60s
+   kubectl wait --for=condition=complete job/rustfs-create-bucket --timeout=120s
    ```
 
 ### SMTP Email

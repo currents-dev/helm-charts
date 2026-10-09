@@ -75,14 +75,14 @@ kubectl create secret generic currents-rustfs-user \
 Install RustFS
 
 ```sh
-helm install rustfs rustfs --repo https://charts.rustfs.com -f samples/rustfs-helm-config.yaml
+helm install rustfs rustfs --repo https://charts.rustfs.com --version 1.0.1 -f samples/rustfs-helm-config.yaml
 ```
 
 Create the `currents` bucket
 
 ```sh
 kubectl apply -f samples/rustfs-create-bucket-job.yaml
-kubectl wait --for=condition=complete job/rustfs-create-bucket --timeout=60s
+kubectl wait --for=condition=complete job/rustfs-create-bucket --timeout=120s
 ```
 
 Create an ingress for RustFS
