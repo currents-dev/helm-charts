@@ -8,22 +8,25 @@ spec:
     spec:
       restartPolicy: Never
       containers:
-        - name: mc
-          image: minio/mc:latest
+        - name: aws-cli
+          image: amazon/aws-cli:2.32.31
           env:
-            - name: RUSTFS_ACCESS_KEY
+            - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
                   name: currents-rustfs-user
                   key: RUSTFS_ACCESS_KEY
-            - name: RUSTFS_SECRET_KEY
+            - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: currents-rustfs-user
                   key: RUSTFS_SECRET_KEY
+            - name: AWS_DEFAULT_REGION
+              value: us-east-1
+            - name: AWS_ENDPOINT_URL
+              value: http://rustfs-svc:9000
           command:
             - /bin/sh
             - -c
             - |
-              mc alias set rustfs http://rustfs-svc:9000 $RUSTFS_ACCESS_KEY $RUSTFS_SECRET_KEY
-              mc mb --ignore-existing rustfs/currents
+              aws s3api head-bucket --bucket currents 2>/dev/null || aws s3 mb s3://currents
