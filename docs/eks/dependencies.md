@@ -250,9 +250,9 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
        memory: "128Mi"
    ```
 
-3. Install RustFS
+3. Install RustFS. The chart version also sets the RustFS image version.
    ```sh
-   helm install rustfs rustfs --repo https://charts.rustfs.com -f rustfs-helm-config.yaml
+   helm install rustfs rustfs --repo https://charts.rustfs.com --version 1.0.1 -f rustfs-helm-config.yaml
    ```
 
 4. Create an Ingress Resource to expose the RustFS S3 API
