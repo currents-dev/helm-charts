@@ -218,6 +218,11 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
    secret:
      existingSecret: "currents-rustfs-user"
 
+   # Let the dashboard and trace.playwright.dev fetch objects from the browser
+   extraEnv:
+     - name: RUSTFS_CORS_ALLOWED_ORIGINS
+       value: "*"
+
    # Service configuration
    service:
      type: ClusterIP
