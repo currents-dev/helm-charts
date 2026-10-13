@@ -296,10 +296,96 @@ ClickHouse data is loaded from an external export (scripts/org-import).
 {{- if .Values.currents.sso.saml.authnRequestsSigned }}
 - name: SSO_SAML_AUTHN_REQUESTS_SIGNED
   value: "true"
-- name: SSO_SAML_SP_CERT_FILE
-  value: {{ printf "/etc/currents/sso/%s" .Values.currents.sso.saml.spCertKey | quote }}
 - name: SSO_SAML_SP_KEY_FILE
   value: {{ printf "/etc/currents/sso/%s" .Values.currents.sso.saml.spKeyKey | quote }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Whether the OAuth provider can run on appHost. The API refuses to start with it on
+over http unless the host is loopback or in OAUTH_HTTP_ALLOWED_HOSTS, and Better
+Auth advertises an https issuer for any http host but localhost and *.localhost,
+so OAuth over http works only on those names.
+*/}}
+{{- define "currents.oauthSupported" -}}
+{{- $hostname := regexReplaceAll ":[0-9]+$" (lower .Values.currents.domains.appHost) "" -}}
+{{- if or .Values.currents.domains.https (eq $hostname "localhost") (hasSuffix ".localhost" $hostname) -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{- define "currents.mcpOAuthEnv" -}}
+- name: MCP_ENABLED
+  value: {{ .Values.currents.mcp.enabled | toString | quote }}
+{{- if .Values.currents.mcp.origins }}
+- name: MCP_ORIGINS
+  value: {{ .Values.currents.mcp.origins | quote }}
+{{- end }}
+{{- $oauth := .Values.currents.oauth }}
+{{- if and $oauth.enabled (include "currents.oauthSupported" .) }}
+- name: OAUTH_PROVIDER_ENABLED
+  value: "true"
+{{- /* The API verifies each access token against its own signing keys. The
+       default URL is on appHost, which a pod may not resolve (*.localhost) or
+       reach without going out through the ingress. */}}
+- name: OAUTH_JWKS_URL
+  value: {{ printf "http://localhost:%v/api/auth/jwks" .Values.server.service.port | quote }}
+{{- $hostname := regexReplaceAll ":[0-9]+$" (lower .Values.currents.domains.appHost) "" }}
+{{- if and (not .Values.currents.domains.https) (hasSuffix ".localhost" $hostname) }}
+- name: OAUTH_HTTP_ALLOWED_HOSTS
+  value: {{ $hostname | quote }}
+{{- end }}
+{{- if $oauth.dynamicClientRegistration }}
+- name: OAUTH_DYNAMIC_CLIENT_REGISTRATION_ENABLED
+  value: "true"
+{{- end }}
+{{- if not $oauth.clientIdMetadataDocuments }}
+- name: OAUTH_CIMD_ENABLED
+  value: "false"
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+The app-content bucket, rendered as the PERMANENT_STORAGE_* the services read.
+Unset fields take the artifact bucket's values, so one endpoint and one set of
+credentials serve both buckets by default. The internal endpoint and region come
+along only with the endpoint: with its own endpoint, the artifact storage's
+internal endpoint would send the pods to the wrong storage.
+*/}}
+{{- define "currents.appContentStorageEnv" -}}
+{{- $acs := .Values.currents.appContentStorage }}
+{{- $os := .Values.currents.objectStorage }}
+{{- if $acs.bucket }}
+{{- $location := ternary $acs $os (not (empty $acs.endpoint)) }}
+- name: PERMANENT_STORAGE_BUCKET
+  value: {{ $acs.bucket | quote }}
+- name: PERMANENT_STORAGE_ENDPOINT
+  value: {{ required "currents.appContentStorage.endpoint or currents.objectStorage.endpoint is required when currents.appContentStorage.bucket is set" $location.endpoint | quote }}
+{{- with (default $location.internalEndpoint $acs.internalEndpoint) }}
+- name: PERMANENT_STORAGE_INTERNAL_ENDPOINT
+  value: {{ . | quote }}
+{{- end }}
+{{- with (default $location.region $acs.region) }}
+- name: PERMANENT_STORAGE_REGION
+  value: {{ . | quote }}
+{{- end }}
+{{- with (default $os.secretName $acs.secretName) }}
+- name: PERMANENT_STORAGE_ACCESS_KEY_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ . }}
+      key: {{ default $os.secretIdKey $acs.secretIdKey }}
+- name: PERMANENT_STORAGE_SECRET_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ . }}
+      key: {{ default $os.secretAccessKey $acs.secretAccessKey }}
+{{- end }}
+{{- if (kindIs "bool" $acs.pathStyle | ternary $acs.pathStyle $os.pathStyle) }}
+- name: PERMANENT_STORAGE_FORCE_PATH_STYLE
+  value: "true"
 {{- end }}
 {{- end }}
 {{- end -}}

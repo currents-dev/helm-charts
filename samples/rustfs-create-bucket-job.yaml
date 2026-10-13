@@ -29,4 +29,17 @@ spec:
             - /bin/sh
             - -c
             - |
-              aws s3api head-bucket --bucket currents 2>/dev/null || aws s3 mb s3://currents
+              set -e
+              for bucket in currents currents-app-content; do
+                aws s3api head-bucket --bucket "$bucket" 2>/dev/null || aws s3 mb "s3://$bucket"
+              done
+              # The app-content bucket also keeps organization logos and session
+              # files, so the rules expire the share prefixes only, never the bucket.
+              aws s3api put-bucket-lifecycle-configuration --bucket currents-app-content --lifecycle-configuration '{
+                "Rules": [
+                  { "ID": "ai-context-share", "Status": "Enabled", "Filter": { "Prefix": "ai-context-share/" }, "Expiration": { "Days": 2 } },
+                  { "ID": "share-3d", "Status": "Enabled", "Filter": { "Prefix": "share-3d/" }, "Expiration": { "Days": 4 } },
+                  { "ID": "share-7d", "Status": "Enabled", "Filter": { "Prefix": "share-7d/" }, "Expiration": { "Days": 8 } },
+                  { "ID": "trace-links", "Status": "Enabled", "Filter": { "Prefix": "trace-links/" }, "Expiration": { "Days": 8 } }
+                ]
+              }'

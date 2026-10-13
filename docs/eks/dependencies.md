@@ -190,6 +190,43 @@ Follow this step if you plan to use provider (S3, Cloudflare) object storage (re
 
 4. You will configure the Currents Helm chart to use `currents-storage-user` and your Object Storage bucket later in these instructions.
 
+#### App content bucket
+
+Context shares, organization logos and session files go to a second bucket, set with `currents.appContentStorage.bucket`. Without it, context sharing and logo editing are off and session file uploads answer `503`. The other `appContentStorage` values default to the `objectStorage` ones, so the same endpoint and secret work for both buckets.
+
+1. Create the bucket, e.g. `currents-app-content`, next to the artifact bucket. Grant the same access as the artifact bucket, including `s3:DeleteObject`: deleting a session or organization removes its files.
+
+2. In the bucket's CORS rule, allow `PUT` from your `appHost` origin as well as `GET`: admins upload the organization logo from the browser.
+
+3. Add lifecycle rules for the share prefixes. Shares expire, but nothing deletes their objects. Scope the rules to these prefixes only: the bucket also holds logos (`<orgId>/logo/`) and session files (`<orgId>/sessions/`), and a bucket-wide rule deletes them.
+
+   ```sh
+   aws s3api put-bucket-lifecycle-configuration --bucket currents-app-content --lifecycle-configuration '{
+     "Rules": [
+       { "ID": "ai-context-share", "Status": "Enabled", "Filter": { "Prefix": "ai-context-share/" }, "Expiration": { "Days": 2 } },
+       { "ID": "share-3d", "Status": "Enabled", "Filter": { "Prefix": "share-3d/" }, "Expiration": { "Days": 4 } },
+       { "ID": "share-7d", "Status": "Enabled", "Filter": { "Prefix": "share-7d/" }, "Expiration": { "Days": 8 } },
+       { "ID": "trace-links", "Status": "Enabled", "Filter": { "Prefix": "trace-links/" }, "Expiration": { "Days": 8 } }
+     ]
+   }'
+   ```
+
+   Each rule outlives the longest share written under its prefix by a day.
+
+#### Artifact expiry
+
+Currents does not delete artifacts. To limit how long they are kept, add a lifecycle rule to the artifact bucket, replacing `30` with the number of days:
+
+```sh
+aws s3api put-bucket-lifecycle-configuration --bucket currents-my-org-name --lifecycle-configuration '{
+  "Rules": [
+    { "ID": "delete-artifacts-after-days", "Status": "Enabled", "Filter": { "Prefix": "" }, "Expiration": { "Days": 30 } }
+  ]
+}'
+```
+
+Runs older than that still show in the dashboard, without their screenshots, videos, traces and stdout. The same command works against the in-cluster RustFS below, run from a Job like the bucket one.
+
 ### Alternative Object Storage (in cluster)
 
 Install RustFS if you don't have access to an Object Storage provider (S3, Cloudflare). You will need an additional subdomain for RustFS.
@@ -304,7 +341,7 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
    kubectl apply -f rustfs-eks-ingress.yaml
    ```
 
-5. Create the `currents` bucket by applying a Job that uses the AWS CLI
+5. Create the `currents` and `currents-app-content` buckets, and the app content bucket's [lifecycle rules](#app-content-bucket), by applying a Job that uses the AWS CLI
 
    `rustfs-create-bucket-job.yaml`
    ```yaml
@@ -339,7 +376,20 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
                - /bin/sh
                - -c
                - |
-                 aws s3api head-bucket --bucket currents 2>/dev/null || aws s3 mb s3://currents
+                 set -e
+                 for bucket in currents currents-app-content; do
+                   aws s3api head-bucket --bucket "$bucket" 2>/dev/null || aws s3 mb "s3://$bucket"
+                 done
+                 # The app-content bucket also keeps organization logos and session
+                 # files, so the rules expire the share prefixes only, never the bucket.
+                 aws s3api put-bucket-lifecycle-configuration --bucket currents-app-content --lifecycle-configuration '{
+                   "Rules": [
+                     { "ID": "ai-context-share", "Status": "Enabled", "Filter": { "Prefix": "ai-context-share/" }, "Expiration": { "Days": 2 } },
+                     { "ID": "share-3d", "Status": "Enabled", "Filter": { "Prefix": "share-3d/" }, "Expiration": { "Days": 4 } },
+                     { "ID": "share-7d", "Status": "Enabled", "Filter": { "Prefix": "share-7d/" }, "Expiration": { "Days": 8 } },
+                     { "ID": "trace-links", "Status": "Enabled", "Filter": { "Prefix": "trace-links/" }, "Expiration": { "Days": 8 } }
+                   ]
+                 }'
    ```
 
    ```sh

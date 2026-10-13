@@ -76,13 +76,35 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.sso.saml.enabled | bool | `false` | Enable SAML SSO. Requires `issuer` and `metadataSecretName` below (a K8s secret holding your IdP metadata XML). Turns on email-first SSO login. |
 | currents.sso.saml.issuer | string | `""` | SP entityID / audience presented to your IdP. A stable opaque identifier (e.g. `currents-onprem:your-org`), NOT a URL. Must match the Audience / SP Entity ID configured in your IdP. |
 | currents.sso.saml.providerId | string | `"onprem-saml"` | Provider id; recommend your IdP service name (e.g. `okta`). Becomes the last path segment of the ACS callback URL. |
-| currents.sso.saml.metadataSecretName | string | `""` | K8s secret holding the IdP metadata XML (and any SP cert/key). Mounted read-only at /etc/currents/sso. See the SAML SSO guide for how to create it. |
+| currents.sso.saml.metadataSecretName | string | `""` | K8s secret holding the IdP metadata XML (and the SP key, when signing requests). Mounted read-only at /etc/currents/sso. See the SAML SSO guide for how to create it. |
 | currents.sso.saml.metadataKey | string | `"idp-metadata.xml"` | The secret key (file name) of the IdP metadata XML |
 | currents.sso.saml.defaultRole | string | `"member"` | Role granted to auto-provisioned SSO users |
 | currents.sso.saml.allowedDomains | string | `""` | Comma-separated email domains allowed to sign in via SSO (optional allow-list) |
-| currents.sso.saml.authnRequestsSigned | bool | `false` | Sign outbound AuthnRequests. Requires the SP cert/key (below) to be present in the same secret. |
-| currents.sso.saml.spCertKey | string | `"sp-cert.pem"` | Secret key (file name) of the SP certificate PEM (only when authnRequestsSigned=true) |
+| currents.sso.saml.authnRequestsSigned | bool | `false` | Sign outbound AuthnRequests. Requires the SP key (below) in the same secret; upload the matching certificate to your IdP. |
 | currents.sso.saml.spKeyKey | string | `"sp-key.pem"` | Secret key (file name) of the SP private key PEM (only when authnRequestsSigned=true) |
+
+### Remote MCP and OAuth
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| currents.mcp.enabled | bool | `true` | Serve remote MCP at `/mcp`, so coding agents can use Currents tools over HTTP. Clients authenticate with an API key or personal access token, or with OAuth (below). Requests without a valid credential get a 401. |
+| currents.mcp.origins | string | `""` | Other origins clients reach `/mcp` on, comma separated (e.g. `https://mcp.example.com`) |
+| currents.oauth.enabled | bool | `true` | Let MCP clients sign in with a Currents account instead of a key. Serves `/api/auth/oauth2/*` and `/.well-known/oauth-*`; the issuer and token audience come from `domains.appHost`. Rendered only when `domains.https` is true, or `appHost` is `localhost` or a `*.localhost` name (for an evaluation without TLS): on any other http host the API would refuse to start, so OAuth stays off there. |
+| currents.oauth.dynamicClientRegistration | bool | `true` | Let clients register themselves, the way to add a client without internet access |
+| currents.oauth.clientIdMetadataDocuments | bool | `true` | Accept clients identified by a client ID metadata document: an https URL the API fetches. Hosts that resolve to private, loopback or link-local addresses are refused, so a client can't name a service inside the cluster. |
+
+### App Content Storage
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| currents.appContentStorage.bucket | string | `""` | The bucket for context shares, organization logos and session files, separate from the artifact bucket. Unset, context sharing and logo editing are off and session file uploads answer 503. Create it with the lifecycle rules in [App content bucket](./eks/dependencies.md#app-content-bucket). |
+| currents.appContentStorage.endpoint | string | `objectStorage.endpoint` | Endpoint browsers reach the bucket on: session files and logos use presigned URLs |
+| currents.appContentStorage.internalEndpoint | string | `objectStorage.internalEndpoint` when `endpoint` is unset | Endpoint the pods reach the bucket on |
+| currents.appContentStorage.region | string | `objectStorage.region` when `endpoint` is unset | The bucket's region |
+| currents.appContentStorage.secretName | string | `objectStorage.secretName` | K8s secret holding the access key. Leave this and `objectStorage.secretName` unset to use the pod's IAM role (IRSA). |
+| currents.appContentStorage.secretIdKey | string | `objectStorage.secretIdKey` | The K8s secret key for the access key ID |
+| currents.appContentStorage.secretAccessKey | string | `objectStorage.secretAccessKey` | The K8s secret key for the secret access key |
+| currents.appContentStorage.pathStyle | bool | `objectStorage.pathStyle` | Whether to use path style access |
 
 ### Other Values
 

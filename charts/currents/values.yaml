@@ -93,7 +93,7 @@ currents:
       # -- Provider id; recommend your IdP service name (e.g. `okta`). Becomes the last path segment of the ACS callback URL.
       # @section -- SAML SSO
       providerId: onprem-saml
-      # -- K8s secret holding the IdP metadata XML (and any SP cert/key). Mounted read-only at /etc/currents/sso. See the SAML SSO guide for how to create it.
+      # -- K8s secret holding the IdP metadata XML (and the SP key, when signing requests). Mounted read-only at /etc/currents/sso. See the SAML SSO guide for how to create it.
       # @section -- SAML SSO
       metadataSecretName: ""
       # -- The secret key (file name) of the IdP metadata XML
@@ -105,15 +105,37 @@ currents:
       # -- Comma-separated email domains allowed to sign in via SSO (optional allow-list)
       # @section -- SAML SSO
       allowedDomains: ""
-      # -- Sign outbound AuthnRequests. Requires the SP cert/key (below) to be present in the same secret.
+      # -- Sign outbound AuthnRequests. Requires the SP key (below) in the same secret; upload the matching certificate to your IdP.
       # @section -- SAML SSO
       authnRequestsSigned: false
-      # -- Secret key (file name) of the SP certificate PEM (only when authnRequestsSigned=true)
-      # @section -- SAML SSO
-      spCertKey: sp-cert.pem
       # -- Secret key (file name) of the SP private key PEM (only when authnRequestsSigned=true)
       # @section -- SAML SSO
       spKeyKey: sp-key.pem
+  mcp:
+    # -- Serve remote MCP at `/mcp`, so coding agents can use Currents tools over HTTP. Clients
+    # authenticate with an API key or personal access token, or with OAuth (below). Requests
+    # without a valid credential get a 401.
+    # @section -- Remote MCP and OAuth
+    enabled: true
+    # -- Other origins clients reach `/mcp` on, comma separated (e.g. `https://mcp.example.com`)
+    # @section -- Remote MCP and OAuth
+    origins: ""
+  oauth:
+    # -- Let MCP clients sign in with a Currents account instead of a key. Serves
+    # `/api/auth/oauth2/*` and `/.well-known/oauth-*`; the issuer and token audience come from
+    # `domains.appHost`. Rendered only when `domains.https` is true, or `appHost` is
+    # `localhost` or a `*.localhost` name (for an evaluation without TLS): on any other http host
+    # the API would refuse to start, so OAuth stays off there.
+    # @section -- Remote MCP and OAuth
+    enabled: true
+    # -- Let clients register themselves, the way to add a client without internet access
+    # @section -- Remote MCP and OAuth
+    dynamicClientRegistration: true
+    # -- Accept clients identified by a client ID metadata document: an https URL the API fetches.
+    # Hosts that resolve to private, loopback or link-local addresses are refused, so a client
+    # can't name a service inside the cluster.
+    # @section -- Remote MCP and OAuth
+    clientIdMetadataDocuments: true
   apiInternalToken:
     # -- The K8s secret to use for the internal API token
     # @section -- Required
@@ -191,6 +213,42 @@ currents:
     bucket: ""
     # -- Whether to use path style access for the object storage
     pathStyle: false
+  appContentStorage:
+    # -- The bucket for context shares, organization logos and session files, separate from the
+    # artifact bucket. Unset, context sharing and logo editing are off and session file uploads
+    # answer 503. Create it with the lifecycle rules in
+    # [App content bucket](./eks/dependencies.md#app-content-bucket).
+    # @section -- App Content Storage
+    bucket: ""
+    # -- Endpoint browsers reach the bucket on: session files and logos use presigned URLs
+    # @section -- App Content Storage
+    # @default -- `objectStorage.endpoint`
+    endpoint: ""
+    # -- Endpoint the pods reach the bucket on
+    # @section -- App Content Storage
+    # @default -- `objectStorage.internalEndpoint` when `endpoint` is unset
+    internalEndpoint: ""
+    # -- The bucket's region
+    # @section -- App Content Storage
+    # @default -- `objectStorage.region` when `endpoint` is unset
+    region: ""
+    # -- K8s secret holding the access key. Leave this and `objectStorage.secretName` unset to use
+    # the pod's IAM role (IRSA).
+    # @section -- App Content Storage
+    # @default -- `objectStorage.secretName`
+    secretName: ""
+    # -- The K8s secret key for the access key ID
+    # @section -- App Content Storage
+    # @default -- `objectStorage.secretIdKey`
+    secretIdKey: ""
+    # -- The K8s secret key for the secret access key
+    # @section -- App Content Storage
+    # @default -- `objectStorage.secretAccessKey`
+    secretAccessKey: ""
+    # -- (bool) Whether to use path style access
+    # @section -- App Content Storage
+    # @default -- `objectStorage.pathStyle`
+    pathStyle:
   logger:
     # -- The coralogix API endpoint to use
     apiEndpoint: ""
