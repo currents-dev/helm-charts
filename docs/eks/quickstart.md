@@ -230,6 +230,15 @@ Remote MCP is served at `https://<appHost>/mcp`. MCP clients authenticate with a
 
 OAuth needs `currents.domains.https: true`. With `https: false`, the chart leaves OAuth off unless `appHost` is `localhost` or a `*.localhost` name, which is enough for an evaluation but not for a real setup. See [Remote MCP and OAuth](../configuration.md#remote-mcp-and-oauth) for the values.
 
+The API checks each OAuth access token against its own signing keys, fetched from `https://<appHost>/api/auth/jwks`. If the server pod cannot reach or trust that URL (split DNS, an internal CA), every token is rejected at `/mcp`; point the API at itself instead:
+
+```yaml
+server:
+  env:
+    - name: OAUTH_JWKS_URL
+      value: http://localhost:4000/api/auth/jwks
+```
+
 ## Enable SAML SSO (optional)
 
 Delegate sign-in to your SAML 2.0 identity provider (Okta, Microsoft Entra ID, etc.). Users sign in **email-first** — they enter their email, are redirected to your IdP to authenticate, and are auto-provisioned into your organization on return. SMTP must be configured (used for provisioning and invitations).

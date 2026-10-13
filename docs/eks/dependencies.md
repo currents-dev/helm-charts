@@ -382,14 +382,19 @@ Creates a single Pod instance of RustFS with 10Gi of storage.
                  done
                  # The app-content bucket also keeps organization logos and session
                  # files, so the rules expire the share prefixes only, never the bucket.
-                 aws s3api put-bucket-lifecycle-configuration --bucket currents-app-content --lifecycle-configuration '{
-                   "Rules": [
-                     { "ID": "ai-context-share", "Status": "Enabled", "Filter": { "Prefix": "ai-context-share/" }, "Expiration": { "Days": 2 } },
-                     { "ID": "share-3d", "Status": "Enabled", "Filter": { "Prefix": "share-3d/" }, "Expiration": { "Days": 4 } },
-                     { "ID": "share-7d", "Status": "Enabled", "Filter": { "Prefix": "share-7d/" }, "Expiration": { "Days": 8 } },
-                     { "ID": "trace-links", "Status": "Enabled", "Filter": { "Prefix": "trace-links/" }, "Expiration": { "Days": 8 } }
-                   ]
-                 }'
+                 # They are written only to a bucket without lifecycle rules, so
+                 # applying the Job again keeps any rules added since.
+                 if ! out=$(aws s3api get-bucket-lifecycle-configuration --bucket currents-app-content 2>&1); then
+                   case "$out" in *NoSuchLifecycleConfiguration*) ;; *) echo "$out" >&2; exit 1 ;; esac
+                   aws s3api put-bucket-lifecycle-configuration --bucket currents-app-content --lifecycle-configuration '{
+                     "Rules": [
+                       { "ID": "ai-context-share", "Status": "Enabled", "Filter": { "Prefix": "ai-context-share/" }, "Expiration": { "Days": 2 } },
+                       { "ID": "share-3d", "Status": "Enabled", "Filter": { "Prefix": "share-3d/" }, "Expiration": { "Days": 4 } },
+                       { "ID": "share-7d", "Status": "Enabled", "Filter": { "Prefix": "share-7d/" }, "Expiration": { "Days": 8 } },
+                       { "ID": "trace-links", "Status": "Enabled", "Filter": { "Prefix": "trace-links/" }, "Expiration": { "Days": 8 } }
+                     ]
+                   }'
+                 fi
    ```
 
    ```sh
