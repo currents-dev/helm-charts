@@ -326,15 +326,17 @@ true
 {{- if and $oauth.enabled (include "currents.oauthSupported" .) }}
 - name: OAUTH_PROVIDER_ENABLED
   value: "true"
-{{- /* The API verifies each access token against its own signing keys. The
-       default URL is on appHost, which a pod may not resolve (*.localhost) or
-       reach without going out through the ingress. */}}
+{{- if not .Values.currents.domains.https }}
+{{- /* Over http, appHost is localhost or *.localhost. The API checks each access
+       token against its own signing keys, fetched from appHost by default, and a
+       pod resolves neither name to the API. */}}
 - name: OAUTH_JWKS_URL
   value: {{ printf "http://localhost:%v/api/auth/jwks" .Values.server.service.port | quote }}
 {{- $hostname := regexReplaceAll ":[0-9]+$" (lower .Values.currents.domains.appHost) "" }}
-{{- if and (not .Values.currents.domains.https) (hasSuffix ".localhost" $hostname) }}
+{{- if hasSuffix ".localhost" $hostname }}
 - name: OAUTH_HTTP_ALLOWED_HOSTS
   value: {{ $hostname | quote }}
+{{- end }}
 {{- end }}
 {{- if $oauth.dynamicClientRegistration }}
 - name: OAUTH_DYNAMIC_CLIENT_REGISTRATION_ENABLED
