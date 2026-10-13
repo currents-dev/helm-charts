@@ -71,6 +71,8 @@ spec:
           {{- include "currents.URLConfigEnv" . | nindent 12 }}
           {{- include "currents.emailEnv" . | nindent 12 }}
           {{- include "currents.samlSSOEnv" . | nindent 12 }}
+          {{- include "currents.mcpOAuthEnv" . | nindent 12 }}
+          {{- include "currents.appContentStorageEnv" . | nindent 12 }}
           {{- if .Values.currents.betterAuth.secretName }}
             - name: BETTER_AUTH_SECRET
               valueFrom:

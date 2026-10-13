@@ -52,6 +52,9 @@ currents:
     secretAccessKey: RUSTFS_SECRET_KEY
     bucket: currents
     pathStyle: true
+  # Context shares, organization logos and session files; the rest comes from objectStorage
+  appContentStorage:
+    bucket: currents-app-content
 
 redis:
   enabled: true

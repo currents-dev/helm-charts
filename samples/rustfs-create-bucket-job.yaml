@@ -29,4 +29,23 @@ spec:
             - /bin/sh
             - -c
             - |
-              aws s3api head-bucket --bucket currents 2>/dev/null || aws s3 mb s3://currents
+              set -e
+              for bucket in currents currents-app-content; do
+                aws s3api head-bucket --bucket "$bucket" 2>/dev/null || aws s3 mb "s3://$bucket"
+              done
+              # The app-content bucket also keeps organization logos and session
+              # files, so the rules expire the share prefixes only, never the bucket.
+              # Each apply rewrites these four rules, matched by ID, and keeps any
+              # other rules on the bucket.
+              share_rules='
+                { "ID": "ai-context-share", "Status": "Enabled", "Filter": { "Prefix": "ai-context-share/" }, "Expiration": { "Days": 2 } },
+                { "ID": "share-3d", "Status": "Enabled", "Filter": { "Prefix": "share-3d/" }, "Expiration": { "Days": 4 } },
+                { "ID": "share-7d", "Status": "Enabled", "Filter": { "Prefix": "share-7d/" }, "Expiration": { "Days": 8 } },
+                { "ID": "trace-links", "Status": "Enabled", "Filter": { "Prefix": "trace-links/" }, "Expiration": { "Days": 8 } }'
+              filter="ID!='ai-context-share' && ID!='share-3d' && ID!='share-7d' && ID!='trace-links'"
+              if ! others=$(aws s3api get-bucket-lifecycle-configuration --bucket currents-app-content --query "Rules[?$filter]" --output json 2>&1); then
+                case "$others" in *NoSuchLifecycleConfiguration*) others="[]" ;; *) echo "$others" >&2; exit 1 ;; esac
+              fi
+              others=$(printf '%s' "$others" | tr -d '\n' | sed 's/^ *\[ *//; s/ *\] *$//')
+              aws s3api put-bucket-lifecycle-configuration --bucket currents-app-content \
+                --lifecycle-configuration "{ \"Rules\": [${others:+$others, }$share_rules] }"

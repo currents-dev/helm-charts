@@ -78,7 +78,7 @@ Install RustFS
 helm install rustfs rustfs --repo https://charts.rustfs.com --version 1.0.1 -f samples/rustfs-helm-config.yaml
 ```
 
-Create the `currents` bucket
+Create the `currents` and `currents-app-content` buckets
 
 ```sh
 kubectl apply -f samples/rustfs-create-bucket-job.yaml

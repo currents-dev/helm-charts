@@ -77,7 +77,7 @@ Steps:
 
 **1. Create the IAM Policy**
 
-This policy allows the Currents service account to perform actions such as listing and accessing objects in the specified S3 bucket. Replace the two instances of `my-currents-bucket` in the policy below with the name of your bucket.
+This policy allows the Currents service account to perform actions such as listing and accessing objects in the artifact and app content buckets. Replace `my-currents-bucket` and `my-currents-app-content` in the policy below with the names of your buckets.
 
 ```json
 {
@@ -91,7 +91,9 @@ This policy allows the Currents service account to perform actions such as listi
             ],
             "Resource": [
                 "arn:aws:s3:::my-currents-bucket/*",
-                "arn:aws:s3:::my-currents-bucket"
+                "arn:aws:s3:::my-currents-bucket",
+                "arn:aws:s3:::my-currents-app-content/*",
+                "arn:aws:s3:::my-currents-app-content"
             ]
         }
     ]

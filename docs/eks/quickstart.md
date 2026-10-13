@@ -65,6 +65,7 @@ Configure and install the Currents Helm Chart once all the services are ready.
    - `currents.email.host`
    - `currents.objectStorage.endpoint`
    - `currents.objectStorage.bucket`
+   - `currents.appContentStorage.bucket` (see [App content bucket](./dependencies.md#app-content-bucket))
    - `director.ingress.annotations`
    - `director.ingress.hosts`
    - `server.ingress.annotations`
@@ -124,6 +125,10 @@ Configure and install the Currents Helm Chart once all the services are ready.
        # internalEndpoint: http://rustfs-svc:9000
        # bucket: currents
        # pathStyle: true
+     # Context shares, organization logos and session files. Endpoint and
+     # credentials default to the objectStorage ones above.
+     appContentStorage:
+       bucket: currents-app-content-my-org-name
 
     gitlab:
       state:
@@ -218,6 +223,21 @@ CURRENTS_API_URL=https://currents-record.eks.example.com npx pwc --key <your-key
 ## Upgrade Existing Installations
 
 When you need to move to a newer Currents release, follow the dedicated [EKS Upgrade Guide](./upgrading.md).
+
+## Remote MCP and OAuth
+
+Remote MCP is served at `https://<appHost>/mcp`. MCP clients authenticate with a Currents API key or personal access token, or sign in with a Currents account through the OAuth provider. Both are on by default; turn them off with `currents.mcp.enabled: false` and `currents.oauth.enabled: false`.
+
+OAuth needs `currents.domains.https: true`. With `https: false`, the chart leaves OAuth off unless `appHost` is `localhost` or a `*.localhost` name, which is enough for an evaluation but not for a real setup. See [Remote MCP and OAuth](../configuration.md#remote-mcp-and-oauth) for the values.
+
+The API checks each OAuth access token against its own signing keys, fetched from `https://<appHost>/api/auth/jwks`. If the server pod cannot reach or trust that URL (split DNS, an internal CA), every token is rejected at `/mcp`; point the API at itself instead:
+
+```yaml
+server:
+  env:
+    - name: OAUTH_JWKS_URL
+      value: http://localhost:4000/api/auth/jwks
+```
 
 ## Enable SAML SSO (optional)
 
