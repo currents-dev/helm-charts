@@ -30,7 +30,7 @@ kubectl ns currents
 
 ## 3rd Party Dependencies
 
-Currents depends on several third-party services that are not bundled with the Helm chart. You are responsible for allocating resources, installing, and maintaining these services.
+Currents depends on several third-party services that are not bundled with the Helm chart. You are responsible for allocating resources, installing, and maintaining these services. The in-cluster setups in the dependencies guide are for evaluation. The Redis this quickstart installs with the chart suits installs recording up to about 100 runs a day; see [Redis](./dependencies.md#redis) for larger ones.
 
 See [Currents Service Dependencies](./dependencies.md).
 
