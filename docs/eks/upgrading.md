@@ -8,6 +8,7 @@ For reference, the Docker Compose environment has a separate upgrade flow: [Upgr
 
 1. Check the chart [CHANGELOG](https://github.com/currents-dev/helm-charts/blob/main/CHANGELOG.md) for the target release.
 2. Review any breaking changes and required values or secrets updates.
+3. Upgrading from `0.8.x` to `1.0.0`? Follow [Upgrading to Chart 1.0](./upgrade-1.0.md) first: it changes SAML SSO and needs a second bucket.
 
 Infrastructure backups and third-party dependencies are customer-managed. See [Currents Service Dependencies](./dependencies.md) and [Support Policy](../support.md).
 
