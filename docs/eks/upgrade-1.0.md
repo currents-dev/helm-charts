@@ -2,7 +2,7 @@
 
 This guide covers upgrading from chart `0.8.x` (images `2026-07-26-00x`) to `1.0.0`. Read it before you upgrade: one change breaks SAML SSO sign-in until you update your identity provider, and the app content bucket has to exist first.
 
-For the general upgrade flow, see the [EKS Upgrade Guide](./upgrading.md).
+For the general upgrade flow, see the [EKS Upgrade Guide](./upgrading.md). The docs for the chart you are upgrading from are at [chart 0.8.x docs](https://currents-dev.github.io/helm-charts/0.8/docs/).
 
 ## What Changes
 
