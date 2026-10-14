@@ -1,9 +1,11 @@
 name: Sync Docs to GH Pages
 
+# Publishes this branch's docs under 0.8/docs, next to main's docs/ on gh-pages.
+# The deploy only cleans its own target folder, so the two never overwrite each other.
 on:
   push:
     branches:
-      - main
+      - release-0.8
 
 jobs:
   release:
@@ -26,4 +28,4 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: docs
-          target-folder: docs
+          target-folder: 0.8/docs

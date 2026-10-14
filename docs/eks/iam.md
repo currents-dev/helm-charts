@@ -1,5 +1,7 @@
 # IAM Resources
 
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
 ## IAM Resources for Accessing Currents Docker Images
 
 Currents Docker images are hosted in a private ECR registry. To gain access, follow these steps:
@@ -235,7 +237,7 @@ apply to both transports.
 Apply it:
 
 ```shell
-helm upgrade --install currents currents --repo https://currents-dev.github.io/helm-charts/ -f currents-helm-config.yaml
+helm upgrade --install currents currents --repo https://currents-dev.github.io/helm-charts/ --version 0.8.1 -f currents-helm-config.yaml
 ```
 
 **4. Confirm the Pods Picked Up the Change**

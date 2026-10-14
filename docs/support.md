@@ -1,5 +1,7 @@
 # Currents Support & Maintenance Policy
 
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
 ## Introduction
 
 This document outlines Currents’ support and maintenance policy for customers deploying Currents in self-managed (on-premises) environments. It clearly defines our responsibilities, delineates the components we fully support, and sets expectations for areas where support is advisory or out of scope.

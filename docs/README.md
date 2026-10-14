@@ -1,5 +1,7 @@
 # Currents Self-Hosted Documentation
 
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
 Currents on-premise installation is a series of microservices provided as container images that are installed into a Kubernetes Cluster using the Currents Helm Chart.
 
 The Currents Helm Chart is stateless, so depends on being connected to stateful services like a Database and Object Storage. These connected stateful services can be deployed inside the Kubernetes cluster alongside Currents, or outside the cluster.

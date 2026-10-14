@@ -1,5 +1,7 @@
 # Configuration Reference
 
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
 ![Version: 0.8.1](https://img.shields.io/badge/Version-0.8.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-006](https://img.shields.io/badge/AppVersion-2026--07--26--006-informational?style=flat-square)
 
 ## Requirements
@@ -261,4 +263,4 @@ The following table lists the configurable parameters of the `currents` chart an
 | redis.sysctl.resourcesPreset | string | `"none"` |  |
 | maintenance.clickhouseRestoreMode | bool | `false` | Suppress change-stream-driven ClickHouse sync while an organization's ClickHouse data is restored from an external export (see scripts/org-import in the currents repo). Enable it together with `toolbox.enabled` for a Mongo + ClickHouse restore, then turn both off again.  Without it, restoring documents into Mongo makes change-streams re-derive ClickHouse rows on top of the ones the import writes directly, permanently double-counting the hourly materialized views.  Leave this OFF for a Mongo-only restore: there, change-streams re-deriving the restored documents is exactly how ClickHouse gets populated.  NOTE: while this is on, NO org gets new ClickHouse metrics — the install keeps recording to Mongo while dashboards quietly stop updating. It is not a setting to leave enabled. |
 
-[values.yaml]: https://github.com/currents-dev/helm-charts/blob/main/charts/currents/values.yaml
+[values.yaml]: https://github.com/currents-dev/helm-charts/blob/release-0.8/charts/currents/values.yaml
