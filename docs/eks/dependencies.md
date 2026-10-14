@@ -2,11 +2,11 @@
 
 Currents depends on several third-party services that are not bundled with the Helm chart. You are responsible for allocating resources, installing, and maintaining these services. During the installation process, you’ll need to provide credentials so Currents can configure these services as needed.
 
-We provide a quick reference of how to create those services for your convenience. The documented configuration for the connected stateful services (mongo, clickhouse) are not definitive, and may not be adequate for all production setups.
+The in-cluster setups below (the MongoDB and ClickHouse operators, RustFS, and the Redis the chart can install) are for evaluation. For production, use services you size, back up and upgrade yourself, or a managed service such as MongoDB Atlas, ClickHouse Cloud, Amazon ElastiCache or S3. See the [Support Policy](../support.md).
 
 ### MongoDB
 
-This will setup a 2-node Mongo Cluster, with each being 10Gb available for storage size.
+For evaluation, this sets up a 2-node MongoDB cluster with 10Gb of storage per node.
 
 1. Install the MongoDB Community Operator
    ```sh
@@ -74,7 +74,7 @@ For ClickHouse there are several production support options:
 - Bring your own Cloud ([install ClickHouse Cloud in your AWS](https://clickhouse.com/docs/cloud/reference/byoc/overview))
 - On-Premises Kubernetes Deployments ([ClickHouse Private](https://clickhouse.com/docs/cloud/infrastructure/clickhouse-private) or [Altinity Operator](https://docs.altinity.com/altinitykubernetesoperator/))
 
-For this guide we are going to install the open-source [Altinity Kubernetes Operator for ClickHouse](https://docs.altinity.com/altinitykubernetesoperator/)
+For evaluation, this guide installs the open-source [Altinity Kubernetes Operator for ClickHouse](https://docs.altinity.com/altinitykubernetesoperator/).
 
 Advanced configuration available at:
 (docs: https://github.com/Altinity/helm-charts/blob/main/charts/clickhouse/README.md )
@@ -104,11 +104,10 @@ This will setup a 1-node 1-shard ClickHouse Replicated Server (10Gb Storage)
 
 Redis is required, and the chart does not deploy one unless you ask it to. Pick one of:
 
-- **Bundled** — set `redis.enabled: true`, as the [quickstart](./quickstart.md) does. Convenient,
-  and usable in production, but it has no high availability during a version upgrade.
+- **Bundled** — set `redis.enabled: true`, as the [quickstart](./quickstart.md) does. For
+  evaluation: it runs a single pod, with no high availability during a version upgrade.
 - **Your own** — leave `redis.enabled` at its default of `false` and point the chart at an
-  existing server, as below. This is the option to take if you already operate Redis, or would
-  rather not operate one at all.
+  existing server, as below. Use this in production.
 
 **Sizing the bundled Redis.** It snapshots its data to `/data` on Redis's default `save`
 schedule, and each snapshot needs spare memory and disk:
@@ -229,7 +228,7 @@ Runs older than that still show in the dashboard, without their screenshots, vid
 
 ### Alternative Object Storage (in cluster)
 
-Install RustFS if you don't have access to an Object Storage provider (S3, Cloudflare). You will need an additional subdomain for RustFS.
+For evaluation without an Object Storage provider (S3, Cloudflare), install RustFS. You will need an additional subdomain for RustFS.
 
 Creates a single Pod instance of RustFS with 10Gi of storage.
 

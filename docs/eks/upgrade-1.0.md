@@ -1,6 +1,6 @@
 # Upgrading to Chart 1.0
 
-This guide covers upgrading from chart `0.8.x` (images `2026-07-26-00x`) to `1.0.0`. Read it before you upgrade: one change breaks SAML SSO sign-in until you update your identity provider, and the app content bucket has to exist first.
+This guide covers upgrading from chart `0.8.x` (images `2026-07-26-00x`) to `1.0.0` (images `2026-10-14-001`). Read it before you upgrade: one change breaks SAML SSO sign-in until you update your identity provider, and the app content bucket has to exist first.
 
 For the general upgrade flow, see the [EKS Upgrade Guide](./upgrading.md). The docs for the chart you are upgrading from are at [chart 0.8.x docs](https://currents-dev.github.io/helm-charts/0.8/docs/).
 
@@ -113,7 +113,7 @@ The scheduler runs this release's migrations when it starts:
 
 With 100,000 runs, the scheduler's startup took under a minute in testing: about 25 seconds for the run status backfill and 10 seconds for `070`. They scale with the number of runs, so expect several minutes for a million.
 
-This is not downtime: the dashboard, API and run recording keep working while the scheduler migrates. Until the migrations finish, filtering runs by status and searching by CI build ID can leave out runs recorded before the upgrade. The change-streams pod also copies every updated run to ClickHouse, during the migrations and for a few minutes after, so new results can take longer to process.
+This is not downtime: the dashboard, API and run recording keep working while the scheduler migrates. Until the migrations finish, filtering runs by status can leave out runs recorded before the upgrade. The change-streams pod also copies every updated run to ClickHouse, during the migrations and for a few minutes after, so new results can take longer to process.
 
 The scheduler pod reports ready while the migrations run, so a finished rollout doesn't mean they are done. Follow the scheduler's log:
 

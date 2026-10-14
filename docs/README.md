@@ -21,10 +21,22 @@ The Currents Helm Chart is stateless, so depends on being connected to stateful 
 - [Helm Documentation](https://helm.sh/docs/)
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 
+## Chart Versions
+
+The chart follows semantic versioning from `1.0.0`:
+
+- A patch release (`1.0.x`) fixes the chart or moves to newer images, with no values to change.
+- A minor release (`1.x.0`) adds values. Existing values keep working.
+- A major release (`2.0.0`) can rename, remove or change the meaning of values, and comes with an upgrade guide.
+
+The values in the [Configuration Reference](./configuration.md) are the chart's interface. Templates, helpers and resource names are not: they can change in any release.
+
+Each chart version deploys one Currents image tag, its `appVersion`.
+
 ## Upstream Services
 
 - The self-hosted solution requires an existing Identity Provider for access provisioning.
-- The recommended configuration for the stateful services (MongoDB, ElasticSearch, Clickhouse) may not be adequate for all production loads.
+- The in-cluster setups for the stateful services (MongoDB, ClickHouse, Redis, RustFS) in [Currents Service Dependencies](./eks/dependencies.md) are for evaluation. In production, run them yourself or use managed services.
 - Currents team doesn't provide support for the upstream services (MongoDB, ElasticSearch, Clickhouse), see [Support Policy](./support.md).
 
 ## Known Limitations

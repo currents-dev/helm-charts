@@ -27,7 +27,7 @@ currents:
       # @section -- Frequently Used
       key: password
   # -- The image tag to use for the Currents images
-  imageTag: 2026-07-26-006
+  imageTag: 2026-10-14-001
   email:
     # -- Which transport to send outgoing email through: `smtp` or `ses`.
     # With `ses` the SMTP settings are ignored and no SMTP credentials are
@@ -942,9 +942,8 @@ serviceAccount:
 # END Service Account Configuration
 
 # Redis Configuration
-# The included redis CAN be used in production, but you won't have high availability during version upgrades
 redis:
-  # -- enable the Bitnami Redis chart. Refer to https://github.com/bitnami/charts/blob/main/bitnami/redis/ for possible values.
+  # -- Install Redis with the chart (the Bitnami Redis chart; see https://github.com/bitnami/charts/blob/main/bitnami/redis/ for its values). For evaluation: in production, point the chart at a Redis you run.
   # @section -- Required
   enabled: false
   image:

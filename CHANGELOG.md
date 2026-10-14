@@ -1,5 +1,14 @@
 # Changelog
 
+## [currents-1.0.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.0.0) - 2026-10-14
+
+Images `2026-10-14-001`. Upgrading from `0.8.x`? Read [Upgrading to Chart 1.0](docs/eks/upgrade-1.0.md) first: the SAML SSO ACS URL changes, and context sharing needs a second bucket.
+
+### Features
+- [`4da2922`](https://github.com/currents-dev/helm-charts/commit/4da29225402946cf068bd2ebadcaa547730c7e53) feat: expose the app-content bucket, MCP and OAuth [ENG-1740] (#59)
+- [`f64819e`](https://github.com/currents-dev/helm-charts/commit/f64819e303516c1cff5cc60f58d2e16c9760e68b) feat: add currents.sso.saml.allowIdpInitiated, the new SAML ACS URL and a 1.0 upgrade guide [ENG-1736] (#61)
+
+
 ## [currents-0.8.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-0.8.1) - 2026-10-07
 
 
