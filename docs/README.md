@@ -31,7 +31,7 @@ The chart follows semantic versioning from `1.0.0`:
 
 The values in the [Configuration Reference](./configuration.md) are the chart's interface. Templates, helpers and resource names are not: they can change in any release.
 
-Each chart version deploys one Currents image tag, its `appVersion`.
+Each chart version deploys one Currents image tag: `currents.imageTag`, which defaults to its `appVersion`. A component's `image.tag` or `image.digest` takes precedence; the chart is tested only with its own tag.
 
 ## Upstream Services
 

@@ -112,8 +112,19 @@ Redis is required, and the chart does not deploy one unless you ask it to. Pick 
   bundled Redis's data outgrows its memory and disk, and the pod crashes. Amazon ElastiCache
   Serverless works well.
 
-Moving from the bundled Redis to your own needs no data migration, only a quiet period with no
-runs recording.
+Moving from the bundled Redis to your own needs no data migration, but Redis holds the job
+queues and the state of runs in progress, and the new one starts empty. Switch once they are
+empty:
+
+1. Stop the runs that report to Currents (pause CI) and let the running ones finish.
+2. Wait until every queue reads 0:
+
+   ```sh
+   kubectl exec -n currents currents-redis-master-0 -- sh -c 'for q in ops-bmq webhooks-bmq ai-bmq analytics-bmq slack-ai-callback; do echo "$q waiting=$(redis-cli LLEN bull:$q:wait) active=$(redis-cli LLEN bull:$q:active) delayed=$(redis-cli ZCARD bull:$q:delayed)"; done'
+   ```
+
+   Delayed jobs are scheduled for later, such as retries. Switching before they run drops them.
+3. Point the chart at your Redis, as below, and upgrade.
 
 **Sizing the bundled Redis.** It snapshots its data to `/data` on Redis's default `save`
 schedule, and each snapshot needs spare memory and disk:
