@@ -246,7 +246,7 @@ Delegate sign-in to your SAML 2.0 identity provider (Okta, Microsoft Entra ID, e
 1. **Create the SAML app in your IdP.** Using Okta as the example, set:
    - **Single Sign-On / ACS URL:** `https://<appHost>/api/auth/sso/saml2/sp/acs/okta`
      — the last segment is your `providerId`; `<appHost>` is your `currents.domains.appHost`.
-     Use the same URL as the Recipient and Destination (Okta does by default). Currents rejects an assertion whose Recipient or Destination is any other URL.
+     Use the same URL as the Recipient and Destination. In Okta, leave "Use this for Recipient URL and Destination URL" checked (the default) and both follow the Single Sign-On URL. Currents rejects an assertion whose Recipient or Destination is any other URL.
    - **Audience / SP Entity ID:** `currents-onprem:your-org` — a stable opaque identifier, **not a URL**.
    - **Name ID format:** `Persistent`
    - **Application username:** Email

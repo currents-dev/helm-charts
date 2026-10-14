@@ -61,7 +61,7 @@ The ACS URL moves:
 The old path answers `404`, so SSO sign-in fails from the upgrade until your IdP sends assertions to the new URL. The root admin's email and password sign-in still works. When the upgrade is done:
 
 1. In your IdP's SAML app, set the Single Sign-On / ACS URL (Entra ID: Reply URL) to the new URL.
-2. Set the Recipient and Destination URLs to the same URL. Okta does this by default ("Use this for Recipient URL and Destination URL"). Currents rejects an assertion whose Recipient or Destination is any other URL.
+2. Set the Recipient and Destination URLs to the new URL as well. In Okta, leave "Use this for Recipient URL and Destination URL" checked (the default) and both follow the Single Sign-On URL. Currents rejects an assertion whose Recipient or Destination is any other URL.
 3. Leave the Audience / SP Entity ID as it is. It must still equal `currents.sso.saml.issuer`, which doesn't change.
 4. Sign in from the Currents sign-in page.
 
@@ -105,7 +105,9 @@ The scheduler runs this release's migrations when it starts:
 | `050`, `060` | Add columns to `run_metric_v2` in ClickHouse |
 | `070-backfill-run-metric-search-columns` | Re-inserts every run into `run_metric_v2` to fill those columns |
 
-With 100,000 runs, the scheduler's startup took under a minute in testing: about 25 seconds for the run status backfill and 10 seconds for `070`. They scale with the number of runs, so expect several minutes for a million. For a few minutes afterwards, the change-streams pod copies every updated run to ClickHouse, which adds load on MongoDB and ClickHouse.
+With 100,000 runs, the scheduler's startup took under a minute in testing: about 25 seconds for the run status backfill and 10 seconds for `070`. They scale with the number of runs, so expect several minutes for a million.
+
+This is not downtime: the dashboard, API and run recording keep working while the scheduler migrates. Until the migrations finish, filtering runs by status and searching by CI build ID can leave out runs recorded before the upgrade. The change-streams pod also copies every updated run to ClickHouse, during the migrations and for a few minutes after, so new results can take longer to process.
 
 The scheduler pod reports ready while the migrations run, so a finished rollout doesn't mean they are done. Follow the scheduler's log:
 
