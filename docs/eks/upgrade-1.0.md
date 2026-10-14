@@ -77,7 +77,13 @@ Context shares, organization logos and session files go to a second bucket. With
 2. If the pods reach storage through IRSA, add the bucket to the role's policy. See [IRSA](./iam.md#irsa).
 3. Set `currents.appContentStorage.bucket`. The other `appContentStorage` values default to the `objectStorage` ones, so the same endpoint and secret serve both buckets.
 
-If you run RustFS in the cluster from [Alternative Object Storage](./dependencies.md#alternative-object-storage-in-cluster), upgrade it to `1.0.1` and run the bucket Job from that section again: it creates the app content bucket and its rules. RustFS releases before `1.0.0`, such as `1.0.0-alpha.79`, accept lifecycle rules without enforcing them.
+If you run RustFS in the cluster from [Alternative Object Storage](./dependencies.md#alternative-object-storage-in-cluster), upgrade it to `1.0.1` and run the bucket Job from that section again: it creates the app content bucket and its rules. Delete the earlier Job first: while it exists, applying the file doesn't start a new run.
+
+```bash
+kubectl delete job rustfs-create-bucket --ignore-not-found
+```
+
+RustFS releases before `1.0.0`, such as `1.0.0-alpha.79`, accept lifecycle rules without enforcing them.
 
 ## Remote MCP and OAuth
 

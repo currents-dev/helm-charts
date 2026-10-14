@@ -285,7 +285,7 @@ Sign in from the dashboard by entering your email — you'll be redirected to yo
 
 A sign-in started from the IdP's app dashboard (an Okta tile, the Entra My Apps portal) is refused unless `allowIdpInitiated` is `true`. Currents can't match it to a request of its own, so leave it off unless your users need the tile.
 
-Once SSO is on, Currents serves its SP metadata at `https://<appHost>/api/auth/sso/saml2/sp/metadata?providerId=okta`, for IdPs that import it.
+Once SSO is on, Currents serves its SP metadata at `https://<appHost>/api/auth/sso/saml2/sp/metadata?providerId=okta` (with your `providerId`), for IdPs that import it.
 
 To rotate the IdP signing certificate, replace the secret with the refreshed metadata and restart the server pod:
 ```sh

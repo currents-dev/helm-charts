@@ -299,7 +299,8 @@ ClickHouse data is loaded from an external export (scripts/org-import).
 - name: SSO_SAML_SP_KEY_FILE
   value: {{ printf "/etc/currents/sso/%s" .Values.currents.sso.saml.spKeyKey | quote }}
 {{- end }}
-{{- if .Values.currents.sso.saml.allowIdpInitiated }}
+{{- /* toString, so a quoted "false" stays off: any non-empty string is true to `if`. */}}
+{{- if eq (toString .Values.currents.sso.saml.allowIdpInitiated) "true" }}
 - name: SSO_SAML_ALLOW_IDP_INITIATED
   value: "true"
 {{- end }}
