@@ -2,9 +2,36 @@
 
 ## [currents-1.0.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.0.0) - 2026-10-14
 
-Images `2026-10-14-001`. Upgrading from `0.8.x`? Read [Upgrading to Chart 1.0](docs/eks/upgrade-1.0.md) first: the SAML SSO ACS URL changes, and context sharing needs a second bucket.
+Images `2026-10-14-001`, the first Currents on-prem feature release since `2026-07-26`, and the chart's first major version. It breaks SAML SSO sign-in until you update your identity provider, so read [Upgrading to Chart 1.0](docs/eks/upgrade-1.0.md) before you upgrade. From 1.0.0 the chart follows semantic versioning (see [Chart Versions](docs/README.md#chart-versions)).
 
-### Features
+### Breaking Changes
+- **The SAML SSO ACS URL moves** from `https://<appHost>/api/auth/sso/saml2/callback/<providerId>` to `https://<appHost>/api/auth/sso/saml2/sp/acs/<providerId>`. The old path answers `404`, so SSO sign-in fails from the upgrade until your IdP sends assertions to the new URL. In your IdP's SAML app:
+  - set the Single Sign-On / ACS URL (Entra ID: Reply URL) to the new URL;
+  - set the Recipient and Destination URLs to the same URL, since Currents rejects an assertion addressed to any other. In Okta, leaving "Use this for Recipient URL and Destination URL" checked does this;
+  - leave the Audience / SP Entity ID as it is: it still equals `currents.sso.saml.issuer`.
+
+  The root admin's email and password sign-in keeps working throughout.
+- **SAML sign-ins started from the IdP are refused** (an Okta tile, the Entra My Apps portal) unless `currents.sso.saml.allowIdpInitiated` is `true`. Sign-ins started from the Currents sign-in page work either way.
+- **`currents.sso.saml.spCertKey` is removed.** The API never read the certificate it pointed to. Signed AuthnRequests need only `spKeyKey`; upload the matching certificate to your IdP. Remove the value from your values file.
+
+### Upgrade Notes
+- **Create the app content bucket first** and set `currents.appContentStorage.bucket`. Without it, context sharing and logo editing are off and session file uploads answer `503`. Its lifecycle rules must be scoped to the share prefixes, because the bucket also holds logos and session files. See [App content bucket](docs/eks/dependencies.md#app-content-bucket).
+- **The scheduler runs database migrations when it starts.** With 100,000 runs they took under a minute in testing; they scale with the number of runs. This is not downtime. The scheduler pod reports ready before they finish, so wait for `Startup tasks complete` in its log, and restart it if a migration logs an error (see [Database Migrations and Startup Tasks](docs/eks/upgrading.md#database-migrations-and-startup-tasks)).
+- **Back up MongoDB and ClickHouse before upgrading.** `helm rollback` returns the chart and images to `0.8.x` but doesn't undo the migrations.
+
+### Added
+- `currents.appContentStorage.*`: the app content bucket for context shares, organization logos and session files. Unset fields fall back to `currents.objectStorage`, so one endpoint and secret can serve both buckets.
+- `currents.mcp.enabled`, `currents.mcp.origins`: remote MCP at `https://<appHost>/mcp`, for coding agents using a Currents API key, a personal access token or an OAuth sign-in.
+- `currents.oauth.enabled`, `currents.oauth.dynamicClientRegistration`, `currents.oauth.clientIdMetadataDocuments`: the OAuth provider that lets MCP clients sign in with a Currents account.
+- `currents.sso.saml.allowIdpInitiated`: accept SAML sign-ins started from the IdP.
+- The images add remote MCP, personal access tokens, context sharing, session files and run attachments. See the [Docker Compose changelog](https://github.com/currents-dev/docker/blob/on-prem/2026-10-14-001/on-prem/CHANGELOG.md#2026-10-14-001---2026-10-14) for everything in `2026-10-14-001`.
+
+### Changed
+- **Remote MCP and the OAuth provider are on after the upgrade.** `/mcp` answers `401` without a valid credential. OAuth turns on only with `currents.domains.https: true`, or an `appHost` of `localhost` or a `*.localhost` name. Set `currents.mcp.enabled: false` or `currents.oauth.enabled: false` to keep either off.
+- **Dependency guidance:** the in-cluster MongoDB, ClickHouse and RustFS setups in the dependencies guide are for evaluation. The Redis the chart can install suits installs up to about 100 runs a day; above that, run your own, and drain its queues before switching (see [Redis](docs/eks/dependencies.md#redis)).
+- The docs for chart `0.8.x` stay published at [0.8/docs](https://currents-dev.github.io/helm-charts/0.8/docs/).
+
+### Commits
 - [`4da2922`](https://github.com/currents-dev/helm-charts/commit/4da29225402946cf068bd2ebadcaa547730c7e53) feat: expose the app-content bucket, MCP and OAuth [ENG-1740] (#59)
 - [`f64819e`](https://github.com/currents-dev/helm-charts/commit/f64819e303516c1cff5cc60f58d2e16c9760e68b) feat: add currents.sso.saml.allowIdpInitiated, the new SAML ACS URL and a 1.0 upgrade guide [ENG-1736] (#61)
 
