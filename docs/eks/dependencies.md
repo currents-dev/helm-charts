@@ -1,5 +1,7 @@
 # Currents Service Dependencies
 
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
 Currents depends on several third-party services that are not bundled with the Helm chart. You are responsible for allocating resources, installing, and maintaining these services. During the installation process, you’ll need to provide credentials so Currents can configure these services as needed.
 
 We provide a quick reference of how to create those services for your convenience. The documented configuration for the connected stateful services (mongo, clickhouse) are not definitive, and may not be adequate for all production setups.

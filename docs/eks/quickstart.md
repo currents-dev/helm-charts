@@ -1,5 +1,7 @@
 # Quickstart: Installing Currents on EKS
 
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
 The QuickStart for installing the Currents Helm Chart on EKS runs through the commands to get the Currents App setup. This includes installing dependencies like MongoDB, ClickHouse, and RustFS into your Kubernetes namespace.
 
 ## Accessing Currents Docker Images
@@ -186,11 +188,11 @@ Configure and install the Currents Helm Chart once all the services are ready.
      enabled: true
    ```
 
-   See the full available configuration values here: https://github.com/currents-dev/helm-charts/blob/main/charts/currents/values.yaml
+   See the full available configuration values here: https://github.com/currents-dev/helm-charts/blob/release-0.8/charts/currents/values.yaml
 
 3. Install the chart
    ```sh
-   helm upgrade --install currents currents --repo https://currents-dev.github.io/helm-charts/ -f currents-helm-config.yaml 
+   helm upgrade --install currents currents --repo https://currents-dev.github.io/helm-charts/ --version 0.8.1 -f currents-helm-config.yaml 
    ```
 
 ## Configure Service Account Access
@@ -255,7 +257,7 @@ Delegate sign-in to your SAML 2.0 identity provider (Okta, Microsoft Entra ID, e
 
 4. **Apply:**
    ```sh
-   helm upgrade --install currents currents --repo https://currents-dev.github.io/helm-charts/ -f currents-helm-config.yaml
+   helm upgrade --install currents currents --repo https://currents-dev.github.io/helm-charts/ --version 0.8.1 -f currents-helm-config.yaml
    ```
 
 Sign in from the dashboard by entering your email — you'll be redirected to your IdP. New SSO users join your organization automatically with the role from `defaultRole` (default `member`); the root admin continues to sign in with email + password.

@@ -1,8 +1,10 @@
 # Upgrading Currents on EKS
 
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
 This guide covers upgrading an existing Currents deployment installed with the Helm chart on EKS.
 
-For reference, the Docker Compose environment has a separate upgrade flow: [Upgrading Currents On-Prem](https://github.com/currents-dev/docker/blob/main/docs/upgrading.md).
+For reference, the Docker Compose environment has a separate upgrade flow: [Upgrading Currents On-Prem](https://github.com/currents-dev/docker/blob/on-prem/2026-07-26-006/docs/upgrading.md).
 
 ## Before You Begin
 
@@ -18,7 +20,7 @@ Two versions matter during upgrades:
 - **Chart version** (`version` in `Chart.yaml`) controls chart templates and defaults.
 - **App image version** (`appVersion` / `currents.imageTag`) controls Currents service container images.
 
-By default, `helm upgrade --install` without `--version` upgrades to the latest published chart. You can pin the chart version with `--version`.
+By default, `helm upgrade --install` without `--version` upgrades to the latest published chart, which is `1.0` or later. The commands here pin `--version 0.8.1` to stay on `0.8.x`.
 
 ## Upgrade Types
 
@@ -31,6 +33,7 @@ kubectl config set-context --current --namespace=currents
 
 helm upgrade --install currents currents \
   --repo https://currents-dev.github.io/helm-charts/ \
+  --version 0.8.1 \
   -f currents-helm-config.yaml
 ```
 
@@ -48,7 +51,7 @@ helm upgrade --install currents currents \
 Use this when release notes mention new or renamed values:
 
 1. Compare your `currents-helm-config.yaml` with the latest chart values reference:
-   - [Currents values.yaml](https://github.com/currents-dev/helm-charts/blob/main/charts/currents/values.yaml)
+   - [Currents values.yaml](https://github.com/currents-dev/helm-charts/blob/release-0.8/charts/currents/values.yaml)
    - [Configuration Reference](../configuration.md)
 2. Add/update required values in your `currents-helm-config.yaml`.
 3. Run `helm upgrade --install` with the updated file.
@@ -70,6 +73,7 @@ kubectl config set-context --current --namespace=currents
 
 helm upgrade --install currents currents \
   --repo https://currents-dev.github.io/helm-charts/ \
+  --version 0.8.1 \
   -f currents-helm-config.yaml
 ```
 
@@ -78,6 +82,7 @@ Optional: if you use the Helm diff plugin, preview changes first:
 ```bash
 helm diff upgrade currents currents \
   --repo https://currents-dev.github.io/helm-charts/ \
+  --version 0.8.1 \
   -f currents-helm-config.yaml
 ```
 

@@ -1,5 +1,7 @@
 # Importing Organization Data (Cloud → Self-Hosted Migration)
 
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
 When you migrate an organization from Currents Cloud to your self-hosted install,
 Currents support runs a one-off export of that org's data and sends you a single
 small file, **`download.json`**, over a secure channel (usually Slack).
@@ -64,7 +66,7 @@ from the data being restored. You turn that on in step 1 and off in step 4.
 This enables the toolbox pod and puts change-streams into restore mode:
 
 ```bash
-helm upgrade <release> currents/currents --reuse-values \
+helm upgrade <release> currents/currents --version 0.8.1 --reuse-values \
   --set toolbox.enabled=true \
   --set maintenance.clickhouseRestoreMode=true
 ```
@@ -133,7 +135,7 @@ see [Troubleshooting](#troubleshooting) to resume.
 Only after the import reports success:
 
 ```bash
-helm upgrade <release> currents/currents --reuse-values \
+helm upgrade <release> currents/currents --version 0.8.1 --reuse-values \
   --set toolbox.enabled=false \
   --set maintenance.clickhouseRestoreMode=false
 ```

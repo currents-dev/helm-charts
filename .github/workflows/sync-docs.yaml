@@ -1,9 +1,14 @@
 name: Sync Docs to GH Pages
 
+# Publishes this branch's docs under 0.8/docs, next to main's docs/ on gh-pages.
 on:
   push:
     branches:
-      - main
+      - release-0.8
+
+# A later push's deploy carries every earlier change, so a queued one can be dropped.
+concurrency:
+  group: sync-docs-${{ github.ref }}
 
 jobs:
   release:
@@ -26,4 +31,8 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: docs
-          target-folder: docs
+          target-folder: 0.8/docs
+          # Rebase onto gh-pages instead of force-pushing: main's docs deploy and
+          # chart-releaser also push there, and a force-push from a deploy that
+          # started before theirs would drop their commits.
+          force: false
