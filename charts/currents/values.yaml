@@ -90,7 +90,7 @@ currents:
       # -- SP entityID / audience presented to your IdP. A stable opaque identifier (e.g. `currents-onprem:your-org`), NOT a URL. Must match the Audience / SP Entity ID configured in your IdP.
       # @section -- SAML SSO
       issuer: ""
-      # -- Provider id; recommend your IdP service name (e.g. `okta`). Becomes the last path segment of the ACS callback URL.
+      # -- Provider id; recommend your IdP service name (e.g. `okta`). Becomes the last path segment of the ACS URL, `https://<appHost>/api/auth/sso/saml2/sp/acs/<providerId>`.
       # @section -- SAML SSO
       providerId: onprem-saml
       # -- K8s secret holding the IdP metadata XML (and the SP key, when signing requests). Mounted read-only at /etc/currents/sso. See the SAML SSO guide for how to create it.
@@ -111,6 +111,9 @@ currents:
       # -- Secret key (file name) of the SP private key PEM (only when authnRequestsSigned=true)
       # @section -- SAML SSO
       spKeyKey: sp-key.pem
+      # -- Accept sign-ins started from the IdP (for example its app dashboard), which carry no request from Currents to match. Off: such a sign-in is refused, and users start from the Currents sign-in page.
+      # @section -- SAML SSO
+      allowIdpInitiated: false
   mcp:
     # -- Serve remote MCP at `/mcp`, so coding agents can use Currents tools over HTTP. Clients
     # authenticate with an API key or personal access token, or with OAuth (below). Requests

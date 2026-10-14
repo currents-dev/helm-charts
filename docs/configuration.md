@@ -75,13 +75,14 @@ The following table lists the configurable parameters of the `currents` chart an
 |-----|------|---------|-------------|
 | currents.sso.saml.enabled | bool | `false` | Enable SAML SSO. Requires `issuer` and `metadataSecretName` below (a K8s secret holding your IdP metadata XML). Turns on email-first SSO login. |
 | currents.sso.saml.issuer | string | `""` | SP entityID / audience presented to your IdP. A stable opaque identifier (e.g. `currents-onprem:your-org`), NOT a URL. Must match the Audience / SP Entity ID configured in your IdP. |
-| currents.sso.saml.providerId | string | `"onprem-saml"` | Provider id; recommend your IdP service name (e.g. `okta`). Becomes the last path segment of the ACS callback URL. |
+| currents.sso.saml.providerId | string | `"onprem-saml"` | Provider id; recommend your IdP service name (e.g. `okta`). Becomes the last path segment of the ACS URL, `https://<appHost>/api/auth/sso/saml2/sp/acs/<providerId>`. |
 | currents.sso.saml.metadataSecretName | string | `""` | K8s secret holding the IdP metadata XML (and the SP key, when signing requests). Mounted read-only at /etc/currents/sso. See the SAML SSO guide for how to create it. |
 | currents.sso.saml.metadataKey | string | `"idp-metadata.xml"` | The secret key (file name) of the IdP metadata XML |
 | currents.sso.saml.defaultRole | string | `"member"` | Role granted to auto-provisioned SSO users |
 | currents.sso.saml.allowedDomains | string | `""` | Comma-separated email domains allowed to sign in via SSO (optional allow-list) |
 | currents.sso.saml.authnRequestsSigned | bool | `false` | Sign outbound AuthnRequests. Requires the SP key (below) in the same secret; upload the matching certificate to your IdP. |
 | currents.sso.saml.spKeyKey | string | `"sp-key.pem"` | Secret key (file name) of the SP private key PEM (only when authnRequestsSigned=true) |
+| currents.sso.saml.allowIdpInitiated | bool | `false` | Accept sign-ins started from the IdP (for example its app dashboard), which carry no request from Currents to match. Off: such a sign-in is refused, and users start from the Currents sign-in page. |
 
 ### Remote MCP and OAuth
 
