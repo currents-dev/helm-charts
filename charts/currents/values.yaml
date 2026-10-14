@@ -943,7 +943,7 @@ serviceAccount:
 
 # Redis Configuration
 redis:
-  # -- Install Redis with the chart (the Bitnami Redis chart; see https://github.com/bitnami/charts/blob/main/bitnami/redis/ for its values). For evaluation: in production, point the chart at a Redis you run.
+  # -- Install Redis with the chart (the Bitnami Redis chart; see https://github.com/bitnami/charts/blob/main/bitnami/redis/ for its values). Suits installs recording up to about 100 runs a day. With hundreds of runs a day or very large runs, point the chart at a Redis you run instead (see Redis in docs/eks/dependencies.md).
   # @section -- Required
   enabled: false
   image:

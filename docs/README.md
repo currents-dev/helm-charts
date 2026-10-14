@@ -36,7 +36,7 @@ Each chart version deploys one Currents image tag, its `appVersion`.
 ## Upstream Services
 
 - The self-hosted solution requires an existing Identity Provider for access provisioning.
-- The in-cluster setups for the stateful services (MongoDB, ClickHouse, Redis, RustFS) in [Currents Service Dependencies](./eks/dependencies.md) are for evaluation. In production, run them yourself or use managed services.
+- The in-cluster setups for MongoDB, ClickHouse and RustFS in [Currents Service Dependencies](./eks/dependencies.md) are for evaluation. In production, run them yourself or use managed services. The Redis the chart can install suits up to about 100 runs a day; see [Redis](./eks/dependencies.md#redis).
 - Currents team doesn't provide support for the upstream services (MongoDB, ElasticSearch, Clickhouse), see [Support Policy](./support.md).
 
 ## Known Limitations

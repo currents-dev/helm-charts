@@ -34,7 +34,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.mongoConnection.key | string | `""` | The K8s secret key to use for the MongoDB connection string |
 | currents.gitlab.state.secretName | string | `""` | The K8s secret to use for the GitLab state key |
 | currents.gitlab.state.secretKey | string | `""` | The K8s secret key to use for the GitLab state key |
-| redis.enabled | bool | `false` | Install Redis with the chart (the Bitnami Redis chart; see https://github.com/bitnami/charts/blob/main/bitnami/redis/ for its values). For evaluation: in production, point the chart at a Redis you run. |
+| redis.enabled | bool | `false` | Install Redis with the chart (the Bitnami Redis chart; see https://github.com/bitnami/charts/blob/main/bitnami/redis/ for its values). Suits installs recording up to about 100 runs a day. With hundreds of runs a day or very large runs, point the chart at a Redis you run instead (see Redis in docs/eks/dependencies.md). |
 
 ### Frequently Used
 

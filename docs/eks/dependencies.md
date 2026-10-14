@@ -2,7 +2,7 @@
 
 Currents depends on several third-party services that are not bundled with the Helm chart. You are responsible for allocating resources, installing, and maintaining these services. During the installation process, you’ll need to provide credentials so Currents can configure these services as needed.
 
-The in-cluster setups below (the MongoDB and ClickHouse operators, RustFS, and the Redis the chart can install) are for evaluation. For production, use services you size, back up and upgrade yourself, or a managed service such as MongoDB Atlas, ClickHouse Cloud, Amazon ElastiCache or S3. See the [Support Policy](../support.md).
+The in-cluster setups below for MongoDB, ClickHouse and RustFS are for evaluation. For production, use services you size, back up and upgrade yourself, or a managed service such as MongoDB Atlas, ClickHouse Cloud or S3. See [Redis](#redis) for when the Redis the chart can install is enough, and the [Support Policy](../support.md).
 
 ### MongoDB
 
@@ -104,10 +104,16 @@ This will setup a 1-node 1-shard ClickHouse Replicated Server (10Gb Storage)
 
 Redis is required, and the chart does not deploy one unless you ask it to. Pick one of:
 
-- **Bundled** — set `redis.enabled: true`, as the [quickstart](./quickstart.md) does. For
-  evaluation: it runs a single pod, with no high availability during a version upgrade.
+- **Bundled** — set `redis.enabled: true`, as the [quickstart](./quickstart.md) does. It runs a
+  single pod, with no high availability during a version upgrade, and suits installs recording
+  up to about 100 runs a day.
 - **Your own** — leave `redis.enabled` at its default of `false` and point the chart at an
-  existing server, as below. Use this in production.
+  existing server, as below. Use this for hundreds of runs a day or very large runs: there the
+  bundled Redis's data outgrows its memory and disk, and the pod crashes. Amazon ElastiCache
+  Serverless works well.
+
+Moving from the bundled Redis to your own needs no data migration, only a quiet period with no
+runs recording.
 
 **Sizing the bundled Redis.** It snapshots its data to `/data` on Redis's default `save`
 schedule, and each snapshot needs spare memory and disk:
