@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+# A later push's deploy carries every earlier change, so a queued one can be dropped.
+concurrency:
+  group: sync-docs-${{ github.ref }}
+
 jobs:
   release:
     # depending on default permission settings for your org (contents being read-only or read-write for workloads), you will have to add permissions
@@ -27,3 +31,7 @@ jobs:
         with:
           folder: docs
           target-folder: docs
+          # Rebase onto gh-pages instead of force-pushing: the release-0.8 docs
+          # deploy (0.8/docs) and chart-releaser also push there, and a force-push
+          # from a deploy that started before theirs would drop their commits.
+          force: false
