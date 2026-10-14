@@ -110,13 +110,21 @@ kubectl get pods -n currents -o custom-columns=NAME:.metadata.name,IMAGE:.spec.c
 
 ## Database Migrations and Startup Tasks
 
-The scheduler component runs startup tasks (including migrations) on startup.
+The scheduler component runs startup tasks (including migrations) on startup and logs `Startup tasks complete` when they finish. On a large dataset they can take several minutes.
 
 Check scheduler logs during/after upgrades:
 
 ```bash
 kubectl logs -n currents deploy/currents-scheduler --tail=200
 ```
+
+If a migration fails, for example with a ClickHouse `Timeout error.` on a busy cluster, the scheduler logs the error and keeps running, but the remaining migrations don't run until it starts again. Restart it:
+
+```bash
+kubectl rollout restart deploy/currents-scheduler -n currents
+```
+
+Finished migrations are skipped, and an interrupted backfill continues from where it stopped.
 
 ## Rollback
 
