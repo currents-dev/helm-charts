@@ -1,0 +1,373 @@
+# Currents Service Dependencies
+
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
+Currents depends on several third-party services that are not bundled with the Helm chart. You are responsible for allocating resources, installing, and maintaining these services. During the installation process, you’ll need to provide credentials so Currents can configure these services as needed.
+
+We provide a quick reference of how to create those services for your convenience. The documented configuration for the connected stateful services (mongo, clickhouse) are not definitive, and may not be adequate for all production setups.
+
+### MongoDB
+
+This will setup a 2-node Mongo Cluster, with each being 10Gb available for storage size.
+
+1. Install the MongoDB Community Operator
+   ```sh
+   helm install community-operator community-operator --repo https://mongodb.github.io/helm-charts
+   ```
+
+2. Create Secrets for the MongoDB instances
+   ```sh
+   kubectl create secret generic mongo-admin-password --from-literal=password=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+   kubectl create secret generic mongo-currents-password --from-literal=password=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+   ```
+
+3. Create the MongoDB Databases Resources file to apply
+
+   `mongodb-community-resources.yaml`
+   ```yaml
+   apiVersion: mongodbcommunity.mongodb.com/v1
+   kind: MongoDBCommunity
+   metadata:
+     name: mongodb
+   spec:
+     members: 2
+     type: ReplicaSet
+     version: "7.0.17"
+     security:
+       authentication:
+         modes: ["SCRAM"]
+     users:
+       - name: cluster-admin
+         db: admin
+         passwordSecretRef: # a reference to the secret that will be used to generate the user's password
+           name: mongo-admin-password
+         roles:
+           - name: clusterAdmin
+             db: admin
+           - name: userAdminAnyDatabase
+             db: admin
+           - name: dbAdminAnyDatabase
+             db: admin
+         scramCredentialsSecretName: admin-scram
+       - name: currents-user
+         db: currents
+         passwordSecretRef: # a reference to the secret that will be used to generate the user's password
+           name: mongo-currents-password
+         roles:
+           - name: dbOwner
+             db: currents
+         scramCredentialsSecretName: currents-scram
+     additionalMongodConfig:
+       storage.wiredTiger.engineConfig.journalCompressor: zlib
+   ```
+
+4. Apply the MongoDBCommunity Resource to create the Database
+
+   ```sh
+   kubectl apply -f mongodb-community-resources.yaml
+   ```
+
+
+### ClickHouse
+
+For ClickHouse there are several production support options:
+
+- Sass Cloud instances (Via [ClickHouse Cloud](https://clickhouse.com/cloud) or [Altinity Cloud](https://docs.altinity.com/altinitycloud/))
+- Bring your own Cloud ([install ClickHouse Cloud in your AWS](https://clickhouse.com/docs/cloud/reference/byoc/overview))
+- On-Premises Kubernetes Deployments ([ClickHouse Private](https://clickhouse.com/docs/cloud/infrastructure/clickhouse-private) or [Altinity Operator](https://docs.altinity.com/altinitykubernetesoperator/))
+
+For this guide we are going to install the open-source [Altinity Kubernetes Operator for ClickHouse](https://docs.altinity.com/altinitykubernetesoperator/)
+
+Advanced configuration available at:
+(docs: https://github.com/Altinity/helm-charts/blob/main/charts/clickhouse/README.md )
+
+This will setup a 1-node 1-shard ClickHouse Replicated Server (10Gb Storage)
+
+
+1. Create Secrets for the ClickHouse Users
+   ```sh
+    kubectl create secret generic clickhouse-default-pass --from-literal=password=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+    kubectl create secret generic clickhouse-currents-pass --from-literal=password=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+   ```
+2. Install the Altinity Kubernetes Operator
+   ```sh
+   helm install clickhouse-operator altinity-clickhouse-operator --repo https://docs.altinity.com/clickhouse-operator
+   ```
+
+3. Install the Altinity Kubernetes Operator
+   ```sh
+   helm install clickhouse clickhouse --repo https://helm.altinity.com \
+     --set=clickhouse.defaultUser.password_secret_name=clickhouse-default-pass \
+     --set-json='clickhouse.users=[{"name":"currents","password_secret_name":"clickhouse-currents-pass"}]' \
+     --set operator.enabled=false
+   ```
+
+### Redis
+
+Redis is required, and the chart does not deploy one unless you ask it to. Pick one of:
+
+- **Bundled** — set `redis.enabled: true`, as the [quickstart](./quickstart.md) does. Convenient,
+  and usable in production, but it has no high availability during a version upgrade.
+- **Your own** — leave `redis.enabled` at its default of `false` and point the chart at an
+  existing server, as below. This is the option to take if you already operate Redis, or would
+  rather not operate one at all.
+
+**Sizing the bundled Redis.** It snapshots its data to `/data` on Redis's default `save`
+schedule, and each snapshot needs spare memory and disk:
+
+- Memory: the forked process that writes a snapshot can grow to the size of the dataset under
+  heavy writes. If the pod has a memory limit, set it to about twice `used_memory` from
+  `INFO memory`, or the fork is killed and the snapshot fails.
+- Disk: the new snapshot is written next to the previous one, so size
+  `redis.master.persistence.size` to at least twice the snapshot file.
+
+A failed snapshot does not stop writes (`stop-writes-on-bgsave-error no` in
+`redis.commonConfiguration`), but until one succeeds a Redis restart loses everything written
+since the last good one. Alert on `rdb_last_bgsave_status:err` in `INFO persistence`.
+
+`currents.redis.host` defaults to the bundled Redis's service name, so it only resolves when
+`redis.enabled` is `true`. Setting one without the other leaves the install pointed at a service
+that was never deployed.
+
+**What your own Redis has to provide.** Currents stores orchestration state as JSON documents
+and reads them from inside Lua scripts, so the server must support the `JSON.GET` / `JSON.SET`
+commands. On ElastiCache that means **Redis 6.2.6 or newer, or Valkey**; older engines will start
+the app but fail spec claiming under load. Run a real test run against it before cutting over, not
+just a health check.
+
+Use a **replication group with a primary and a replica**, not cluster mode. Currents runs multi-key
+Lua scripts, and cluster mode rejects those when the keys land in different slots. This is the
+topology the hosted service runs.
+
+**Authentication is an AUTH token supplied in the URI.** IAM authentication is not supported —
+the client takes a static credential and has nothing to refresh a short-lived one.
+
+1. Create the secret holding the connection URI. Keep the token here rather than in your values
+   file: a URI composed from plain values is rendered into the pod spec, where anyone who can
+   describe a pod can read it.
+
+   ```sh
+   kubectl create secret generic currents-redis \
+     --from-literal=uri="rediss://:<auth-token>@master.<id>.cache.amazonaws.com:6379" \
+     --from-literal=readerUri="rediss://:<auth-token>@replica.<id>.cache.amazonaws.com:6379"
+   ```
+
+   `rediss://` selects encryption in transit. Use `redis://` only if the group has it disabled.
+
+2. Point the chart at it, leaving the bundled Redis off (set it explicitly if you previously
+   turned it on):
+
+   ```yaml
+   redis:
+     enabled: false
+
+   currents:
+     redis:
+       connection:
+         secretName: currents-redis
+         key: uri
+         readerKey: readerUri
+   ```
+
+   `readerKey` is optional. Without it, read-only traffic goes to the primary; with it, to the
+   reader endpoint.
+
+For a Redis that needs no credentials, `currents.redis.host`, `readerHost`, `port` and
+`tls.enabled` compose the URI directly and no secret is required.
+
+### Object Storage (provider)
+
+Follow this step if you plan to use provider (S3, Cloudflare) object storage (recommended).
+
+1. Ensure you have created an Object Storage bucket for Currents in your provider.
+
+2. If using S3, you can choose to setup IAM permissions for the Currents service account. If so, you can skip the rest of these steps, and setup the IAM access after installing the Helm chart.
+
+3. Create a secret containing the access key and secret for the bucket you want to use for Currents 
+   ```sh
+   AWS_ACCESS_KEY_ID=<replace-with-access-key-id>
+   AWS_SECRET_ACCESS_KEY=<replace-with-secret-access-key>
+   kubectl create secret generic currents-storage-user --from-literal=apiId=$AWS_ACCESS_KEY_ID --from-literal=keySecret=$AWS_SECRET_ACCESS_KEY
+   ```
+
+4. You will configure the Currents Helm chart to use `currents-storage-user` and your Object Storage bucket later in these instructions.
+
+### Alternative Object Storage (in cluster)
+
+Install RustFS if you don't have access to an Object Storage provider (S3, Cloudflare). You will need an additional subdomain for RustFS.
+
+Creates a single Pod instance of RustFS with 10Gi of storage.
+
+1. Create a secret for RustFS credentials
+   ```sh
+   kubectl create secret generic currents-rustfs-user \
+     --from-literal=RUSTFS_ACCESS_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32) \
+     --from-literal=RUSTFS_SECRET_KEY=$(head -c 512 /dev/urandom | LC_ALL=C tr -cd 'a-zA-Z0-9' | head -c 32)
+   ```
+
+2. Create a RustFS values file
+
+   `rustfs-helm-config.yaml`
+   ```yaml
+   # Standalone mode for dev/test - single pod
+   mode:
+     standalone:
+       enabled: true
+     distributed:
+       enabled: false
+
+   # Use the secret we created for credentials
+   secret:
+     existingSecret: "currents-rustfs-user"
+
+   # Let the dashboard and trace.playwright.dev fetch objects from the browser
+   extraEnv:
+     - name: RUSTFS_CORS_ALLOWED_ORIGINS
+       value: "*"
+
+   # Service configuration
+   service:
+     type: ClusterIP
+     endpoint:
+       port: 9000
+     console:
+       port: 9001
+
+   # Disable gateway API / TraefikService CRD creation
+   gatewayApi:
+     gatewayClass: ""
+
+   # Disable built-in ingress (we create our own for full control)
+   ingress:
+     enabled: false
+
+   # Storage configuration
+   storageclass:
+     name: ""  # Uses default storage class
+     dataStorageSize: "10Gi"
+     logStorageSize: "256Mi"
+
+   # Resource limits
+   resources:
+     limits:
+       cpu: "500m"
+       memory: "512Mi"
+     requests:
+       cpu: "100m"
+       memory: "128Mi"
+   ```
+
+3. Install RustFS. The chart version also sets the RustFS image version.
+   ```sh
+   helm install rustfs rustfs --repo https://charts.rustfs.com --version 1.0.1 -f rustfs-helm-config.yaml
+   ```
+
+4. Create an Ingress Resource to expose the RustFS S3 API
+
+   Be sure to customize the following:
+   - `alb.ingress.kubernetes.io/certificate-arn`
+   - `spec.ingressClassName`
+   - `spec.rules[0].host`
+
+   `rustfs-eks-ingress.yaml`
+   ```yaml
+   apiVersion: networking.k8s.io/v1
+   kind: Ingress
+   metadata:
+     name: ingress-rustfs
+     annotations:
+       # Set to 'internet-facing' to expose to the public
+       alb.ingress.kubernetes.io/scheme: internal
+       alb.ingress.kubernetes.io/group.name: currents
+       # Set the ARN to a resource managed by AWS Certificate Manager
+       alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:"
+       alb.ingress.kubernetes.io/target-type: ip
+       alb.ingress.kubernetes.io/backend-protocol: HTTP
+       alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+       alb.ingress.kubernetes.io/healthcheck-path: /health
+       alb.ingress.kubernetes.io/success-codes: '200'
+   spec:
+     ingressClassName: alb-currents
+     rules:
+       # Set the storage DNS name
+       - host: storage.eks.example.com
+         http:
+           paths:
+             - path: /
+               pathType: Prefix
+               backend:
+                 service:
+                   name: rustfs-svc
+                   port:
+                     number: 9000
+   ```
+
+   ```sh
+   kubectl apply -f rustfs-eks-ingress.yaml
+   ```
+
+5. Create the `currents` bucket by applying a Job that uses the AWS CLI
+
+   `rustfs-create-bucket-job.yaml`
+   ```yaml
+   apiVersion: batch/v1
+   kind: Job
+   metadata:
+     name: rustfs-create-bucket
+   spec:
+     ttlSecondsAfterFinished: 300
+     template:
+       spec:
+         restartPolicy: Never
+         containers:
+           - name: aws-cli
+             image: amazon/aws-cli:2.32.31
+             env:
+               - name: AWS_ACCESS_KEY_ID
+                 valueFrom:
+                   secretKeyRef:
+                     name: currents-rustfs-user
+                     key: RUSTFS_ACCESS_KEY
+               - name: AWS_SECRET_ACCESS_KEY
+                 valueFrom:
+                   secretKeyRef:
+                     name: currents-rustfs-user
+                     key: RUSTFS_SECRET_KEY
+               - name: AWS_DEFAULT_REGION
+                 value: us-east-1
+               - name: AWS_ENDPOINT_URL
+                 value: http://rustfs-svc:9000
+             command:
+               - /bin/sh
+               - -c
+               - |
+                 aws s3api head-bucket --bucket currents 2>/dev/null || aws s3 mb s3://currents
+   ```
+
+   ```sh
+   kubectl apply -f rustfs-create-bucket-job.yaml
+   kubectl wait --for=condition=complete job/rustfs-create-bucket --timeout=120s
+   ```
+
+### SMTP Email
+
+For sending outgoing emails like Automated reports. 
+
+1. Create a secret that contains the smtp username/password
+   ```sh
+   SMTP_USERNAME=<replace-with-smtp-username>
+   SMTP_PASSWORD=<replace-with-smtp-password>
+   kubectl create secret generic currents-email-smtp --from-literal=username=$SMTP_USERNAME  --from-literal=password=$SMTP_PASSWORD
+   ```
+
+2. You will configure the Currents Helm chart to use `currents-email-smtp` and your SMTP host later in these instructions.
+
+### GitLab
+
+1. Create a private key for encoding communication between GitLab and Currents
+   ```sh
+   openssl genrsa -out gitlab-key.pem 2048
+   kubectl create secret generic currents-gitlab-key --from-file=gitlab-key.pem
+   ```
+
+2. You will configure the Currents Helm chart to use `currents-gitlab-key` later in these instructions.

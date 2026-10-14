@@ -1,0 +1,266 @@
+# Configuration Reference
+
+> These docs are for chart `0.8.x`. For the current chart, see the [current docs](https://currents-dev.github.io/helm-charts/docs/). To upgrade to `1.0`, follow [Upgrading to Chart 1.0](https://currents-dev.github.io/helm-charts/docs/eks/upgrade-1.0.html).
+
+![Version: 0.8.1](https://img.shields.io/badge/Version-0.8.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2026-07-26-006](https://img.shields.io/badge/AppVersion-2026--07--26--006-informational?style=flat-square)
+
+## Requirements
+
+| Repository | Name | Version |
+|------------|------|---------|
+| oci://registry-1.docker.io/bitnamicharts | redis | 20.2.1 |
+
+The following table lists the configurable parameters of the `currents` chart and their default values:
+
+## Values
+
+### Required
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| currents.domains.appHost | string | `"currents-app.localhost"` | The host for the app |
+| currents.domains.recordApiHost | string | `"currents-record.localhost"` | The host for the recording endpoint that the test reporters communicate with |
+| currents.rootUser.password.secretName | string | `""` | The K8s secret containing the root user password. The password is used during initial setup only. |
+| currents.email.smtp.host | string | `""` | the SMTP server to use. Required unless `transporter` is `ses`. |
+| currents.email.smtp.secretName | string | `""` | K8s secret to use for the SMTP username/password. Required unless `transporter` is `ses`. |
+| currents.betterAuth.secretName | string | `""` | The K8s secret containing the Better Auth secret |
+| currents.apiInternalToken.secretName | string | `""` | The K8s secret to use for the internal API token |
+| currents.clickhouse.user.secretName | string | `""` | The k8s secret to use for the ClickHouse password |
+| currents.clickhouse.user.secretPasswordKey | string | `""` | The k8s secret key to use to access the ClickHouse password |
+| currents.clickhouse.user.secretAccessTokenKey | string | `""` | The k8s secret key to use to access the ClickHouse access token |
+| currents.clickhouse.host | string | `""` | The ClickHouse host to use |
+| currents.objectStorage.endpoint | string | `""` | The object storage endpoint to use |
+| currents.objectStorage.secretName | string | `""` | The K8s secret to use for the object storage access key |
+| currents.objectStorage.bucket | string | `""` | The object storage bucket to use |
+| currents.mongoConnection.secretName | string | `""` | The K8s secret to use for the MongoDB connection string |
+| currents.mongoConnection.key | string | `""` | The K8s secret key to use for the MongoDB connection string |
+| currents.gitlab.state.secretName | string | `""` | The K8s secret to use for the GitLab state key |
+| currents.gitlab.state.secretKey | string | `""` | The K8s secret key to use for the GitLab state key |
+| redis.enabled | bool | `false` | enable the Bitnami Redis chart. Refer to https://github.com/bitnami/charts/blob/main/bitnami/redis/ for possible values. |
+
+### Frequently Used
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| currents.domains.https | bool | `true` | Whether to use https or http |
+| currents.rootUser.password.key | string | `"password"` | The K8s secret key for the root user password |
+| currents.email.smtp.secretUserKey | string | `"username"` | The K8s secret key to use for the SMTP username |
+| currents.email.smtp.secretPasswordKey | string | `"password"` | The K8s secret key to use for the SMTP password |
+| currents.betterAuth.key | string | `"secret"` | The K8s secret key for the Better Auth secret |
+| currents.apiInternalToken.key | string | `"token"` | The K8s secret key to use for the internal API token |
+| currents.redis.connection | object | `{"key":"uri","readerKey":"","secretName":""}` | Read the connection URI from a K8s secret instead of composing it from the fields above. Needed for any Redis that requires credentials: the composed URI is rendered into the pod spec, so an AUTH token set that way would be readable by anyone who can describe a pod. Leave unset to use the bundled Redis. |
+| currents.clickhouse.user.username | string | `"currents"` | The ClickHouse username to use |
+| currents.clickhouse.tls.enabled | bool | `true` | Whether to use TLS for the ClickHouse connection |
+| currents.objectStorage.secretIdKey | string | `"keyId"` | The K8s secret key to use for the object storage access key ID |
+| currents.objectStorage.secretAccessKey | string | `"keySecret"` | The K8s secret key to use for the object storage secret access key |
+| global.imagePullSecrets | list | `[]` | Reference to one or more secrets to be used when pulling images. [Pull an Image from a Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/). |
+| director.resources | object | `{}` | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+| director.ingress.enabled | bool | `false` (but can also be turned on by currents.ingress.enabled) | Whether to enable the director ingress |
+| director.ingress.className | string | `""` | The ingress class to use |
+| director.ingress.annotations | object | `{}` | Annotations to add to the ingress |
+| director.ingress.hosts | list | see [values.yaml] for default values | The hosts to use for the ingress |
+| director.ingress.tls | list | see [values.yaml] for default values | The TLS configuration for the ingress |
+| server.resources | object | `{}` | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+| server.ingress.enabled | bool | `false` (but can also be turned on by currents.ingress.enabled) | Whether to enable the server ingress |
+| server.ingress.className | string | `""` | The ingress class to use |
+| server.ingress.annotations | object | `{}` | Annotations to add to the ingress |
+| server.ingress.hosts | list | see [values.yaml] for default values | The hosts to use for the ingress |
+| server.ingress.tls | list | see [values.yaml] for default values | The TLS configuration for the ingress |
+| writer.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+| scheduler.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+| changestreams.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+| webhooks.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+
+### SAML SSO
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| currents.sso.saml.enabled | bool | `false` | Enable SAML SSO. Requires `issuer` and `metadataSecretName` below (a K8s secret holding your IdP metadata XML). Turns on email-first SSO login. |
+| currents.sso.saml.issuer | string | `""` | SP entityID / audience presented to your IdP. A stable opaque identifier (e.g. `currents-onprem:your-org`), NOT a URL. Must match the Audience / SP Entity ID configured in your IdP. |
+| currents.sso.saml.providerId | string | `"onprem-saml"` | Provider id; recommend your IdP service name (e.g. `okta`). Becomes the last path segment of the ACS callback URL. |
+| currents.sso.saml.metadataSecretName | string | `""` | K8s secret holding the IdP metadata XML (and any SP cert/key). Mounted read-only at /etc/currents/sso. See the SAML SSO guide for how to create it. |
+| currents.sso.saml.metadataKey | string | `"idp-metadata.xml"` | The secret key (file name) of the IdP metadata XML |
+| currents.sso.saml.defaultRole | string | `"member"` | Role granted to auto-provisioned SSO users |
+| currents.sso.saml.allowedDomains | string | `""` | Comma-separated email domains allowed to sign in via SSO (optional allow-list) |
+| currents.sso.saml.authnRequestsSigned | bool | `false` | Sign outbound AuthnRequests. Requires the SP cert/key (below) to be present in the same secret. |
+| currents.sso.saml.spCertKey | string | `"sp-cert.pem"` | Secret key (file name) of the SP certificate PEM (only when authnRequestsSigned=true) |
+| currents.sso.saml.spKeyKey | string | `"sp-key.pem"` | Secret key (file name) of the SP private key PEM (only when authnRequestsSigned=true) |
+
+### Other Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| currents.rootUser.email | string | `"admin@{{ .Values.currents.domains.appHost }}"` | The email address of the root user |
+| currents.imageTag | string | `"2026-07-26-006"` | The image tag to use for the Currents images |
+| currents.email.transporter | string | `"smtp"` | Which transport to send outgoing email through: `smtp` or `ses`. With `ses` the SMTP settings are ignored and no SMTP credentials are needed — the AWS SDK resolves credentials from the pod itself, so grant the Currents service account permission to send. See [Using IAM Roles for Sending Email with SES](./eks/iam.md#using-iam-roles-for-sending-email-with-ses). |
+| currents.email.from | tpl/string | `""` | The email address to send from. Defaults to `currents.email.smtp.from` when unset, which is retained for compatibility. |
+| currents.email.ses.region | string | `""` | The AWS region to send through. Required when `transporter` is `ses`, and the `from` address must be a verified identity in that region. |
+| currents.email.smtp.port | int | `587` | The SMTP server port to use |
+| currents.email.smtp.from | tpl/string | `"Currents Report <report@{{ .Values.currents.domains.appHost }}>"` | The email address to send from |
+| currents.email.smtp.tls | bool | `false` | Whether the SMTP server uses TLS |
+| currents.email.inviteFrom | tpl/string | `""` | The email address to send invitations from |
+| currents.email.inviteExpirationDays | string | `""` | Number of days before invitation links expire |
+| currents.email.reportsBcc | string | `""` | BCC address for automated report emails |
+| currents.email.inviteBcc | string | `""` | BCC address for invitation emails |
+| currents.email.linksBaseUrl | string | `""` | Base URL for links in emails (defaults to APP_BASE_URL if empty) |
+| currents.ingress.enabled | bool | `false` | Whether to enable the both default ingresses (server, and director) |
+| currents.redis.host | tpl | `{{ .Release.Name }}-redis-master` | set the redis hostname to talk to. The default names the bundled Redis's service, which only exists when `redis.enabled` is true — point this at your own server otherwise. |
+| currents.redis.readerHost | tpl | `""` | hostname for read-only traffic. A managed Redis usually publishes a separate reader endpoint; leaving this empty sends reads to `host`, which is the primary. |
+| currents.redis.port | int | `6379` | The port to connect on |
+| currents.redis.tls.enabled | bool | `false` | Connect with `rediss://`. Set this for a managed Redis with encryption in transit. |
+| currents.redis.connection.secretName | string | `""` | Secret holding the full URI, e.g. `rediss://:<auth-token>@host:6379` |
+| currents.redis.connection.key | string | `"uri"` | Secret key for the primary URI |
+| currents.redis.connection.readerKey | string | `""` | Secret key for the read-only URI. Defaults to `key` when unset. |
+| currents.clickhouse.port | int | `8123` | The ClickHouse port to use |
+| currents.objectStorage.internalEndpoint | string | `""` | The object storage internal endpoint to use (for internal communication) |
+| currents.objectStorage.region | string | `""` | The region to use for the object storage |
+| currents.objectStorage.pathStyle | bool | `false` | Whether to use path style access for the object storage |
+| currents.logger.apiEndpoint | string | `""` | The coralogix API endpoint to use |
+| currents.logger.apiSecretName | string | `""` | The k8s secret to use for the coralogix private key |
+| currents.logger.apiSecretKey | string | `"apiKey"` | The k8s secret key to use for the coralogix private key |
+| global.imagePullPolicy | string | `"IfNotPresent"` | The image pull policy to use for all images |
+| global.additionalLabels | object | `{}` | Labels to apply to all resources. |
+| global.podAnnotations | object | `{}` | This is for setting Kubernetes Annotations to a Pod |
+| global.env | list | `[]` | Additional environment variables to pass to binary. |
+| global.containerSecurityContext | dict | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | Container Security Context to be set on the pods [Configure a Security Context for a Pod or Container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/). |
+| global.securityContext | dict | `{"fsGroup":1000,"fsGroupChangePolicy":"OnRootMismatch","runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}}` | Pod Security Context. [Configure a Security Context for a Pod or Container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/). |
+| global.revisionHistoryLimit | string | `nil` | The number of old ReplicaSets to retain to allow rollback (if not set, the default Kubernetes value is set to 10). |
+| global.priorityClassName | string | `""` | The optional priority class to be used for the currents pods. |
+| global.volumes | list | `[]` | Additional volumes on the output Deployment definition. |
+| global.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition. |
+| global.nodeSelector | object | `{"kubernetes.io/os":"linux"}` | This default ensures that Pods are only scheduled to Linux nodes. It prevents Pods being scheduled to Windows nodes in a mixed OS cluster. |
+| global.tolerations | list | `[]` |  |
+| global.affinity | object | `{}` |  |
+| director.name | string | `"director"` |  |
+| director.replicas | int | `1` |  |
+| director.image.registry | string | `"513558712013.dkr.ecr.us-east-1.amazonaws.com"` | The container registry to pull the manager image from. |
+| director.image.repository | string | `"currents/on-prem/director"` | The container image for Currents Director. |
+| director.image.tag | string | `""` | Override the image tag to deploy by setting this variable. |
+| director.image.digest | string | `""` | Setting a digest will override any tag. |
+| director.image.pullPolicy | string | `""` | default to the same as global.image.pullPolicy |
+| director.deploymentStrategy | object | `{}` | Deployment update strategy for Currents deployment. [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
+| director.env | list | `[]` | Env variables to pass to the container |
+| director.volumes | list | `[]` | Additional volumes on the output Deployment definition. |
+| director.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition. |
+| director.startupProbe | object | `{"failureThreshold":30,"httpGet":{"path":"/","port":"http"},"periodSeconds":10,"timeoutSeconds":5}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| director.livenessProbe | object | `{"failureThreshold":6,"httpGet":{"path":"/","port":"http"},"periodSeconds":20,"timeoutSeconds":10}` | Liveness probe to check if the container is alive. `timeoutSeconds` is set explicitly: Kubernetes defaults it to 1 second, and a service that is merely busy answers more slowly than that under load, which turns a slow pod into a restarting one. |
+| director.readinessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/","port":"http"},"periodSeconds":10,"timeoutSeconds":5}` | Readiness probe to check if the container is ready |
+| director.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
+| director.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| director.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
+| director.service | object | `{"port":1234,"type":"ClusterIP"}` | This is for setting up a service [more information](https://kubernetes.io/docs/concepts/services-networking/service/) |
+| server.name | string | `"server"` |  |
+| server.replicas | int | `1` |  |
+| server.image.registry | string | `"513558712013.dkr.ecr.us-east-1.amazonaws.com"` | The container registry to pull the manager image from |
+| server.image.repository | string | `"currents/on-prem/api"` | The container image for Currents Server API |
+| server.image.tag | string | `""` | Override the image tag to deploy by setting this variable |
+| server.image.digest | string | `""` | Setting a digest will override any tag |
+| server.image.pullPolicy | string | `""` | defaults to global.image.pullPolicy |
+| server.deploymentStrategy | object | `{}` | Deployment update strategy for Currents deployment |
+| server.env | list | `[]` | Env variables to pass to the container |
+| server.volumes | list | `[]` | Additional volumes on the output Deployment definition |
+| server.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
+| server.pm2HomeSizeLimit | string | `"256Mi"` | Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's sockets and, for services started from an ecosystem file, its log files. Disk-backed on purpose: on a memory-backed volume those log files count against the pod's memory limit and the container is OOMKilled under load. |
+| server.startupProbe | object | `{"failureThreshold":30,"httpGet":{"path":"/","port":"http"},"periodSeconds":10,"timeoutSeconds":5}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| server.livenessProbe | object | `{"failureThreshold":6,"httpGet":{"path":"/","port":"http"},"periodSeconds":20,"timeoutSeconds":10}` | Liveness probe to check if the container is alive. `timeoutSeconds` is set explicitly: Kubernetes defaults it to 1 second, and a service that is merely busy answers more slowly than that under load, which turns a slow pod into a restarting one. |
+| server.readinessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/","port":"http"},"periodSeconds":10,"timeoutSeconds":5}` | Readiness probe to check if the container is ready |
+| server.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
+| server.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| server.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
+| server.service | object | `{"port":4000,"type":"ClusterIP"}` | This is for setting up a service [more information](https://kubernetes.io/docs/concepts/services-networking/service/) |
+| writer.name | string | `"writer"` |  |
+| writer.replicas | int | `1` |  |
+| writer.image.registry | string | `"513558712013.dkr.ecr.us-east-1.amazonaws.com"` |  |
+| writer.image.repository | string | `"currents/on-prem/writer"` |  |
+| writer.image.tag | string | `""` | Override the image tag to deploy by setting this variable |
+| writer.image.digest | string | `""` | Setting a digest will override any tag |
+| writer.image.pullPolicy | string | `""` | defaults to global.image.pullPolicy |
+| writer.deploymentStrategy | object | `{}` | Deployment update strategy for Currents deployment |
+| writer.env | list | `[]` | Env variables to pass to the container |
+| writer.volumes | list | `[]` | Additional volumes on the output Deployment definition |
+| writer.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
+| writer.pm2Instances | int | `2` | Node processes pm2 runs per writer pod. Each is single threaded, so a pod with more than one core does no more work until this is raised. Matches the value the hosted service runs. |
+| writer.pm2HomeSizeLimit | string | `"256Mi"` | Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's sockets and, for services started from an ecosystem file, its log files. Disk-backed on purpose: on a memory-backed volume those log files count against the pod's memory limit and the container is OOMKilled under load. |
+| writer.startupProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","writer-service"]},"failureThreshold":30,"periodSeconds":10,"timeoutSeconds":15}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| writer.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","writer-service"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Liveness probe to check if the container is alive. The command forks a Node CLI, which cannot finish within the 1 second Kubernetes defaults `timeoutSeconds` to while the container is under CPU pressure. Timed-out probe processes then accumulate and make the pressure worse. |
+| writer.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","writer-service"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Readiness probe to check if the container is ready |
+| writer.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
+| writer.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| writer.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
+| scheduler.name | string | `"scheduler"` |  |
+| scheduler.image.registry | string | `"513558712013.dkr.ecr.us-east-1.amazonaws.com"` | The container registry to pull the manager image from |
+| scheduler.image.repository | string | `"currents/on-prem/scheduler"` | The container image for Currents Server API |
+| scheduler.image.tag | string | `""` | Override the image tag to deploy by setting this variable |
+| scheduler.image.digest | string | `""` | Setting a digest will override any tag |
+| scheduler.image.pullPolicy | string | `""` | defaults to global.image.pullPolicy |
+| scheduler.startup.persistence | object | See [values.yaml] for default values | Persistence settings used to optimize startup tasks (avoid rerun startup tasks on restart) |
+| scheduler.deploymentStrategy | object | `{"type":"Recreate"}` | Deployment update strategy for Currents deployment. [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
+| scheduler.env | list | `[]` | Env variables to pass to the container |
+| scheduler.volumes | list | `[]` | Additional volumes on the output Deployment definition |
+| scheduler.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
+| scheduler.pm2HomeSizeLimit | string | `"256Mi"` | Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's sockets and, for services started from an ecosystem file, its log files. Disk-backed on purpose: on a memory-backed volume those log files count against the pod's memory limit and the container is OOMKilled under load. |
+| scheduler.startupProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":30,"periodSeconds":10,"timeoutSeconds":15}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| scheduler.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Liveness probe to check if the container is alive. The command forks a Node CLI, which cannot finish within the 1 second Kubernetes defaults `timeoutSeconds` to while the container is under CPU pressure. Timed-out probe processes then accumulate and make the pressure worse. |
+| scheduler.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Readiness probe to check if the container is ready |
+| scheduler.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
+| scheduler.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| scheduler.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
+| changestreams.name | string | `"change-streams"` |  |
+| changestreams.image.registry | string | `"513558712013.dkr.ecr.us-east-1.amazonaws.com"` | The container registry to pull the manager image from. |
+| changestreams.image.repository | string | `"currents/on-prem/change-streams"` | The container image for Currents Change Streams Image |
+| changestreams.image.tag | string | `""` | Override the image tag to deploy by setting this variable |
+| changestreams.image.digest | string | `""` | Setting a digest will override any tag |
+| changestreams.image.pullPolicy | string | `""` | defaults to global.image.pullPolicy |
+| changestreams.deploymentStrategy | object | `{"type":"Recreate"}` | Deployment update strategy for Currents deployment. [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
+| changestreams.env | list | `[]` | Env variables to pass to the container |
+| changestreams.volumes | list | `[]` | Additional volumes on the output Deployment definition |
+| changestreams.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
+| changestreams.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
+| changestreams.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| changestreams.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
+| webhooks.name | string | `"webhooks"` |  |
+| webhooks.image.registry | string | `"513558712013.dkr.ecr.us-east-1.amazonaws.com"` |  |
+| webhooks.image.repository | string | `"currents/on-prem/webhooks"` |  |
+| webhooks.image.tag | string | `""` | Override the image tag to deploy by setting this variable |
+| webhooks.image.digest | string | `""` | Setting a digest will override any tag |
+| webhooks.image.pullPolicy | string | `""` | defaults to global.image.pullPolicy |
+| webhooks.deploymentStrategy | object | `{"type":"Recreate"}` | Deployment update strategy for Currents deployment. [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
+| webhooks.env | list | `[]` | Env variables to pass to the container |
+| webhooks.volumes | list | `[]` | Additional volumes on the output Deployment definition |
+| webhooks.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
+| webhooks.pm2HomeSizeLimit | string | `"256Mi"` | Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's sockets and, for services started from an ecosystem file, its log files. Disk-backed on purpose: on a memory-backed volume those log files count against the pod's memory limit and the container is OOMKilled under load. |
+| webhooks.startupProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":30,"periodSeconds":10,"timeoutSeconds":15}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| webhooks.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Liveness probe to check if the container is alive. The command forks a Node CLI, which cannot finish within the 1 second Kubernetes defaults `timeoutSeconds` to while the container is under CPU pressure. Timed-out probe processes then accumulate and make the pressure worse. |
+| webhooks.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Readiness probe to check if the container is ready |
+| webhooks.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
+| webhooks.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| webhooks.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
+| toolbox.enabled | bool | `false` | Create the toolbox pod and its scratch PVC. Leave disabled for normal installs — with this off, nothing in this section renders. |
+| toolbox.name | string | `"toolbox"` |  |
+| toolbox.persistence | object | See [values.yaml] for default values | Scratch space for artifacts and the import state file. Size it at ~1.5x the export's total bytes (manifest totals.exportedBytes + clickhouseTotals.exportedBytes). |
+| toolbox.env | list | `[]` | Additional environment variables for toolbox containers. |
+| toolbox.clickhouseRequestTimeoutMs | int | `3600000` | ClickHouse client per-request socket timeout (ms) for the import. |
+| toolbox.clickhouseInsertBlockRows | int | `65536` | Rows per block the import inserts into ClickHouse. Each block is aggregated by `test_metric_v2`'s two materialized views, so this sets the insert's peak memory on the ClickHouse server: measured against the real schema, 1M rows (the ClickHouse default) peaks at ~3.1 GiB and 65536 at ~1.3 GiB. Lower it if ClickHouse has less than 8 GiB or an insert fails with MEMORY_LIMIT_EXCEEDED. |
+| toolbox.resources | object | `{}` | Resource limits for the toolbox containers. A large import is IO-bound; give it enough memory to stream comfortably. |
+| toolbox.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] for the toolbox pod |
+| toolbox.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| toolbox.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the pod |
+| serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
+| serviceAccount.name | string | If not set and create is true, a name is generated using the fullname template | The name of the service account to use. |
+| serviceAccount.annotations | object | `{}` | Optional additional annotations to add to the Service Account. Templates are allowed for both keys and values. |
+| serviceAccount.automount | bool | `true` | Automatically mount a ServiceAccount's API credentials? |
+| redis.image.repository | string | `"redis/redis-stack-server"` |  |
+| redis.image.tag | string | `"7.2.0-v15"` |  |
+| redis.commonConfiguration | string | `"loadmodule /opt/redis-stack/lib/rejson.so\nstop-writes-on-bgsave-error no"` | Redis server configuration. Setting this replaces the whole value, so keep these lines when adding your own. Redis snapshots to disk on its default `save` schedule: it holds in-progress runs and queued jobs that nothing recreates after a restart. With the Redis default of `stop-writes-on-bgsave-error yes`, one failed snapshot (a full disk, or the snapshot's fork killed for memory) makes Redis reject every write and ingestion stops until a snapshot succeeds. Keep writes on and watch `rdb_last_bgsave_status` in `INFO persistence` instead. |
+| redis.architecture | string | `"standalone"` |  |
+| redis.auth.enabled | bool | `false` |  |
+| redis.master.resourcesPreset | string | `"none"` |  |
+| redis.master.resources | object | `{"requests":{"cpu":"500m","memory":"1Gi"}}` | Requests without limits, deliberately. With neither, the Redis pod is BestEffort and is the first thing the kubelet evicts under node memory pressure, which drops every service's queue connection at once. No limit is set so a queue backlog cannot turn into an OOMKill instead. Size this to your queue depth, plus headroom for snapshots: the forked process that writes one can grow to the size of the dataset under heavy writes. |
+| redis.replica.resourcesPreset | string | `"none"` |  |
+| redis.sentinel.resourcesPreset | string | `"none"` |  |
+| redis.metrics.resourcesPreset | string | `"none"` |  |
+| redis.volumePermissions.resourcesPreset | string | `"none"` |  |
+| redis.sysctl.resourcesPreset | string | `"none"` |  |
+| maintenance.clickhouseRestoreMode | bool | `false` | Suppress change-stream-driven ClickHouse sync while an organization's ClickHouse data is restored from an external export (see scripts/org-import in the currents repo). Enable it together with `toolbox.enabled` for a Mongo + ClickHouse restore, then turn both off again.  Without it, restoring documents into Mongo makes change-streams re-derive ClickHouse rows on top of the ones the import writes directly, permanently double-counting the hourly materialized views.  Leave this OFF for a Mongo-only restore: there, change-streams re-deriving the restored documents is exactly how ClickHouse gets populated.  NOTE: while this is on, NO org gets new ClickHouse metrics — the install keeps recording to Mongo while dashboards quietly stop updating. It is not a setting to leave enabled. |
+
+[values.yaml]: https://github.com/currents-dev/helm-charts/blob/release-0.8/charts/currents/values.yaml
