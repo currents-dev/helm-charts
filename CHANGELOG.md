@@ -16,7 +16,14 @@ Images `2026-10-14-001`, the first Currents on-prem feature release since `2026-
 
 ### Upgrade Notes
 - **Create the app content bucket first** and set `currents.appContentStorage.bucket`. Without it, context sharing and logo editing are off and session file uploads answer `503`. Its lifecycle rules must be scoped to the share prefixes, because the bucket also holds logos and session files. See [App content bucket](docs/eks/dependencies.md#app-content-bucket).
-- **The scheduler runs database migrations when it starts.** With 100,000 runs they took under a minute in testing; they scale with the number of runs. This is not downtime. The scheduler pod reports ready before they finish, so wait for `Startup tasks complete` in its log, and restart it if a migration logs an error (see [Database Migrations and Startup Tasks](docs/eks/upgrading.md#database-migrations-and-startup-tasks)).
+- **The scheduler builds new MongoDB indexes, then runs migrations, when it starts.**
+  - On `instances` it first drops the indexes `0.8.x` reads a run's spec files with, so those reads have no index until the build finishes.
+  - The builds load every replica set member, and on a large database they take hours.
+  - Estimate the time for your install, and on a large database build the indexes before upgrading, in a maintenance window. See [MongoDB Index Builds](docs/eks/upgrade-1.0.md#mongodb-index-builds).
+  - The migrations take about a minute per 100,000 runs.
+  - The scheduler pod reports ready before all this finishes, so wait for `Startup tasks complete` in its log, and restart it if a migration logs an error (see [Database Migrations and Startup Tasks](docs/eks/upgrading.md#database-migrations-and-startup-tasks)).
+- **SAML SSO requires a signed assertion.** A response whose `Assertion` isn't signed is refused with `SAML_ASSERTION_SIGNATURE_REQUIRED`, even when the response itself is signed. In Okta, set Assertion Signature to Signed. See [SAML SSO](docs/eks/upgrade-1.0.md#saml-sso).
+- **Upgrade to `1.0.1` or later.** On `1.0.0`, users who signed in before the upgrade can't sign in. See [Sign-In After the Upgrade](docs/eks/upgrade-1.0.md#sign-in-after-the-upgrade).
 - **Back up MongoDB and ClickHouse before upgrading.** `helm rollback` returns the chart and images to `0.8.x` but doesn't undo the migrations.
 
 ### Added
