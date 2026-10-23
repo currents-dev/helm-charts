@@ -79,7 +79,7 @@ Run this in `mongosh`, connected to the Currents database:
 ```js
 const gb = (c) => db.getCollection(c).stats().size / 1e9;
 const runs = db.runs.estimatedDocumentCount();
-const indexGB = 2 * gb('instances') + gb('runs') + gb('testRecord');
+const indexGB = 2 * gb('instances') + gb('runs') + gb('testRecord') + gb('instanceStats');
 print(`runs: ${runs}`);
 print(`data the index builds read: ${indexGB.toFixed(1)} GB`);
 print(`index builds: ${Math.ceil(indexGB / 60)} to ${Math.ceil(indexGB * 0.6)} minutes`);
