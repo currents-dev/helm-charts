@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Security
+- The `2026-10-14-002` images run Node.js 24.22.1, which fixes [CVE-2026-111497](https://nvd.nist.gov/vuln/detail/CVE-2026-111497): an out-of-bounds write in the Brotli decoder of `node:zlib`, through which crafted Brotli data can corrupt memory and possibly run code. Chart `1.0.0` defaults to `2026-10-14-001`, which runs Node.js 24.22.0 without the fix; on `1.0.0`, set `currents.imageTag: 2026-10-14-002` to get it.
+
+
 ## [currents-1.0.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.0.0) - 2026-10-14
 
 Images `2026-10-14-001`, the first Currents on-prem feature release since `2026-07-26`, and the chart's first major version. It breaks SAML SSO sign-in until you update your identity provider, so read [Upgrading to Chart 1.0](docs/eks/upgrade-1.0.md) before you upgrade. From 1.0.0 the chart follows semantic versioning (see [Chart Versions](docs/README.md#chart-versions)).
