@@ -2,8 +2,17 @@
 
 ## [Unreleased]
 
+## [currents-1.0.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.0.1) - 2026-10-27
+
+Images `2026-10-14-002`, a patch on `1.0.0` with no values changes. Upgrade to it from `1.0.0`, or straight from `0.8.x` following [Upgrading to Chart 1.0](docs/eks/upgrade-1.0.md): the `1.0.0` breaking changes and upgrade notes still apply.
+
+### Bug Fixes
+- [`f2fd600`](https://github.com/currents-dev/helm-charts/commit/f2fd60098cc5b3423b24878a7e69a9e3d0af5c8e) fix: update the images to 2026-10-14-002 so accounts created before 1.0.0 sign in again [ENG-1851] (#66)
+
+  On `1.0.0`, users who signed in before the upgrade were refused: SAML sign-ins with `account_not_linked`, the root admin's password with `INVALID_EMAIL_OR_PASSWORD`. `1.0.1` signs them in with no change to the database, and the scheduler's startup migration drops the `account_issuer_accountId_uidx` index `1.0.0` created. See [Sign-In After the Upgrade](docs/eks/upgrade-1.0.md#sign-in-after-the-upgrade).
+
 ### Security
-- The `2026-10-14-002` images run Node.js 24.22.1, which fixes [CVE-2026-111497](https://nvd.nist.gov/vuln/detail/CVE-2026-111497): an out-of-bounds write in the Brotli decoder of `node:zlib`, through which crafted Brotli data can corrupt memory and possibly run code. Chart `1.0.0` defaults to `2026-10-14-001`, which runs Node.js 24.22.0 without the fix; on `1.0.0`, set `currents.imageTag: 2026-10-14-002` to get it.
+- The `2026-10-14-002` images run Node.js 24.22.1, which fixes [CVE-2026-111497](https://nvd.nist.gov/vuln/detail/CVE-2026-111497): an out-of-bounds write in the Brotli decoder of `node:zlib`, through which crafted Brotli data can corrupt memory and possibly run code. The `2026-10-14-001` images that `1.0.0` deploys run Node.js 24.22.0 without the fix.
 
 
 ## [currents-1.0.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.0.0) - 2026-10-14
