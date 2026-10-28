@@ -20,7 +20,9 @@ spec:
     spec:
       containers:
         - name: mongodb
-          image: mongo:8
+          # mongod 8.x exits at startup on the runners' Ubuntu 7.0.0 kernels (SERVER-136848),
+          # so the rollout below times out. 7.0 has no kernel check.
+          image: mongo:7.0
           args: ["--replSet", "rs0", "--bind_ip_all"]
           ports:
             - containerPort: 27017
