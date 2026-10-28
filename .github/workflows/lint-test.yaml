@@ -4,7 +4,10 @@ on: pull_request
 
 jobs:
   lint-test:
-    runs-on: ubuntu-latest
+    # ubuntu-26.04 runs kernel 7.0.0, and mongod (mongo:8 in .github/ci/dependencies.yaml)
+    # refuses to start on Ubuntu's 7.0.0 kernels (SERVER-136848), so the install gate's
+    # MongoDB never becomes ready. Move to ubuntu-latest once mongod starts there.
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write   # Required for OIDC (assume the ECR pull role)
       contents: read    # Required for checkout
