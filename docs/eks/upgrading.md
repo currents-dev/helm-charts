@@ -90,11 +90,31 @@ That last line matters. Until an upgrade has recorded a build, the estimate uses
 
 ### Ways Forward
 
-Build the indexes against the version still serving, then upgrade. Nothing is down while this runs, and it records a measured rate for later estimates:
+Build the indexes before the upgrade, while the running release keeps serving. Nothing is down for it, and the build records a measured rate that later estimates use.
+
+The build has to come from the image you are upgrading **to**: the running release does not declare the new indexes, so running `sync-indexes` inside a current pod rebuilds what is already there. Render the same Job the hook would run, at the target version and under a name of its own, and apply it:
 
 ```bash
-kubectl exec -n currents deploy/currents-scheduler -- \
-  node /app/packages/mongo/dist/scripts/migrate.js sync-indexes
+helm template currents currents \
+  --repo https://currents-dev.github.io/helm-charts/ \
+  --version <target-chart-version> \
+  -f currents-helm-config.yaml \
+  --set indexes.preUpgrade.mode=build \
+  --set indexes.name=index-build \
+  --show-only templates/indexes/pre-upgrade-job.yaml \
+  | kubectl apply -n currents -f -
+
+kubectl logs -n currents -f job/currents-index-build
+```
+
+`helm template` reads the chart and writes nothing to the cluster, so `--version` is what picks the image — pass the version you are about to upgrade to. A `currents.imageTag` pinned in your values file wins here exactly as it will during the upgrade. `--set indexes.name=index-build` gives the Job a name of its own, so it neither collides with `currents-index-check` nor deletes the failed check's log. The rendered Job still carries its `helm.sh/hook` annotations; outside of Helm they are ordinary annotations and `kubectl` ignores them.
+
+Index builds read whole collections and saturate the secondaries the API reads from, so pick a quiet window. This is the same work the upgrade would do, moved to a time you choose rather than one Helm picks.
+
+When the Job completes, remove it and upgrade as usual — the check finds nothing pending and passes:
+
+```bash
+kubectl delete job -n currents currents-index-build
 ```
 
 Or accept the downtime and upgrade anyway:
@@ -123,7 +143,7 @@ kubectl exec -n currents deploy/currents-scheduler -- \
   node /app/packages/mongo/dist/scripts/migrate.js index-plan
 ```
 
-This reports the indexes the running version declares. It tells you nothing about what a newer chart adds — only the hook, which runs the new image, can.
+This reports the indexes the running version declares, which says nothing about what a newer chart adds. For that, render the check Job the same way as the build above with `--set indexes.preUpgrade.mode=gate`: it reads the plan from the target image and leaves the database alone. It exits non-zero when the estimate is over the threshold, so the Job shows as failed even though the read succeeded; the log is the answer either way.
 
 ## Running the Upgrade
 
