@@ -266,6 +266,15 @@ The following table lists the configurable parameters of the `currents` chart an
 | toolbox.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] for the toolbox pod |
 | toolbox.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | toolbox.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the pod |
+| indexes.name | string | `"index-check"` |  |
+| indexes.preUpgrade.mode | string | `"gate"` | What to do before any pod rolls.  `gate` reads the plan and refuses the upgrade when the estimated build is over `thresholdSeconds`, leaving the running release untouched. Nothing is written, and it finishes in seconds.  `build` builds the indexes first and waits. `helm upgrade` is held open for the whole build, so raise `--timeout` past the estimate or Helm gives up partway and marks the release failed.  `off` renders no hook. Use it to proceed once you have read the estimate and accepted the downtime. |
+| indexes.preUpgrade.thresholdSeconds | int | `600` | Estimated build time, in seconds, that `gate` refuses to upgrade over. At the built-in rate that is about 18 GB of collection to scan; on a deployment that has recorded its own builds and measured a faster disk, considerably more. Until the first build is recorded the estimate is deliberately pessimistic, so a first upgrade can stop on a build that turns out to be quick — the Job's log says when that is the case. |
+| indexes.preUpgrade.timeoutSeconds | int | `300` | How long `gate` may take before the upgrade fails anyway. Reading the plan is a handful of `listIndexes` and `$collStats` calls, so overrunning this means MongoDB is not answering. Without it a hook holds `helm upgrade` open indefinitely. Not applied to `build`. |
+| indexes.env | list | `[]` | Additional environment variables for the pre-upgrade Job. |
+| indexes.resources | object | `{}` | Resource limits for the pre-upgrade Job. It reads index metadata and collection stats, so it needs very little. |
+| indexes.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] for the pre-upgrade Job |
+| indexes.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| indexes.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the pod |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | If not set and create is true, a name is generated using the fullname template | The name of the service account to use. |
 | serviceAccount.annotations | object | `{}` | Optional additional annotations to add to the Service Account. Templates are allowed for both keys and values. |
