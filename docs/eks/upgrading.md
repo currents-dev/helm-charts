@@ -245,6 +245,23 @@ Read the Job's log and pick a way forward: [Index Builds Before an Upgrade](#ind
 
 If the log shows a connection error rather than an estimate, or the Job ends in `DeadlineExceeded`, MongoDB is not answering the chart's `currents.mongoConnection` secret — the same connection every service uses. Fix that before upgrading; the check is reporting a real problem, not getting in the way.
 
+If the log is the `migrate` usage line instead:
+
+```
+Usage: node dist/scripts/migrate.js <up|status|sync-indexes|baseline|mark> [--dry-run]
+```
+
+then the image the Job ran predates the check and does not know `index-plan --gate`. This happens when `currents.imageTag` is pinned to a release older than the chart. Either unpin it, or skip the check for this upgrade:
+
+```bash
+helm upgrade --install currents currents \
+  --repo https://currents-dev.github.io/helm-charts/ \
+  -f currents-helm-config.yaml \
+  --set indexes.preUpgrade.mode=off
+```
+
+The check stops the upgrade whenever it cannot reach a verdict, rather than assuming the build is short. An upgrade it blocks for a reason you have read and accepted costs one flag; one it waves through silently costs the hour it exists to warn you about.
+
 ### Connection Errors in Logs
 
 If services report MongoDB/ClickHouse/Redis/object storage connection errors, dependencies may still be initializing. Restart the affected deployment:
