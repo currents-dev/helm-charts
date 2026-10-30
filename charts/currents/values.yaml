@@ -924,6 +924,55 @@ toolbox:
   affinity: {}
 # END Toolbox Configuration
 
+# Index Configuration
+# A release that declares a new index builds it while the upgrade is in flight.
+# On a large `instances` collection that has taken about an hour, and the
+# scheduler only logs it once the pods have already rolled. This section runs a
+# `pre-upgrade` hook Job that reads what the build would cost first.
+indexes:
+  name: index-check
+  preUpgrade:
+    # -- What to do before any pod rolls.
+    #
+    # `gate` reads the plan and refuses the upgrade when the estimated build is
+    # over `thresholdSeconds`, leaving the running release untouched. Nothing is
+    # written, and it finishes in seconds.
+    #
+    # `build` builds the indexes first and waits. `helm upgrade` is held open
+    # for the whole build, so raise `--timeout` past the estimate or Helm gives
+    # up partway and marks the release failed.
+    #
+    # `off` renders no hook. Use it to proceed once you have read the estimate
+    # and accepted the downtime.
+    mode: gate
+    # -- Estimated build time, in seconds, that `gate` refuses to upgrade over.
+    # At the built-in rate that is about 18 GB of collection to scan; on a
+    # deployment that has recorded its own builds and measured a faster disk,
+    # considerably more. Until the first build is recorded the estimate is
+    # deliberately pessimistic, so a first upgrade can stop on a build that
+    # turns out to be quick — the Job's log says when that is the case.
+    thresholdSeconds: 600
+    # -- How long `gate` may take before the upgrade fails anyway. Reading the
+    # plan is a handful of `listIndexes` and `$collStats` calls, so overrunning
+    # this means MongoDB is not answering. Without it a hook holds
+    # `helm upgrade` open indefinitely. Not applied to `build`.
+    timeoutSeconds: 300
+  # -- Additional environment variables for the pre-upgrade Job.
+  env: []
+  # -- Resource limits for the pre-upgrade Job. It reads index metadata and
+  # collection stats, so it needs very little.
+  resources: {}
+  # -- [Node selector] for the pre-upgrade Job
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+  # -- [Tolerations] for use with node taints
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
+  # -- Assign custom [affinity] rules to the pod
+  # @default -- `{}` (defaults to the global.affinity preset)
+  affinity: {}
+# END Index Configuration
+
 # Service Account Configuration
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
