@@ -22,7 +22,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.email.smtp.host | string | `""` | the SMTP server to use. Required unless `transporter` is `ses`. |
 | currents.email.smtp.secretName | string | `""` | K8s secret to use for the SMTP username/password. Required unless `transporter` is `ses`. |
 | currents.betterAuth.secretName | string | `""` | The K8s secret containing the Better Auth secret |
-| currents.apiInternalToken.secretName | string | `""` | The K8s secret to use for the internal API token |
+| currents.apiInternalToken.secretName | string | `""` | The K8s secret holding the token the director authenticates to the server with; both deployments read it. Templating fails when it is unset, because an empty `API_SECRET` leaves the director unable to cancel runs. Generate at least 32 random characters with `openssl rand -hex 32`. |
 | currents.clickhouse.user.secretName | string | `""` | The k8s secret to use for the ClickHouse password |
 | currents.clickhouse.user.secretPasswordKey | string | `""` | The k8s secret key to use to access the ClickHouse password |
 | currents.clickhouse.user.secretAccessTokenKey | string | `""` | The k8s secret key to use to access the ClickHouse access token |
