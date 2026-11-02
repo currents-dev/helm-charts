@@ -60,33 +60,27 @@ spec:
               value: "true"
             - name: ON_PREM_EMAIL
               value: {{ tpl .Values.currents.rootUser.email . }}
-          {{- if .Values.currents.rootUser.password.secretName }}
             - name: ON_PREM_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.currents.rootUser.password.secretName }}
+                  name: {{ required "currents.rootUser.password.secretName is required: it sets the root admin's password for the first sign-in" .Values.currents.rootUser.password.secretName }}
                   key: {{ .Values.currents.rootUser.password.key }}
-          {{- end }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
           {{- include "currents.URLConfigEnv" . | nindent 12 }}
           {{- include "currents.emailEnv" . | nindent 12 }}
           {{- include "currents.samlSSOEnv" . | nindent 12 }}
           {{- include "currents.mcpOAuthEnv" . | nindent 12 }}
           {{- include "currents.appContentStorageEnv" . | nindent 12 }}
-          {{- if .Values.currents.betterAuth.secretName }}
             - name: BETTER_AUTH_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.currents.betterAuth.secretName }}
+                  name: {{ required "currents.betterAuth.secretName is required: the server signs session cookies with it" .Values.currents.betterAuth.secretName }}
                   key: {{ .Values.currents.betterAuth.key }}
-          {{- end }}
-          {{- if .Values.currents.apiInternalToken.secretName }}
             - name: API_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.currents.apiInternalToken.secretName }}
+                  name: {{ required "currents.apiInternalToken.secretName is required: the director authenticates to the server with this token" .Values.currents.apiInternalToken.secretName }}
                   key: {{ .Values.currents.apiInternalToken.key }}
-          {{- end }}
           {{- with (concat .Values.global.env .Values.server.env) }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
