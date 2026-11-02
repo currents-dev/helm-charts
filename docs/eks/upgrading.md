@@ -62,6 +62,89 @@ Use this when release notes require new secrets:
 2. Ensure your values file references those secret names and keys.
 3. Run `helm upgrade --install`.
 
+## Index Builds Before an Upgrade
+
+A release that declares a new index builds it during the upgrade, and the upgrade is not finished until the build is. On a large `instances` collection that has taken about an hour.
+
+Before any pod rolls, the chart runs a `pre-upgrade` hook Job, `currents-index-check`, that reads what the build would cost. It only reads. If the estimate is over `indexes.preUpgrade.thresholdSeconds` (600 by default), the Job fails and Helm stops the upgrade with the running release untouched:
+
+```
+Error: UPGRADE FAILED: pre-upgrade hooks failed: job currents-index-check failed: BackoffLimitExceeded
+```
+
+**Helm does not print the Job's output**, and the output is the part you need — the estimate, the collections and the indexes. Read it from the pod, which is kept for this:
+
+```bash
+kubectl logs -n currents job/currents-index-check
+```
+
+```
+Index build estimated at 64 minutes, which is over the limit of 10 minutes.
+
+  instances: 109.0 GB, about 62 minutes (createdAt_1)
+
+Estimated at 30.0 MB/s, the built-in default — this deployment has recorded no index builds of its own, so the real build may be several times faster.
+```
+
+That last line matters. Until an upgrade has recorded a build, the estimate uses a deliberately slow rate, so a first upgrade can stop on a build that is really much quicker. Once a build has been recorded the estimate uses this deployment's own measured rate and the figure is worth trusting.
+
+### Ways Forward
+
+Build the indexes before the upgrade, while the running release keeps serving. Nothing is down for it, and the build records a measured rate that later estimates use.
+
+The build has to come from the image you are upgrading **to**: the running release does not declare the new indexes, so running `sync-indexes` inside a current pod rebuilds what is already there. Render the same Job the hook would run, at the target version and under a name of its own, and apply it:
+
+```bash
+helm template currents currents \
+  --repo https://currents-dev.github.io/helm-charts/ \
+  --version <target-chart-version> \
+  -f currents-helm-config.yaml \
+  --set indexes.preUpgrade.mode=build \
+  --set indexes.name=index-build \
+  --show-only templates/indexes/pre-upgrade-job.yaml \
+  | kubectl apply -n currents -f -
+
+kubectl logs -n currents -f job/currents-index-build
+```
+
+`helm template` reads the chart and writes nothing to the cluster, so `--version` is what picks the image — pass the version you are about to upgrade to. A `currents.imageTag` pinned in your values file wins here exactly as it will during the upgrade. `--set indexes.name=index-build` gives the Job a name of its own, so it neither collides with `currents-index-check` nor deletes the failed check's log. The rendered Job still carries its `helm.sh/hook` annotations; outside of Helm they are ordinary annotations and `kubectl` ignores them.
+
+Index builds read whole collections and saturate the secondaries the API reads from, so pick a quiet window. This is the same work the upgrade would do, moved to a time you choose rather than one Helm picks.
+
+When the Job completes, remove it and upgrade as usual — the check finds nothing pending and passes:
+
+```bash
+kubectl delete job -n currents currents-index-build
+```
+
+Or accept the downtime and upgrade anyway:
+
+```bash
+helm upgrade --install currents currents \
+  --repo https://currents-dev.github.io/helm-charts/ \
+  -f currents-helm-config.yaml \
+  --set indexes.preUpgrade.mode=off
+```
+
+Or have the hook build them as part of the upgrade. Helm waits for the whole build, so raise `--timeout` past the estimate — otherwise Helm gives up partway and marks the release failed:
+
+```bash
+helm upgrade --install currents currents \
+  --repo https://currents-dev.github.io/helm-charts/ \
+  -f currents-helm-config.yaml \
+  --set indexes.preUpgrade.mode=build \
+  --timeout 90m
+```
+
+To see what an upgrade would build without upgrading, run the plan against the running release:
+
+```bash
+kubectl exec -n currents deploy/currents-scheduler -- \
+  node /app/packages/mongo/dist/scripts/migrate.js index-plan
+```
+
+This reports the indexes the running version declares, which says nothing about what a newer chart adds. For that, render the check Job the same way as the build above with `--set indexes.preUpgrade.mode=gate`: it reads the plan from the target image and leaves the database alone. It exits non-zero when the estimate is over the threshold, so the Job shows as failed even though the read succeeded; the log is the answer either way.
+
 ## Running the Upgrade
 
 Recommended upgrade command:
@@ -151,6 +234,33 @@ kubectl get pods -n currents
 kubectl describe pod <pod-name> -n currents
 kubectl logs <pod-name> -n currents --all-containers --tail=200
 ```
+
+### Upgrade Stopped by the Index Check
+
+```
+Error: UPGRADE FAILED: pre-upgrade hooks failed: job currents-index-check failed
+```
+
+Read the Job's log and pick a way forward: [Index Builds Before an Upgrade](#index-builds-before-an-upgrade).
+
+If the log shows a connection error rather than an estimate, or the Job ends in `DeadlineExceeded`, MongoDB is not answering the chart's `currents.mongoConnection` secret — the same connection every service uses. Fix that before upgrading; the check is reporting a real problem, not getting in the way.
+
+If the log is the `migrate` usage line instead:
+
+```
+Usage: node dist/scripts/migrate.js <up|status|sync-indexes|baseline|mark> [--dry-run]
+```
+
+then the image the Job ran predates the check and does not know `index-plan --gate`. This happens when `currents.imageTag` is pinned to a release older than the chart. Either unpin it, or skip the check for this upgrade:
+
+```bash
+helm upgrade --install currents currents \
+  --repo https://currents-dev.github.io/helm-charts/ \
+  -f currents-helm-config.yaml \
+  --set indexes.preUpgrade.mode=off
+```
+
+The check stops the upgrade whenever it cannot reach a verdict, rather than assuming the build is short. An upgrade it blocks for a reason you have read and accepted costs one flag; one it waves through silently costs the hour it exists to warn you about.
 
 ### Connection Errors in Logs
 

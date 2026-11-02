@@ -1,0 +1,133 @@
+{{- $mode := .Values.indexes.preUpgrade.mode | default "gate" }}
+{{- if not (has $mode (list "gate" "build" "off")) }}
+{{- fail (printf "indexes.preUpgrade.mode must be one of \"gate\", \"build\" or \"off\", got %q" $mode) }}
+{{- end }}
+{{- if ne $mode "off" }}
+{{/*
+Pre-upgrade index check.
+
+New indexes are built while the upgrade is in flight, and on a large
+`instances` collection that has taken about an hour with the install serving
+nothing. Nothing told the operator beforehand: the scheduler only logs it once
+the pods have already rolled.
+
+This Job runs the new image's `migrate` CLI against the database the old
+release is still serving, before any pod rolls. `index-plan` only reads, so
+running the new code against the old data is safe.
+
+Helm reports a failed hook as `job failed: BackoffLimitExceeded` and does not
+print the pod's log — which is where the estimate and the collection names
+are. Hence the delete policy below, and the `kubectl logs` line in
+docs/eks/upgrading.md.
+*/}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "currents.indexes.fullname" . }}
+  labels:
+    {{- include "currents.labels" (dict "context" . "component" .Values.indexes.name) | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade
+    {{- /* Ahead of anything else a future hook adds: there is no point
+           preparing for an upgrade this check is about to stop. */}}
+    helm.sh/hook-weight: "-10"
+    {{- /* Deliberately not hook-failed. That policy deletes the pod as soon as
+           the Job fails, taking the only copy of the message with it. */}}
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  # One attempt. A second read returns the same plan, and retrying only delays
+  # the operator seeing it.
+  backoffLimit: 0
+  {{- if eq $mode "gate" }}
+  {{- /* Only in gate mode. Reading the plan is a handful of listIndexes and
+         $collStats calls, so anything longer than this is a database that is
+         not answering, and a hook with no deadline holds `helm upgrade` open
+         indefinitely. A build has no deadline — the point of that mode is to
+         wait for it. */}}
+  activeDeadlineSeconds: {{ .Values.indexes.preUpgrade.timeoutSeconds | int }}
+  {{- end }}
+  template:
+    metadata:
+      {{- with .Values.global.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "currents.labels" (dict "context" . "component" .Values.indexes.name) | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "currents.serviceAccountName" . }}
+      {{- with .Values.global.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+        - name: index-check
+          {{- with .Values.global.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- /* The scheduler image: it carries packages/mongo, so the same
+                 migrate CLI the scheduler runs at startup. */}}
+          image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.scheduler.image) }}
+          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.scheduler.image.pullPolicy }}
+          {{- if eq $mode "build" }}
+          command:
+            - node
+            - /app/packages/mongo/dist/scripts/migrate.js
+            - sync-indexes
+          {{- else }}
+          command:
+            - node
+            - /app/packages/mongo/dist/scripts/migrate.js
+            - index-plan
+            - --gate
+            - --gate-seconds
+            - {{ .Values.indexes.preUpgrade.thresholdSeconds | int | quote }}
+          {{- end }}
+          env:
+            - name: CURRENTS_ENV
+              value: "onprem"
+            {{- /* global.securityContext sets readOnlyRootFilesystem, and no
+                   CI job runs a pre-upgrade hook, so anything that reaches for
+                   a home directory would fail first at a customer's upgrade.
+                   Point it at the writable mount below. */}}
+            - name: HOME
+              value: /tmp
+            {{- /* The whole helper rather than MONGODB_URI alone, so how Mongo
+                   is wired stays defined in one place. The CLI opens no other
+                   connection; the rest of these are unread. */}}
+            {{- include "currents.connectionConfigEnv" . | nindent 12 }}
+            {{- with (concat .Values.global.env .Values.indexes.env) }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.indexes.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.indexes.nodeSelector | default .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.indexes.tolerations | default .Values.global.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.indexes.affinity | default .Values.global.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
