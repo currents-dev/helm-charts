@@ -18,10 +18,10 @@ The following table lists the configurable parameters of the `currents` chart an
 |-----|------|---------|-------------|
 | currents.domains.appHost | string | `"currents-app.localhost"` | The host for the app |
 | currents.domains.recordApiHost | string | `"currents-record.localhost"` | The host for the recording endpoint that the test reporters communicate with |
-| currents.rootUser.password.secretName | string | `""` | The K8s secret containing the root user password. The password is used during initial setup only. |
+| currents.rootUser.password.secretName | string | `""` | The K8s secret containing the root user password, used for the first sign-in only. Templating fails when it is unset, because the server refuses to start without `ON_PREM_PASSWORD`. Generate one with `openssl rand -hex 16`. |
 | currents.email.smtp.host | string | `""` | the SMTP server to use. Required unless `transporter` is `ses`. |
 | currents.email.smtp.secretName | string | `""` | K8s secret to use for the SMTP username/password. Required unless `transporter` is `ses`. |
-| currents.betterAuth.secretName | string | `""` | The K8s secret containing the Better Auth secret |
+| currents.betterAuth.secretName | string | `""` | The K8s secret containing the secret the server signs session cookies with. Templating fails when it is unset, because the server refuses to start without `BETTER_AUTH_SECRET`. Generate one with `openssl rand -hex 32`. |
 | currents.apiInternalToken.secretName | string | `""` | The K8s secret holding the token the director authenticates to the server with; both deployments read it. Templating fails when it is unset, because an empty `API_SECRET` leaves the director unable to cancel runs. Generate at least 32 random characters with `openssl rand -hex 32`. |
 | currents.clickhouse.user.secretName | string | `""` | The k8s secret to use for the ClickHouse password |
 | currents.clickhouse.user.secretPasswordKey | string | `""` | The k8s secret key to use to access the ClickHouse password |

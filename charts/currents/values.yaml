@@ -20,7 +20,9 @@ currents:
     # -- The email address of the root user
     email: 'admin@{{ .Values.currents.domains.appHost }}'
     password:
-      # -- The K8s secret containing the root user password. The password is used during initial setup only.
+      # -- The K8s secret containing the root user password, used for the first sign-in
+      # only. Templating fails when it is unset, because the server refuses to start
+      # without `ON_PREM_PASSWORD`. Generate one with `openssl rand -hex 16`.
       # @section -- Required
       secretName: ""
       # -- The K8s secret key for the root user password
@@ -76,7 +78,9 @@ currents:
     # -- Whether to enable the both default ingresses (server, and director)
     enabled: false
   betterAuth:
-    # -- The K8s secret containing the Better Auth secret
+    # -- The K8s secret containing the secret the server signs session cookies with.
+    # Templating fails when it is unset, because the server refuses to start without
+    # `BETTER_AUTH_SECRET`. Generate one with `openssl rand -hex 32`.
     # @section -- Required
     secretName: ""
     # -- The K8s secret key for the Better Auth secret
