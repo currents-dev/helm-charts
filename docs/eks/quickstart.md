@@ -244,7 +244,7 @@ aiQueueWorker:
 
 Optional settings go in the same list: `LLM_MODEL`, `LLM_EXPLANATION_MODEL`, `LLM_REASONING_EFFORT`, `LLM_EXPLANATION_REASONING_EFFORT`, `EXPLANATION_TRACE_TOOLS`, `AI_QUEUE_CONCURRENCY` (default `5`) and `LOG_LEVEL`. Set `aiQueueWorker.enabled: false` to run no worker; AI tasks then wait in the queue.
 
-If you set `AI_QUEUE_WORKER_ENABLED=true` on `webhooks` to run AI tasks, remove it and move the `LLM_*` settings to `aiQueueWorker.env`. On `webhooks` the variable now only starts the Slack AI answer worker; set `SLACK_AI_CALLBACK_WORKER_ENABLED=true` there instead. Keep `AI_QUEUE_WORKER_ENABLED=true` on `director` if you have it: it makes the director create the AI indexes in MongoDB.
+If you set `AI_QUEUE_WORKER_ENABLED=true` on `webhooks` to run AI tasks, remove it and move the `LLM_*` settings to `aiQueueWorker.env`. On `webhooks` that variable only starts the Slack AI answer worker; set `SLACK_AI_CALLBACK_WORKER_ENABLED=true` there instead. Keep `AI_QUEUE_WORKER_ENABLED=true` on `director` if you have it: it makes the director create the AI indexes in MongoDB.
 
 ## Remote MCP and OAuth
 
