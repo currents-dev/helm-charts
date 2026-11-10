@@ -224,6 +224,28 @@ CURRENTS_API_URL=https://currents-record.eks.example.com npx pwc --key <your-key
 
 When you need to move to a newer Currents release, follow the dedicated [EKS Upgrade Guide](./upgrading.md). From `0.8.x`, read [Upgrading to Chart 1.0](./upgrade-1.0.md) first.
 
+## AI Explanations and Chat
+
+The `ai-queue-worker` deployment runs the AI tasks (test explanations, chat) from the `ai-bmq` Redis queue. It is on by default and uses the image `currents/on-prem/ai-queue-worker`, so your nodes need pull access to that repository too (see [IAM Resources](./iam.md)). `webhooks` does not run AI tasks.
+
+The worker needs an LLM endpoint. Set it in `aiQueueWorker.env`, or in `global.env` to give it to every service:
+
+```yaml
+aiQueueWorker:
+  env:
+    - name: LLM_PROVIDER_URL
+      value: https://llm.example.com/v1
+    - name: LLM_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: currents-llm
+          key: api-key
+```
+
+Optional settings go in the same list: `LLM_MODEL`, `LLM_EXPLANATION_MODEL`, `LLM_REASONING_EFFORT`, `LLM_EXPLANATION_REASONING_EFFORT`, `EXPLANATION_TRACE_TOOLS`, `AI_QUEUE_CONCURRENCY` (default `5`) and `LOG_LEVEL`. Set `aiQueueWorker.enabled: false` to run no worker; AI tasks then wait in the queue.
+
+If you set `AI_QUEUE_WORKER_ENABLED=true` on `webhooks` to run AI tasks, remove it and move the `LLM_*` settings to `aiQueueWorker.env`. On `webhooks` the variable now only starts the Slack AI answer worker; set `SLACK_AI_CALLBACK_WORKER_ENABLED=true` there instead. Keep `AI_QUEUE_WORKER_ENABLED=true` on `director` if you have it: it makes the director create the AI indexes in MongoDB.
+
 ## Remote MCP and OAuth
 
 Remote MCP is served at `https://<appHost>/mcp`. MCP clients authenticate with a Currents API key or personal access token, or sign in with a Currents account through the OAuth provider. Both are on by default; turn them off with `currents.mcp.enabled: false` and `currents.oauth.enabled: false`.

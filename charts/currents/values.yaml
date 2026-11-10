@@ -888,6 +888,95 @@ webhooks:
   affinity: {}
 # END Webhooks Configuration
 
+# AI Queue Worker Configuration
+aiQueueWorker:
+  # -- Run the AI queue worker. It runs the AI tasks (explanations, chat) from the
+  # `ai-bmq` queue; with it off, those tasks stay queued.
+  enabled: true
+  name: ai-queue-worker
+  replicas: 1
+  # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+  image:
+    # The container registry to pull the manager image from.
+    registry: 513558712013.dkr.ecr.us-east-1.amazonaws.com
+    # The container image for Currents AI Queue Worker Image
+    repository: currents/on-prem/ai-queue-worker
+    # -- Override the image tag to deploy by setting this variable
+    tag: ""
+    # -- Setting a digest will override any tag
+    digest: ""
+    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
+
+    # -- defaults to global.image.pullPolicy
+    pullPolicy: ""
+  # -- Deployment update strategy for Currents deployment.
+  # [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
+  deploymentStrategy:
+    type: Recreate
+  # -- Env variables to pass to the container. The LLM settings go here or in
+  # `global.env`: `LLM_PROVIDER_URL`, `LLM_API_KEY`, and optionally `LLM_MODEL`,
+  # `AI_QUEUE_CONCURRENCY` (default 5).
+  env: []
+  # -- Additional volumes on the output Deployment definition
+  volumes: []
+  # -- Additional volumeMounts on the output Deployment definition
+  volumeMounts: []
+  # -- Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's
+  # sockets and, for services started from an ecosystem file, its log files.
+  # Disk-backed on purpose: on a memory-backed volume those log files count
+  # against the pod's memory limit and the container is OOMKilled under load.
+  pm2HomeSizeLimit: 256Mi
+  # -- Startup probe. While it is running the liveness and readiness probes are
+  # held off, so a slow start is not mistaken for an unhealthy container.
+  startupProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - dist
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 30
+  # -- Liveness probe to check if the container is alive. The command forks a
+  # Node CLI, which cannot finish within the 1 second Kubernetes defaults
+  # `timeoutSeconds` to while the container is under CPU pressure. Timed-out
+  # probe processes then accumulate and make the pressure worse.
+  livenessProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - dist
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 5
+  # -- Readiness probe to check if the container is ready
+  readinessProbe:
+    exec:
+      command:
+        - ./node_modules/.bin/pm2
+        - show
+        - dist
+    periodSeconds: 30
+    timeoutSeconds: 15
+    failureThreshold: 5
+  # -- Liveness probe to check if the container is alive
+  # -- Resources to provide
+  # [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+  # @section -- Frequently Used
+  # @default -- `{}` (defaults to global.resources)
+  resources: {}
+  # -- [Node selector]
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+  # -- [Tolerations] for use with node taints
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
+  # -- Assign custom [affinity] rules to the deployment
+  # @default -- `{}` (defaults to the global.affinity preset)
+  affinity: {}
+# END AI Queue Worker Configuration
+
 # Toolbox Configuration
 # An optional, manually-driven pod for one-off operational work (data import,
 # ad-hoc maintenance). It runs `sleep infinity` and does nothing on its own —
