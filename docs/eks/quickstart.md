@@ -226,12 +226,19 @@ When you need to move to a newer Currents release, follow the dedicated [EKS Upg
 
 ## AI Explanations and Chat
 
-The `ai-queue-worker` deployment runs the AI tasks (test explanations, chat) from the `ai-bmq` Redis queue. It is on by default and uses the image `currents/on-prem/ai-queue-worker`, so your nodes need pull access to that repository too (see [IAM Resources](./iam.md)). `webhooks` does not run AI tasks.
+The `ai-queue-worker` deployment runs the AI tasks (test explanations, chat) from the `ai-bmq` Redis queue. It is off by default, because it needs an LLM endpoint you provide. `webhooks` does not run AI tasks.
 
-The worker needs an LLM endpoint. Set it in `aiQueueWorker.env`, or in `global.env` to give it to every service:
+AI stays off for an organization until an admin grants AI consent in its settings. Turn the worker on first: AI tasks requested without it wait in the queue and never finish.
+
+To turn it on, set `aiQueueWorker.enabled: true` and the LLM endpoint in `aiQueueWorker.env`. Set `AI_QUEUE_WORKER_ENABLED=true` on the scheduler as well: the scheduler builds the MongoDB indexes for the AI collections, including the ones that expire old AI sessions, only when it has that variable. The worker uses the image `currents/on-prem/ai-queue-worker`, so your nodes need pull access to that repository too (see [IAM Resources](./iam.md)).
 
 ```yaml
+scheduler:
+  env:
+    - name: AI_QUEUE_WORKER_ENABLED
+      value: "true"
 aiQueueWorker:
+  enabled: true
   env:
     - name: LLM_PROVIDER_URL
       value: https://llm.example.com/v1
@@ -242,9 +249,9 @@ aiQueueWorker:
           key: api-key
 ```
 
-Optional settings go in the same list: `LLM_MODEL`, `LLM_EXPLANATION_MODEL`, `LLM_REASONING_EFFORT`, `LLM_EXPLANATION_REASONING_EFFORT`, `EXPLANATION_TRACE_TOOLS`, `AI_QUEUE_CONCURRENCY` (default `5`) and `LOG_LEVEL`. Set `aiQueueWorker.enabled: false` to run no worker; AI tasks then wait in the queue.
+Optional settings go in the same list: `LLM_MODEL`, `LLM_EXPLANATION_MODEL`, `LLM_REASONING_EFFORT`, `LLM_EXPLANATION_REASONING_EFFORT`, `EXPLANATION_TRACE_TOOLS`, `AI_QUEUE_CONCURRENCY` (default `5`) and `LOG_LEVEL`. To give the LLM settings to every service instead, put them in `global.env`.
 
-If you set `AI_QUEUE_WORKER_ENABLED=true` on `webhooks` to run AI tasks, remove it and move the `LLM_*` settings to `aiQueueWorker.env`. On `webhooks` that variable only starts the Slack AI answer worker; set `SLACK_AI_CALLBACK_WORKER_ENABLED=true` there instead. Keep `AI_QUEUE_WORKER_ENABLED=true` on `director` if you have it: it makes the director create the AI indexes in MongoDB.
+If you set `AI_QUEUE_WORKER_ENABLED=true` on `webhooks` to run AI tasks, AI stops at this upgrade until you turn the worker on as above. Remove the variable from `webhooks` and move the `LLM_*` settings to `aiQueueWorker.env`. On `webhooks` that variable now only starts the Slack AI answer worker; set `SLACK_AI_CALLBACK_WORKER_ENABLED=true` there instead.
 
 ## Remote MCP and OAuth
 

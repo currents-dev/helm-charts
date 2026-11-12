@@ -890,9 +890,11 @@ webhooks:
 
 # AI Queue Worker Configuration
 aiQueueWorker:
-  # -- Run the AI queue worker. It runs the AI tasks (explanations, chat) from the
-  # `ai-bmq` queue; with it off, those tasks stay queued.
-  enabled: true
+  # -- Run the AI queue worker, which runs the AI tasks (explanations, chat) from
+  # the `ai-bmq` queue. Off by default: it needs an LLM endpoint in `env`. Turn
+  # it on before an organization admin grants AI consent in settings; without
+  # it, those tasks stay queued.
+  enabled: false
   name: ai-queue-worker
   replicas: 1
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
