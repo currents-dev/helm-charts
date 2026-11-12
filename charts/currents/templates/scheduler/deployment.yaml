@@ -47,12 +47,8 @@ spec:
               value: "onprem"
             - name: RUN_STARTUP_TASKS
               value: "true"
-            {{- if .Values.aiQueueWorker.enabled }}
-            # The scheduler builds the MongoDB indexes, and declares the AI
-            # collections' ones (including the TTLs that expire AI sessions)
-            # only with this set.
-            - name: AI_QUEUE_WORKER_ENABLED
-              value: "true"
+            {{- with include "currents.indexDeclarationEnv" . }}
+              {{- . | nindent 12 }}
             {{- end }}
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
             {{- with (concat .Values.global.env .Values.scheduler.env) }}

@@ -110,6 +110,12 @@ spec:
                    is wired stays defined in one place. The CLI opens no other
                    connection; the rest of these are unread. */}}
             {{- include "currents.connectionConfigEnv" . | nindent 12 }}
+            {{- /* The same indexes the scheduler declares, so the estimate
+                   and a `build` cover the AI collections when the worker is
+                   on. */}}
+            {{- with include "currents.indexDeclarationEnv" . }}
+              {{- . | nindent 12 }}
+            {{- end }}
             {{- with (concat .Values.global.env .Values.indexes.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}

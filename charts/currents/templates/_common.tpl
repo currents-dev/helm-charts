@@ -396,3 +396,17 @@ internal endpoint would send the pods to the wrong storage.
 {{- end }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Env for the containers that declare MongoDB indexes: the scheduler, which
+builds them at startup, and the pre-upgrade index Job, which estimates or
+builds them first. The AI collections' indexes, including the TTLs that expire
+AI sessions, are declared only with AI_QUEUE_WORKER_ENABLED set. A container
+without it leaves those indexes out of its estimate and its build.
+*/}}
+{{- define "currents.indexDeclarationEnv" -}}
+{{- if .Values.aiQueueWorker.enabled -}}
+- name: AI_QUEUE_WORKER_ENABLED
+  value: "true"
+{{- end }}
+{{- end -}}
