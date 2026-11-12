@@ -243,7 +243,7 @@ Error: UPGRADE FAILED: pre-upgrade hooks failed: job currents-index-check failed
 
 Read the Job's log and pick a way forward: [Index Builds Before an Upgrade](#index-builds-before-an-upgrade).
 
-If the log shows a connection error rather than an estimate, or the Job ends in `DeadlineExceeded`, MongoDB is not answering the chart's `currents.mongoConnection` secret — the same connection every service uses. Fix that before upgrading; the check is reporting a real problem, not getting in the way.
+If the log shows a connection error rather than an estimate, or the pod ran until the Job ended in `DeadlineExceeded`, MongoDB is not answering the chart's `currents.mongoConnection` secret — the same connection every service uses. Fix that before upgrading; the check is reporting a real problem, not getting in the way.
 
 If the log is the `migrate` usage line instead:
 
@@ -259,6 +259,14 @@ helm upgrade --install currents currents \
   -f currents-helm-config.yaml \
   --set indexes.preUpgrade.mode=off
 ```
+
+If the Job ends in `DeadlineExceeded` and `kubectl logs` finds no pod, the pod was never created. `kubectl describe job currents-index-check -n currents` gives the reason. When it is a missing ServiceAccount:
+
+```
+error looking up service account currents/<name>: serviceaccount "<name>" not found
+```
+
+then this upgrade changes `serviceAccount.name`, turns on `serviceAccount.create`, or names an account that does not exist yet. The Job runs as that account and before the chart creates anything, so the account is not there. Run this one upgrade with the same `--set indexes.preUpgrade.mode=off`; from the next upgrade the check runs as the new account.
 
 The check stops the upgrade whenever it cannot reach a verdict, rather than assuming the build is short. An upgrade it blocks for a reason you have read and accepted costs one flag; one it waves through silently costs the hour it exists to warn you about.
 

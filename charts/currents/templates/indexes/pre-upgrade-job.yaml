@@ -60,6 +60,11 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- /* The same account as the scheduler, so the check connects the way
+             the scheduler does. A hook runs before the chart applies its
+             ServiceAccount, so an upgrade that creates or renames the account
+             leaves this pod uncreated until the deadline; docs/eks/upgrading.md
+             gives the way through. */}}
       serviceAccountName: {{ include "currents.serviceAccountName" . }}
       {{- with .Values.global.securityContext }}
       securityContext:
