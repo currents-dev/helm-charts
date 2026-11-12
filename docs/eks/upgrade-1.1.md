@@ -8,9 +8,32 @@ For the general upgrade flow, see the [EKS Upgrade Guide](./upgrading.md).
 
 | Change | Action |
 |--------|--------|
+| [AI moves to the `ai-queue-worker` deployment](#ai-queue-worker) | Required if you use AI: turn on `aiQueueWorker` in the same upgrade. Otherwise none: it is off by default |
+| [Pre-upgrade index check](#pre-upgrade-index-check) | None. If it stops the upgrade, read its log |
 | [New MongoDB indexes](#mongodb-index-builds) | None on most installs: they build in seconds. If the pre-upgrade index check stops the upgrade, build them first |
 | [Database migrations](#database-migrations) | None: they run when the scheduler starts |
 | [Stored key hashes](#keys-left-without-a-hash) | Resolve any keys the scheduler reports as shared |
+
+## AI Queue Worker
+
+The `ai-queue-worker` deployment runs the AI tasks (test explanations, chat). `webhooks` does not run them in `1.1`. The worker is off by default, because it needs an LLM endpoint you provide.
+
+If you set `AI_QUEUE_WORKER_ENABLED=true` on `webhooks` to run AI tasks, AI stops at this upgrade until the worker is on. In the same upgrade:
+
+1. Set `aiQueueWorker.enabled: true`.
+2. Move the `LLM_*` settings from `webhooks.env` to `aiQueueWorker.env`, or keep them in `global.env`.
+3. Remove `AI_QUEUE_WORKER_ENABLED` from `webhooks.env`. On `webhooks` that variable only starts the Slack AI answer worker; set `SLACK_AI_CALLBACK_WORKER_ENABLED=true` there for that.
+4. Give your nodes pull access to the `currents/on-prem/ai-queue-worker` repository. See [IAM Resources](./iam.md).
+
+The settings are in [AI Explanations and Chat](./quickstart.md#ai-explanations-and-chat). If you don't use AI, nothing changes.
+
+## Pre-Upgrade Index Check
+
+Before any pod rolls, the chart runs a `pre-upgrade` hook Job, `currents-index-check`, with the scheduler image you are upgrading to. It estimates the new release's MongoDB index builds and stops the upgrade, with the running release untouched, when the estimate is over `indexes.preUpgrade.thresholdSeconds` (600 by default). This upgrade's builds take seconds on most installs, so it passes; see [MongoDB Index Builds](#mongodb-index-builds).
+
+- How to read its log and the ways forward: [Index Builds Before an Upgrade](./upgrading.md#index-builds-before-an-upgrade).
+- The Job runs as the chart's ServiceAccount. If this upgrade also renames it or turns on `serviceAccount.create`, run it with `--set indexes.preUpgrade.mode=off`. See [Upgrade Stopped by the Index Check](./upgrading.md#upgrade-stopped-by-the-index-check).
+- `indexes.preUpgrade.mode` is `gate` by default. `build` builds the indexes in the hook instead, and `off` skips it. See the [Configuration Reference](../configuration.md).
 
 ## MongoDB Index Builds
 
