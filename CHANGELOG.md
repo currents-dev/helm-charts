@@ -3,8 +3,8 @@
 ## [Unreleased]
 
 ### Upgrade Notes
-- **The scheduler builds six MongoDB indexes and runs five migrations when it starts, which takes seconds.** None of the indexes is on `instances`, `runs` or `testRecord`. On a test install with 3.1 million `instances`, startup finished 18 seconds after the scheduler started. Only the `orchestrationSession` index grows with your history, and the chart's pre-upgrade index check stops the upgrade if it would take longer than the threshold. See [Upgrading from the 2026-10-14 Images to 2026-11-10](docs/eks/upgrading.md#upgrading-from-the-2026-10-14-images-to-2026-11-10).
-- **Organization API keys, record keys and the SCIM secret get a stored hash.** A key whose value another document also holds is left without one, and the scheduler logs a warning with the documents' ids. The upgrade guide says how to resolve them.
+- **The scheduler builds six MongoDB indexes and runs five migrations when it starts, which takes seconds.** None of the indexes is on `instances`, `runs` or `testRecord`. On a test install with 3.1 million `instances`, startup finished 18 seconds after the scheduler started. Only the `orchestrationSession` index grows with your history, and the chart's pre-upgrade index check stops the upgrade if it would take longer than the threshold. See [MongoDB Index Builds](docs/eks/upgrade-1.1.md#mongodb-index-builds).
+- **Organization API keys, record keys and the SCIM secret get a stored hash.** A key whose value another document also holds is left without one, and the scheduler logs a warning with the documents' ids. See [Keys Left Without a Hash](docs/eks/upgrade-1.1.md#keys-left-without-a-hash) for how to resolve them.
 
 ## [currents-1.0.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.0.1) - 2026-10-27
 
