@@ -257,7 +257,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | webhooks.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
 | webhooks.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | webhooks.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
-| aiQueueWorker.enabled | bool | `false` | Run the AI queue worker, which runs the AI tasks (explanations, chat) from the `ai-bmq` queue. Off by default: it needs an LLM endpoint in `env`. Turn it on before an organization admin grants AI consent in settings; without it, those tasks stay queued. |
+| aiQueueWorker.enabled | bool | `false` | Run the AI queue worker, which runs the AI tasks (explanations, chat) from the `ai-bmq` queue. Off by default: it needs an LLM endpoint in `env`. Turn it on before an organization admin grants AI consent in settings; without it, those tasks stay queued. Turning it on also sets `AI_QUEUE_WORKER_ENABLED` on the scheduler, which builds the AI collections' MongoDB indexes. |
 | aiQueueWorker.name | string | `"ai-queue-worker"` |  |
 | aiQueueWorker.replicas | int | `1` |  |
 | aiQueueWorker.image.registry | string | `"513558712013.dkr.ecr.us-east-1.amazonaws.com"` |  |

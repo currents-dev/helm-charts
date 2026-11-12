@@ -230,13 +230,9 @@ The `ai-queue-worker` deployment runs the AI tasks (test explanations, chat) fro
 
 AI stays off for an organization until an admin grants AI consent in its settings. Turn the worker on first: AI tasks requested without it wait in the queue and never finish.
 
-To turn it on, set `aiQueueWorker.enabled: true` and the LLM endpoint in `aiQueueWorker.env`. Set `AI_QUEUE_WORKER_ENABLED=true` on the scheduler as well: the scheduler builds the MongoDB indexes for the AI collections, including the ones that expire old AI sessions, only when it has that variable. The worker uses the image `currents/on-prem/ai-queue-worker`, so your nodes need pull access to that repository too (see [IAM Resources](./iam.md)).
+To turn it on, set `aiQueueWorker.enabled: true` and the LLM endpoint in `aiQueueWorker.env`. The chart then also has the scheduler build the MongoDB indexes for the AI collections, including the ones that expire old AI sessions. The worker uses the image `currents/on-prem/ai-queue-worker`, so your nodes need pull access to that repository too (see [IAM Resources](./iam.md)).
 
 ```yaml
-scheduler:
-  env:
-    - name: AI_QUEUE_WORKER_ENABLED
-      value: "true"
 aiQueueWorker:
   enabled: true
   env:

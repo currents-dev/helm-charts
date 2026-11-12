@@ -893,7 +893,9 @@ aiQueueWorker:
   # -- Run the AI queue worker, which runs the AI tasks (explanations, chat) from
   # the `ai-bmq` queue. Off by default: it needs an LLM endpoint in `env`. Turn
   # it on before an organization admin grants AI consent in settings; without
-  # it, those tasks stay queued.
+  # it, those tasks stay queued. Turning it on also sets
+  # `AI_QUEUE_WORKER_ENABLED` on the scheduler, which builds the AI collections'
+  # MongoDB indexes.
   enabled: false
   name: ai-queue-worker
   replicas: 1
