@@ -1,0 +1,101 @@
+{{- if .Values.aiQueueWorker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "currents.aiQueueWorker.fullname" . }}
+  labels:
+    {{- include "currents.labels" (dict "context" . "component" .Values.aiQueueWorker.name) | nindent 4 }}
+spec:
+  replicas: {{ .Values.aiQueueWorker.replicas }}
+  selector:
+    matchLabels:
+      {{- include "currents.selectorLabels" (dict "context" . "component" .Values.aiQueueWorker.name) | nindent 6 }}
+  {{- if .Values.aiQueueWorker.deploymentStrategy }}
+  strategy:
+    {{- toYaml .Values.aiQueueWorker.deploymentStrategy | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      {{- with .Values.global.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "currents.labels" (dict "context" . "component" .Values.aiQueueWorker.name) | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "currents.serviceAccountName" . }}
+      {{- with .Values.global.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.aiQueueWorker.name }}
+          {{- with .Values.global.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.aiQueueWorker.image) }}
+          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.aiQueueWorker.image.pullPolicy }}
+          env:
+            - name: CURRENTS_ENV
+              value: "onprem"
+            {{- include "currents.connectionConfigEnv" . | nindent 12 }}
+            {{- include "currents.URLConfigEnv" . | nindent 12 }}
+            {{- with (concat .Values.global.env .Values.aiQueueWorker.env) }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: pm2-data
+              mountPath: /home/node/.pm2
+          {{- with .Values.aiQueueWorker.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.aiQueueWorker.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.aiQueueWorker.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.aiQueueWorker.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.global.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.aiQueueWorker.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: pm2-data
+          emptyDir:
+            sizeLimit: {{ .Values.aiQueueWorker.pm2HomeSizeLimit }}
+      {{- with .Values.global.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.aiQueueWorker.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.aiQueueWorker.nodeSelector | default .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.aiQueueWorker.tolerations | default .Values.global.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.aiQueueWorker.affinity | default .Values.global.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

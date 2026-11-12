@@ -41,6 +41,13 @@ Create webhooks name and version as used by the chart label.
 {{- end -}}
 
 {{/*
+Create ai-queue-worker name and version as used by the chart label.
+*/}}
+{{- define "currents.aiQueueWorker.fullname" -}}
+{{- printf "%s-%s" (include "currents.fullname" .) .Values.aiQueueWorker.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 Create toolbox name as used by the chart label.
 */}}
 {{- define "currents.toolbox.fullname" -}}

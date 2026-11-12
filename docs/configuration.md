@@ -68,6 +68,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | scheduler.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
 | changestreams.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
 | webhooks.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+| aiQueueWorker.resources | object | `{}` (defaults to global.resources) | Resources to provide [Resource Management for Pods and Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
 
 ### SAML SSO
 
@@ -256,6 +257,25 @@ The following table lists the configurable parameters of the `currents` chart an
 | webhooks.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
 | webhooks.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | webhooks.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
+| aiQueueWorker.enabled | bool | `false` | Run the AI queue worker, which runs the AI tasks (explanations, chat) from the `ai-bmq` queue. Off by default: it needs an LLM endpoint in `env`. Turn it on before an organization admin grants AI consent in settings; without it, those tasks stay queued. Turning it on also sets `AI_QUEUE_WORKER_ENABLED` on the scheduler, which builds the AI collections' MongoDB indexes. |
+| aiQueueWorker.name | string | `"ai-queue-worker"` |  |
+| aiQueueWorker.replicas | int | `1` |  |
+| aiQueueWorker.image.registry | string | `"513558712013.dkr.ecr.us-east-1.amazonaws.com"` |  |
+| aiQueueWorker.image.repository | string | `"currents/on-prem/ai-queue-worker"` |  |
+| aiQueueWorker.image.tag | string | `""` | Override the image tag to deploy by setting this variable |
+| aiQueueWorker.image.digest | string | `""` | Setting a digest will override any tag |
+| aiQueueWorker.image.pullPolicy | string | `""` | defaults to global.image.pullPolicy |
+| aiQueueWorker.deploymentStrategy | object | `{"type":"Recreate"}` | Deployment update strategy for Currents deployment. [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
+| aiQueueWorker.env | list | `[]` | Env variables to pass to the container. The LLM settings go here or in `global.env`: `LLM_PROVIDER_URL`, `LLM_API_KEY`, and optionally `LLM_MODEL`, `AI_QUEUE_CONCURRENCY` (default 5). |
+| aiQueueWorker.volumes | list | `[]` | Additional volumes on the output Deployment definition |
+| aiQueueWorker.volumeMounts | list | `[]` | Additional volumeMounts on the output Deployment definition |
+| aiQueueWorker.pm2HomeSizeLimit | string | `"256Mi"` | Size of the emptyDir backing PM2_HOME (`/home/node/.pm2`). It holds pm2's sockets and, for services started from an ecosystem file, its log files. Disk-backed on purpose: on a memory-backed volume those log files count against the pod's memory limit and the container is OOMKilled under load. |
+| aiQueueWorker.startupProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":30,"periodSeconds":10,"timeoutSeconds":15}` | Startup probe. While it is running the liveness and readiness probes are held off, so a slow start is not mistaken for an unhealthy container. |
+| aiQueueWorker.livenessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Liveness probe to check if the container is alive. The command forks a Node CLI, which cannot finish within the 1 second Kubernetes defaults `timeoutSeconds` to while the container is under CPU pressure. Timed-out probe processes then accumulate and make the pressure worse. |
+| aiQueueWorker.readinessProbe | object | `{"exec":{"command":["./node_modules/.bin/pm2","show","dist"]},"failureThreshold":5,"periodSeconds":30,"timeoutSeconds":15}` | Readiness probe to check if the container is ready |
+| aiQueueWorker.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] |
+| aiQueueWorker.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| aiQueueWorker.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the deployment |
 | toolbox.enabled | bool | `false` | Create the toolbox pod and its scratch PVC. Leave disabled for normal installs — with this off, nothing in this section renders. |
 | toolbox.name | string | `"toolbox"` |  |
 | toolbox.persistence | object | See [values.yaml] for default values | Scratch space for artifacts and the import state file. Size it at ~1.5x the export's total bytes (manifest totals.exportedBytes + clickhouseTotals.exportedBytes). |
