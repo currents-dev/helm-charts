@@ -266,7 +266,22 @@ server:
 
 ## Trace Links
 
-The API answers trace links at `https://<appHost>/t`, with no values to set. A trace link gives an agent read access to one failed test's Playwright trace: its summary, frames, page snapshots, network requests and an animation of the failure. Agents get the links in context shares and from MCP, and reach them at the same address as the dashboard. To give agents another address, set `TRACE_LINK_BASE_URL` in `server.env`.
+The API answers trace links at `https://<appHost>/t`, with no values to set. A trace link gives an agent read access to one failed test's Playwright trace: its summary, frames, page snapshots, network requests and an animation of the failure. Agents get the links in context shares and from MCP, and reach them at the same address as the dashboard.
+
+To serve trace links on a host of their own, set `currents.domains.traceLinkHost`. Links then point at `https://<traceLinkHost>/t`, and the server ingress routes `/t` on that host to the server. Point the host's DNS at the ingress, and add it to `server.ingress.tls` when TLS ends at the ingress:
+
+```yaml
+currents:
+  domains:
+    traceLinkHost: traces.example.com
+server:
+  ingress:
+    tls:
+      - secretName: currents-tls
+        hosts:
+          - "{{ .Values.currents.domains.appHost }}"
+          - traces.example.com
+```
 
 Trace work runs on worker threads in the server pod, one job per thread, so it doesn't slow the rest of the API. The threads follow the pod's CPU limit, or the node's CPUs if it has none:
 

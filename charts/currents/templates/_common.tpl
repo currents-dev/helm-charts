@@ -206,6 +206,12 @@ ClickHouse data is loaded from an external export (scripts/org-import).
   value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.appHost) }}
 - name: CURRENTS_RECORD_API_URL
   value: {{ include "currents.url" (dict "context" . "input" .Values.currents.domains.recordApiHost) }}
+{{- with .Values.currents.domains.traceLinkHost }}
+{{- /* The API serves the trace API only under /t, on any host. A base without
+       the path mints links that land on the dashboard. */}}
+- name: TRACE_LINK_BASE_URL
+  value: {{ printf "%s/t" (include "currents.url" (dict "context" $ "input" .)) }}
+{{- end }}
 {{- end -}}
 
 {{- define "currents.emailEnv" -}}
