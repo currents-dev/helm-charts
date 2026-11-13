@@ -112,6 +112,7 @@ The following table lists the configurable parameters of the `currents` chart an
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| currents.domains.traceLinkHost | string | `""` | A host of their own for trace links, which the API otherwise serves at `<appHost>/t`. Links then point at `<traceLinkHost>/t`, and the server ingress, when enabled, routes `/t` on this host to the server. The host needs DNS pointing at the ingress, and a TLS certificate when `https` is on. |
 | currents.rootUser.email | string | `"admin@{{ .Values.currents.domains.appHost }}"` | The email address of the root user |
 | currents.imageTag | string | `"2026-10-14-002"` | The image tag to use for the Currents images |
 | currents.email.transporter | string | `"smtp"` | Which transport to send outgoing email through: `smtp` or `ses`. With `ses` the SMTP settings are ignored and no SMTP credentials are needed — the AWS SDK resolves credentials from the pod itself, so grant the Currents service account permission to send. See [Using IAM Roles for Sending Email with SES](./eks/iam.md#using-iam-roles-for-sending-email-with-ses). |

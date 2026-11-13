@@ -264,6 +264,50 @@ server:
       value: http://localhost:4000/api/auth/jwks
 ```
 
+## Trace Links
+
+The API answers trace links at `https://<appHost>/t`, with no values to set. A trace link gives an agent read access to one failed test's Playwright trace: its summary, frames, page snapshots, network requests and an animation of the failure. Agents get the links in context shares and from MCP, and reach them at the same address as the dashboard.
+
+To serve trace links on a host of their own, set `currents.domains.traceLinkHost`. Links then point at `https://<traceLinkHost>/t`, and the server ingress routes `/t` on that host to the server. Point the host's DNS at the ingress, and add it to `server.ingress.tls` when TLS ends at the ingress:
+
+```yaml
+currents:
+  domains:
+    traceLinkHost: traces.example.com
+server:
+  ingress:
+    tls:
+      - secretName: currents-tls
+        hosts:
+          - "{{ .Values.currents.domains.appHost }}"
+          - traces.example.com
+```
+
+Trace work runs on worker threads in the server pod, one job per thread, so it doesn't slow the rest of the API. The threads follow the pod's CPU limit, or the node's CPUs if it has none:
+
+| CPU limit | Threads |
+|-----------|---------|
+| 1 | One, for reads and renders |
+| 2–3 | One for reads, one for renders |
+| 4 or more | Two for reads, one for renders |
+
+In testing, a server pod with 2 CPUs and 2 GiB answered about 2 agent investigations per second, with animations under 1.5 s at the 95th percentile and the rest of the API still answering in 2–3 ms. A busy hour of 10 failing runs uses about a sixth of that. The test ran on Apple Silicon; x86 cloud vCPUs render more slowly, so take it as an upper bound.
+
+- Memory peaked at 0.8–1.0 GiB under load, plus up to 128 MiB of cached trace answers per pod. The cache size is fixed.
+- For more animations, add server replicas: each pod has one render thread. For many quick reads, give the pod 4 CPUs.
+- Past capacity, trace requests answer `503` with `Retry-After: 5`, and agents retry.
+
+```yaml
+server:
+  resources:
+    requests:
+      cpu: "2"
+      memory: 2Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+```
+
 ## Enable SAML SSO (optional)
 
 Delegate sign-in to your SAML 2.0 identity provider (Okta, Microsoft Entra ID, etc.). Users sign in **email-first** — they enter their email, are redirected to your IdP to authenticate, and are auto-provisioned into your organization on return. SMTP must be configured (used for provisioning and invitations).
