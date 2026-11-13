@@ -2,9 +2,9 @@
 
 ## [Unreleased]
 
-### Added
-- **Trace links.** The API answers them at `https://<appHost>/t`, so agents can read a failed test's Playwright trace. Size the server pod for the trace work: see [Trace Links](docs/eks/quickstart.md#trace-links).
-- `currents.domains.traceLinkHost` serves trace links on a host of their own, at `https://<traceLinkHost>/t`, and adds that host to the server ingress.
+## [currents-1.1.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.1.0) - 2026-11-13
+
+Images `2026-11-10-003`: trace links served by the API, AI tasks in an optional `ai-queue-worker` deployment, and a pre-upgrade check of the MongoDB index builds. Upgrade from `1.0.x` following [Upgrading to Chart 1.1](docs/eks/upgrade-1.1.md); from `0.8.x`, follow [Upgrading to Chart 1.0](docs/eks/upgrade-1.0.md) as well.
 
 ### Upgrade Notes
 - **`director` and `server` pods keep serving for 10 seconds after a rollout starts replacing them** (a `preStop` sleep), so requests that reach a pod while it leaves the Service no longer fail with connection resets. The hook acts on the pod being replaced, so the upgrade to this release still replaces `1.0` pods without it; reporters retry the few resets that causes. Set `director.lifecycle` or `server.lifecycle` to `null` to remove it.
@@ -12,6 +12,21 @@
 - **Every upgrade first runs a `pre-upgrade` hook Job, `currents-index-check`,** which stops the upgrade if the new release's MongoDB index builds are estimated over `indexes.preUpgrade.thresholdSeconds` (600 by default). See [Pre-Upgrade Index Check](docs/eks/upgrade-1.1.md#pre-upgrade-index-check).
 - **The scheduler builds six MongoDB indexes and runs five migrations when it starts, which takes seconds.** None of the indexes is on `instances`, `runs` or `testRecord`. On a test install with 3.1 million `instances`, startup finished 18 seconds after the scheduler started. Only the `orchestrationSession` index grows with your history, and the chart's pre-upgrade index check stops the upgrade if it would take longer than the threshold. See [MongoDB Index Builds](docs/eks/upgrade-1.1.md#mongodb-index-builds).
 - **Organization API keys, record keys and the SCIM secret get a stored hash.** A key whose value another document also holds is left without one, and the scheduler logs a warning with the documents' ids. See [Keys Left Without a Hash](docs/eks/upgrade-1.1.md#keys-left-without-a-hash) for how to resolve them.
+
+### Added
+- **Trace links.** The API answers them at `https://<appHost>/t`, so agents can read a failed test's Playwright trace. Size the server pod for the trace work: see [Trace Links](docs/eks/quickstart.md#trace-links).
+- `currents.domains.traceLinkHost` serves trace links on a host of their own, at `https://<traceLinkHost>/t`, and adds that host to the server ingress.
+
+### Features
+- [`b55402d`](https://github.com/currents-dev/helm-charts/commit/b55402d4c2d0d6a076147729588226ad455e625c) feat: add the ai-queue-worker deployment [ENG-2181] (#74)
+- [`01a19fe`](https://github.com/currents-dev/helm-charts/commit/01a19fe5a38afa126d00a1103c4405917203c328) feat: check what an upgrade's index builds cost before any pod rolls [ENG-1881] (#72)
+- [`1c5df53`](https://github.com/currents-dev/helm-charts/commit/1c5df533751875d3fa1856e10372d44fd727df2b) feat: serve trace links on a host of their own, and document trace links on-prem [ENG-2113] (#78)
+
+### Bug Fixes
+- [`a76f65f`](https://github.com/currents-dev/helm-charts/commit/a76f65fea17b4187c3d2f4929bf82548edd8a17b) fix: fail templating when a required secret name is unset (#73)
+- [`10f9a1d`](https://github.com/currents-dev/helm-charts/commit/10f9a1d6006ca42085399265e69e1d69afb49337) fix: give the pre-upgrade index check AI_QUEUE_WORKER_ENABLED when the AI worker is on [ENG-2181] (#76)
+- [`93dfa00`](https://github.com/currents-dev/helm-charts/commit/93dfa000eb14664f8ea87b73566363c7c97dfae4) fix: keep director and server pods serving for 10 s while a rollout replaces them [ENG-2184] (#77)
+
 
 ## [currents-1.0.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.0.1) - 2026-10-27
 
