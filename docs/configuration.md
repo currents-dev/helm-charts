@@ -160,6 +160,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | director.image.tag | string | `""` | Override the image tag to deploy by setting this variable. |
 | director.image.digest | string | `""` | Setting a digest will override any tag. |
 | director.image.pullPolicy | string | `""` | default to the same as global.image.pullPolicy |
+| director.lifecycle | object | `{"preStop":{"exec":{"command":["sleep","10"]}}}` | Container lifecycle hooks. The default `preStop` sleep keeps a pod that a rollout is replacing serving for 10 s while it is removed from the Service. Without it the pod stops at once, and requests that still reach it fail with connection resets. Set `null` to remove the hook. The sleep must stay shorter than the pod's termination grace period (30 s). |
 | director.deploymentStrategy | object | `{}` | Deployment update strategy for Currents deployment. [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |
 | director.env | list | `[]` | Env variables to pass to the container |
 | director.volumes | list | `[]` | Additional volumes on the output Deployment definition. |
@@ -178,6 +179,7 @@ The following table lists the configurable parameters of the `currents` chart an
 | server.image.tag | string | `""` | Override the image tag to deploy by setting this variable |
 | server.image.digest | string | `""` | Setting a digest will override any tag |
 | server.image.pullPolicy | string | `""` | defaults to global.image.pullPolicy |
+| server.lifecycle | object | `{"preStop":{"exec":{"command":["sleep","10"]}}}` | Container lifecycle hooks. The default `preStop` sleep keeps a pod that a rollout is replacing serving for 10 s while it is removed from the Service. Without it the pod stops at once, and requests that still reach it fail with connection resets. Set `null` to remove the hook. The sleep must stay shorter than the pod's termination grace period (30 s). |
 | server.deploymentStrategy | object | `{}` | Deployment update strategy for Currents deployment |
 | server.env | list | `[]` | Env variables to pass to the container |
 | server.volumes | list | `[]` | Additional volumes on the output Deployment definition |
