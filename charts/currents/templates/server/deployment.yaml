@@ -96,6 +96,10 @@ spec:
               mountPath: /etc/currents/sso
               readOnly: true
           {{- end }}
+          {{- with .Values.server.lifecycle }}
+          lifecycle:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.server.startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}

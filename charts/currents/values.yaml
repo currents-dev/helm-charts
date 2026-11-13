@@ -364,6 +364,15 @@ director:
 
     # -- default to the same as global.image.pullPolicy
     pullPolicy: ""
+  # -- Container lifecycle hooks. The default `preStop` sleep keeps a pod that a
+  # rollout is replacing serving for 10 s while it is removed from the Service.
+  # Without it the pod stops at once, and requests that still reach it fail with
+  # connection resets. Set `null` to remove the hook. The sleep must stay shorter
+  # than the pod's termination grace period (30 s).
+  lifecycle:
+    preStop:
+      exec:
+        command: ["sleep", "10"]
   # -- Deployment update strategy for Currents deployment.
   # [Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)
   deploymentStrategy: {}
@@ -477,6 +486,15 @@ server:
 
     # -- defaults to global.image.pullPolicy
     pullPolicy: ""
+  # -- Container lifecycle hooks. The default `preStop` sleep keeps a pod that a
+  # rollout is replacing serving for 10 s while it is removed from the Service.
+  # Without it the pod stops at once, and requests that still reach it fail with
+  # connection resets. Set `null` to remove the hook. The sleep must stay shorter
+  # than the pod's termination grace period (30 s).
+  lifecycle:
+    preStop:
+      exec:
+        command: ["sleep", "10"]
   # -- Deployment update strategy for Currents deployment
   deploymentStrategy: {}
   #  strategy:

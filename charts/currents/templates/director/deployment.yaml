@@ -70,6 +70,10 @@ spec:
             - name: http
               containerPort: {{ .Values.director.service.port }}
               protocol: TCP
+          {{- with .Values.director.lifecycle }}
+          lifecycle:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.director.startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}
