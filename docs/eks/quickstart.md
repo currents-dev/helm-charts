@@ -222,7 +222,7 @@ CURRENTS_API_URL=https://currents-record.eks.example.com npx pwc --key <your-key
 
 ## Upgrade Existing Installations
 
-When you need to move to a newer Currents release, follow the dedicated [EKS Upgrade Guide](./upgrading.md). From `0.8.x`, read [Upgrading to Chart 1.0](./upgrade-1.0.md) first.
+When you need to move to a newer Currents release, follow the dedicated [EKS Upgrade Guide](./upgrading.md). Read the guide for each chart version you pass first: see [Upgrade Guides by Version](./upgrading.md#upgrade-guides-by-version).
 
 ## AI Explanations and Chat
 
