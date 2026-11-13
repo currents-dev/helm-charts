@@ -308,6 +308,8 @@ server:
       memory: 2Gi
 ```
 
+To get a trace link and read it with an agent, see [Read a Trace with an Agent](./read-a-trace.md).
+
 ## Enable SAML SSO (optional)
 
 Delegate sign-in to your SAML 2.0 identity provider (Okta, Microsoft Entra ID, etc.). Users sign in **email-first** — they enter their email, are redirected to your IdP to authenticate, and are auto-provisioned into your organization on return. SMTP must be configured (used for provisioning and invitations).
