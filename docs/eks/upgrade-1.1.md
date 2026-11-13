@@ -9,6 +9,7 @@ For the general upgrade flow, see the [EKS Upgrade Guide](./upgrading.md).
 | Change | Action |
 |--------|--------|
 | [AI moves to the `ai-queue-worker` deployment](#ai-queue-worker) | Required if you use AI: turn on `aiQueueWorker` in the same upgrade. Otherwise none: it is off by default |
+| [Trace links](./quickstart.md#trace-links) | None: the API answers them. Check the server pod's CPU and memory for the trace work |
 | [Pre-upgrade index check](#pre-upgrade-index-check) | None. If it stops the upgrade, read its log |
 | [New MongoDB indexes](#mongodb-index-builds) | None on most installs: they build in seconds. If the pre-upgrade index check stops the upgrade, build them first |
 | [Database migrations](#database-migrations) | None: they run when the scheduler starts |

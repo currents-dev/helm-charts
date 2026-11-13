@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+- **Trace links.** The API answers them at `https://<appHost>/t`, so agents can read a failed test's Playwright trace. Size the server pod for the trace work: see [Trace Links](docs/eks/quickstart.md#trace-links).
+- `currents.domains.traceLinkHost` serves trace links on a host of their own, at `https://<traceLinkHost>/t`, and adds that host to the server ingress.
+
 ### Upgrade Notes
 - **`director` and `server` pods keep serving for 10 seconds after a rollout starts replacing them** (a `preStop` sleep), so requests that reach a pod while it leaves the Service no longer fail with connection resets. The hook acts on the pod being replaced, so the upgrade to this release still replaces `1.0` pods without it; reporters retry the few resets that causes. Set `director.lifecycle` or `server.lifecycle` to `null` to remove it.
 - **AI tasks run in the new `ai-queue-worker` deployment, off by default.** If you set `AI_QUEUE_WORKER_ENABLED=true` on `webhooks` to run AI tasks, AI stops at this upgrade until you set `aiQueueWorker.enabled: true` and move the `LLM_*` settings to `aiQueueWorker.env`. See [AI Queue Worker](docs/eks/upgrade-1.1.md#ai-queue-worker).

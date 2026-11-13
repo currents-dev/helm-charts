@@ -13,6 +13,11 @@ currents:
     # -- The host for the recording endpoint that the test reporters communicate with
     # @section -- Required
     recordApiHost: currents-record.localhost
+    # -- A host of their own for trace links, which the API otherwise serves at
+    # `<appHost>/t`. Links then point at `<traceLinkHost>/t`, and the server
+    # ingress, when enabled, routes `/t` on this host to the server. The host
+    # needs DNS pointing at the ingress, and a TLS certificate when `https` is on.
+    traceLinkHost: ""
     # -- Whether to use https or http
     # @section -- Frequently Used
     https: true

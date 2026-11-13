@@ -50,4 +50,16 @@ spec:
                   {{- end }}
           {{- end }}
     {{- end }}
+    {{- with .Values.currents.domains.traceLinkHost }}
+    - host: {{ (tpl . $) | quote }}
+      http:
+        paths:
+          - path: /t
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "currents.server.fullname" $ }}
+                port:
+                  number: {{ $.Values.server.service.port }}
+    {{- end }}
 {{- end }}
