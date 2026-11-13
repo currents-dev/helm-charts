@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Upgrade Notes
+- **AI tasks run in the new `ai-queue-worker` deployment, off by default.** If you set `AI_QUEUE_WORKER_ENABLED=true` on `webhooks` to run AI tasks, AI stops at this upgrade until you set `aiQueueWorker.enabled: true` and move the `LLM_*` settings to `aiQueueWorker.env`. See [AI Queue Worker](docs/eks/upgrade-1.1.md#ai-queue-worker).
+- **Every upgrade first runs a `pre-upgrade` hook Job, `currents-index-check`,** which stops the upgrade if the new release's MongoDB index builds are estimated over `indexes.preUpgrade.thresholdSeconds` (600 by default). See [Pre-Upgrade Index Check](docs/eks/upgrade-1.1.md#pre-upgrade-index-check).
+- **The scheduler builds six MongoDB indexes and runs five migrations when it starts, which takes seconds.** None of the indexes is on `instances`, `runs` or `testRecord`. On a test install with 3.1 million `instances`, startup finished 18 seconds after the scheduler started. Only the `orchestrationSession` index grows with your history, and the chart's pre-upgrade index check stops the upgrade if it would take longer than the threshold. See [MongoDB Index Builds](docs/eks/upgrade-1.1.md#mongodb-index-builds).
+- **Organization API keys, record keys and the SCIM secret get a stored hash.** A key whose value another document also holds is left without one, and the scheduler logs a warning with the documents' ids. See [Keys Left Without a Hash](docs/eks/upgrade-1.1.md#keys-left-without-a-hash) for how to resolve them.
+
 ## [currents-1.0.1](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.0.1) - 2026-10-27
 
 Images `2026-10-14-002`, a patch on `1.0.0` with no values changes. Upgrade to it from `1.0.0`, or straight from `0.8.x` following [Upgrading to Chart 1.0](docs/eks/upgrade-1.0.md): the `1.0.0` breaking changes and upgrade notes still apply.

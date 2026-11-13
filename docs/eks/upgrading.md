@@ -4,11 +4,20 @@ This guide covers upgrading an existing Currents deployment installed with the H
 
 For reference, the Docker Compose environment has a separate upgrade flow: [Upgrading Currents On-Prem](https://github.com/currents-dev/docker/blob/main/docs/upgrading.md).
 
+## Upgrade Guides by Version
+
+A chart version that needs more than the steps on this page has its own guide. Read the guide for each version between yours and the target, then upgrade as described below.
+
+| Upgrading to | From | Images | Guide |
+|---|---|---|---|
+| `1.1.x` | `1.0.x` | `2026-11-10-00x` | [Upgrading to Chart 1.1](./upgrade-1.1.md) |
+| `1.0.x` | `0.8.x` | `2026-10-14-00x` | [Upgrading to Chart 1.0](./upgrade-1.0.md) |
+
 ## Before You Begin
 
 1. Check the chart [CHANGELOG](https://github.com/currents-dev/helm-charts/blob/main/CHANGELOG.md) for the target release.
 2. Review any breaking changes and required values or secrets updates.
-3. Upgrading from `0.8.x` to `1.0.0`? Follow [Upgrading to Chart 1.0](./upgrade-1.0.md) first: it changes SAML SSO and needs a second bucket.
+3. Read the guide for each chart version you pass, from [Upgrade Guides by Version](#upgrade-guides-by-version).
 
 Infrastructure backups and third-party dependencies are customer-managed. See [Currents Service Dependencies](./dependencies.md) and [Support Policy](../support.md).
 
