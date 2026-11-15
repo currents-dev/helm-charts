@@ -416,3 +416,18 @@ without it leaves those indexes out of its estimate and its build.
   value: "true"
 {{- end }}
 {{- end -}}
+
+{{/*
+The times that choose where a test's steps are stored. The director and the
+writer must get the same values, so both include this.
+*/}}
+{{- define "currents.testStepsEnv" -}}
+{{- with .Values.currents.testSteps.dualWriteFrom }}
+- name: STEPS_CLICKHOUSE_DUAL_WRITE_FROM
+  value: {{ . | quote }}
+{{- end }}
+{{- with .Values.currents.testSteps.onlyFrom }}
+- name: STEPS_CLICKHOUSE_ONLY_FROM
+  value: {{ . | quote }}
+{{- end }}
+{{- end -}}

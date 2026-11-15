@@ -51,6 +51,13 @@ spec:
             {{- include "currents.URLConfigEnv" . | nindent 12 }}
             {{- include "currents.emailEnv" . | nindent 12 }}
             {{- include "currents.appContentStorageEnv" . | nindent 12 }}
+            {{- with include "currents.testStepsEnv" . }}
+              {{- . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.currents.testSteps.retentionDays }}
+            - name: STEPS_RETENTION_DAYS
+              value: {{ . | toString | quote }}
+            {{- end }}
             {{- with (concat .Values.global.env .Values.writer.env) }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
