@@ -372,6 +372,8 @@ To change `retentionDays`, stop all writers, then start them with the new value.
 
 ```sh
 kubectl scale deploy/currents-writer --replicas=0
+# Wait until no writer pod is left, including Terminating ones, so in-flight inserts finish
+kubectl get pods -l app.kubernetes.io/component=writer
 helm upgrade <release> <chart> -f currents-helm-config.yaml
 kubectl scale deploy/currents-writer --replicas=<writer.replicas>
 ```
