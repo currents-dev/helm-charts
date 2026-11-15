@@ -153,7 +153,7 @@ currents:
     # provider gives it, so no record key is stored as a CI secret. Off by default. The director
     # then needs outbound https access to the CI providers' public OIDC endpoints (GitHub Actions,
     # GitLab.com, CircleCI, Buildkite, Bitbucket Pipelines): it does not work without internet
-    # access, with self-hosted GitLab or with GitHub Enterprise. See
+    # access, unless the issuers are self-managed ones listed in `extraIssuers`. See
     # [CI OIDC Token Exchange](./eks/quickstart.md#ci-oidc-token-exchange-optional).
     # @section -- CI OIDC Token Exchange
     enabled: false
@@ -173,6 +173,18 @@ currents:
     # minute.
     # @section -- CI OIDC Token Exchange
     trustForwardedFor: false
+    # -- Self-managed GitLab and GitHub Enterprise Server instances whose jobs may exchange
+    # tokens, besides the cloud providers. A list of `provider=issuer` entries, at most 20, for
+    # example `gitlab=https://gitlab.acme.internal` and
+    # `github=https://ghes.acme.internal/_services/token`. The director and the server read it
+    # and refuse to start with an invalid value, so it is rendered on both while the list is not
+    # empty, whether or not `enabled` is true. Each issuer is `https`, in lowercase, with no
+    # trailing slash, query or fragment. The director needs outbound https access to each host.
+    # For a certificate from an internal CA, set `NODE_EXTRA_CA_CERTS` on the director with
+    # `director.env`, `director.volumes` and `director.volumeMounts`. See
+    # [CI OIDC Token Exchange](./eks/quickstart.md#ci-oidc-token-exchange-optional).
+    # @section -- CI OIDC Token Exchange
+    extraIssuers: []
   apiInternalToken:
     # -- The K8s secret holding the token the director authenticates to the server with;
     # both deployments read it. Templating fails when it is unset, because an empty

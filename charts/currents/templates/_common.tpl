@@ -233,6 +233,31 @@ ClickHouse data is loaded from an external export (scripts/org-import).
 {{- end }}
 {{- end -}}
 
+{{- /* OIDC_EXTRA_ISSUERS, read by the director and the server. Nothing is rendered
+       while the list is empty. A list item is `provider=issuer`; a string of
+       comma-separated entries is accepted too. The services check the rest of
+       the rules at start. */}}
+{{- define "currents.oidcExtraIssuersEnv" -}}
+{{- $issuers := .Values.currents.oidcTokenExchange.extraIssuers | default list -}}
+{{- if kindIs "string" $issuers }}
+{{- $issuers = splitList "," $issuers }}
+{{- end }}
+{{- $entries := list }}
+{{- range $issuers }}
+{{- $entry := trim (toString .) }}
+{{- if $entry }}
+{{- if not (regexMatch "^(github|gitlab)=https://" $entry) }}
+{{- fail (printf "currents.oidcTokenExchange.extraIssuers: %q is not a provider=issuer entry. The provider is github or gitlab and the issuer starts with https://, for example gitlab=https://gitlab.acme.internal" $entry) }}
+{{- end }}
+{{- $entries = append $entries $entry }}
+{{- end }}
+{{- end }}
+{{- if $entries }}
+- name: OIDC_EXTRA_ISSUERS
+  value: {{ join "," $entries | quote }}
+{{- end }}
+{{- end -}}
+
 {{- define "currents.emailEnv" -}}
 {{- $email := .Values.currents.email -}}
 {{- $transporter := $email.transporter | default "smtp" -}}

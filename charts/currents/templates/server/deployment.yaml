@@ -70,6 +70,7 @@ spec:
           {{- include "currents.emailEnv" . | nindent 12 }}
           {{- include "currents.samlSSOEnv" . | nindent 12 }}
           {{- include "currents.mcpOAuthEnv" . | nindent 12 }}
+          {{- include "currents.oidcExtraIssuersEnv" . | nindent 12 }}
           {{- include "currents.appContentStorageEnv" . | nindent 12 }}
             - name: BETTER_AUTH_SECRET
               valueFrom:

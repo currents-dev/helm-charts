@@ -322,9 +322,30 @@ currents:
     enabled: true
     audience: currents:record-key:<company>  # required, see Audience
     # trustForwardedFor: true                # see Client addresses
+    # extraIssuers:                          # see Self-managed GitLab and GitHub Enterprise Server
+    #   - gitlab=https://gitlab.acme.internal
 ```
 
-- **Network.** The director checks a token with the CI provider's public signing keys, which it fetches over https through the provider's OpenID Connect discovery document. The director pods need outbound access to the providers you use: GitHub Actions (`token.actions.githubusercontent.com`), GitLab.com (`gitlab.com`), CircleCI (`oidc.circleci.com`), Buildkite (`agent.buildkite.com`) and Bitbucket Pipelines (`api.bitbucket.org`). It does not work on an install without internet access, and tokens from self-hosted GitLab and GitHub Enterprise are not accepted.
+- **Network.** The director checks a token with the CI provider's public signing keys, which it fetches over https through the provider's OpenID Connect discovery document. The director pods need outbound access to the providers you use: GitHub Actions (`token.actions.githubusercontent.com`), GitLab.com (`gitlab.com`), CircleCI (`oidc.circleci.com`), Buildkite (`agent.buildkite.com`) and Bitbucket Pipelines (`api.bitbucket.org`). It does not work on an install without internet access, unless the only issuers are self-managed ones you list in `extraIssuers`. For each listed instance the director pods need outbound https access to its host, which can be private or internal; only the listed hosts are fetched.
+- **Self-managed GitLab and GitHub Enterprise Server.** List the issuers in `extraIssuers`, one `provider=issuer` entry each, at most 20: `gitlab=` followed by the URL of the GitLab instance, and `github=` followed by `https://<host>/_services/token` for GitHub Enterprise Server. The issuer is compared with the `iss` claim of the token as an exact string, so write it `https`, with the host in lowercase, no default port, and no user, password, trailing slash, query or fragment. An issuer of a cloud provider, an issuer listed twice, an unknown provider and more than 20 entries are refused. The chart renders `OIDC_EXTRA_ISSUERS` on the director and the server whenever the list is not empty, even when `enabled` is false, and both refuse to start with an entry they cannot use: check `kubectl logs` of both after you change it. A trust policy stores the issuer it was made for and matches only tokens of that issuer, because a self-hosted instance chooses its own owner and project IDs, which can equal IDs on GitLab.com or github.com. The dashboard form for adding a policy for a listed issuer is not available yet. This part needs the images of a release that includes self-hosted issuers.
+- **Internal certificate authority.** When a listed instance uses a certificate from your own authority, give the director that authority with `NODE_EXTRA_CA_CERTS`, the path of a PEM file in the container. Only the director fetches signing keys. Keep the authority's certificate in a ConfigMap or a Secret, mount it into the director, and point the variable at it:
+
+  ```yaml
+  director:
+    env:
+      - name: NODE_EXTRA_CA_CERTS
+        value: /etc/currents/ca/ca.pem
+    volumes:
+      - name: internal-ca
+        configMap:
+          name: internal-ca   # holds the key ca.pem
+    volumeMounts:
+      - name: internal-ca
+        mountPath: /etc/currents/ca
+        readOnly: true
+  ```
+
+  Node.js adds the file to its built-in authorities; it does not replace them.
 - **Audience.** `audience` is required and has no default: templating fails while it is empty. Pick a name for your install, such as `currents:record-key:<company>`; it is not a URL, so a change of DNS does not affect it. Do not use `currents:record-key`, the name Currents cloud uses: a token made for the cloud would then be accepted. On GitHub Actions the reporter requests the token itself, with the audience in `CURRENTS_OIDC_AUDIENCE`, which defaults to `currents:record-key`, the name Currents cloud uses: set it to your name in those jobs. On the other providers the job supplies the token, so the audience is whatever the job asks the provider for (`aud` in a GitLab CI `id_tokens` entry, and the commands on CircleCI, Buildkite and Bitbucket Pipelines): use your name there. The hint the reporter prints when it has neither a record key nor a token shows `CURRENTS_OIDC_AUDIENCE` when it is set.
 - **Client addresses.** The director counts at most 120 requests a minute from one address before it checks a token. By default it counts the address of the connection, which behind an ingress or load balancer is that proxy's, so every caller shares the 120. Set `trustForwardedFor: true` only when the proxy in front of the director appends the client's address to `X-Forwarded-For` and passes on none that the caller wrote: otherwise a caller writes the header and gets a new count for each request, so the limit does nothing. Check what your ingress controller and load balancer write before setting it.
 - **Indexes.** The scheduler creates the indexes the exchange needs when it starts, with the other indexes the release declares: a TTL index on `recordKeys.expiresAt` that removes expired keys, and a partial index on `recordKeys.issuedFor.policyId` that finds the keys of a removed trust policy. There is nothing to build by hand, and the [pre-upgrade index check](./upgrade-1.1.md#pre-upgrade-index-check) covers them like the rest. Record keys are looked up by hash without an index on-prem, which is fast while the collection is small; keys from the exchange expire after six hours, and MongoDB's TTL cleanup removes their documents later.
