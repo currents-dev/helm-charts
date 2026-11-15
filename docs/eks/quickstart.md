@@ -330,10 +330,12 @@ To turn it on:
 2. Check that `writer`, `server` and `ai-queue-worker` reach ClickHouse. The chart gives every pod `CLICKHOUSE_URL` and the credentials from `currents.clickhouse`, so this holds unless you override them in `global.env` or a service's `env`. The `server` and `ai-queue-worker` read steps from ClickHouse, and the `writer` inserts them:
 
    ```sh
-   kubectl exec deploy/currents-writer -- env | grep CLICKHOUSE_
-   kubectl exec deploy/currents-server -- env | grep CLICKHOUSE_
-   kubectl exec deploy/currents-ai-queue-worker -- env | grep CLICKHOUSE_
+   kubectl exec deploy/<fullname>-writer -- env | grep CLICKHOUSE_
+   kubectl exec deploy/<fullname>-server -- env | grep CLICKHOUSE_
+   kubectl exec deploy/<fullname>-ai-queue-worker -- env | grep CLICKHOUSE_
    ```
+
+   `<fullname>` is the release name if it contains `currents`, and `<release>-currents` otherwise.
 
 3. Set `dualWriteFrom` to a future time, and `retentionDays` if 21 days is not right, then upgrade the release:
 
@@ -371,11 +373,11 @@ Do not set `onlyFrom` unless the `writer`, the `server` and the `ai-queue-worker
 To change `retentionDays`, stop all writers, then start them with the new value. Writers rolled one at a time can store two versions of one test with different expiry dates.
 
 ```sh
-kubectl scale deploy/currents-writer --replicas=0
+kubectl scale deploy -l app.kubernetes.io/component=writer --replicas=0
 # Wait until no writer pod is left, including Terminating ones, so in-flight inserts finish
 kubectl get pods -l app.kubernetes.io/component=writer
 helm upgrade <release> <chart> -f currents-helm-config.yaml
-kubectl scale deploy/currents-writer --replicas=<writer.replicas>
+kubectl scale deploy -l app.kubernetes.io/component=writer --replicas=<writer.replicas>
 ```
 
 ### Going back
