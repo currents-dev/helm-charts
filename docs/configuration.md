@@ -95,6 +95,14 @@ The following table lists the configurable parameters of the `currents` chart an
 | currents.oauth.dynamicClientRegistration | bool | `true` | Let clients register themselves, the way to add a client without internet access |
 | currents.oauth.clientIdMetadataDocuments | bool | `true` | Accept clients identified by a client ID metadata document: an https URL the API fetches. Hosts that resolve to private, loopback or link-local addresses are refused, so a client can't name a service inside the cluster. |
 
+### CI OIDC Token Exchange
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| currents.oidcTokenExchange.enabled | bool | `false` | Let a CI job get a record key, valid for 6 hours, in exchange for the OIDC token its CI provider gives it, so no record key is stored as a CI secret. Off by default. The director then needs outbound https access to the CI providers' public OIDC endpoints (GitHub Actions, GitLab.com, CircleCI, Buildkite, Bitbucket Pipelines): it does not work without internet access, with self-hosted GitLab or with GitHub Enterprise. See [CI OIDC Token Exchange](./eks/quickstart.md#ci-oidc-token-exchange-optional). |
+| currents.oidcTokenExchange.audience | string | `""` | The public URL of the director that reporters use as `CURRENTS_API_URL`. A token is accepted only when its audience is the origin of this URL. Defaults to the URL of `domains.recordApiHost`. |
+| currents.oidcTokenExchange.trustForwardedFor | bool | `false` | Count the exchange's requests per client address by the last `X-Forwarded-For` entry. Set it to `true` only when a proxy or load balancer in front of the director appends the client's address to that header and passes on none that the caller wrote: otherwise a caller writes the header and gets a new count for each request. Off, the limit counts the address of the connection, which behind a proxy is the proxy's, so every caller shares 120 requests a minute. |
+
 ### App Content Storage
 
 | Key | Type | Default | Description |

@@ -310,6 +310,28 @@ server:
 
 To get a trace link and read it with an agent, see [Read a Trace with an Agent](./read-a-trace.md).
 
+## CI OIDC Token Exchange (Optional)
+
+A CI job can get a record key from the OIDC token its CI provider gives it, so no record key is stored as a CI secret. The reporters ask for a key this way only when no record key is set. The key is valid for 6 hours, is limited to the one project the job names, and the reporter revokes it when the job ends. An organization admin adds a trust policy for each repository or owner in the dashboard; a job without a matching policy is refused.
+
+The exchange is off. Turn it on once the requirements below are met. It needs the images of a release that includes the exchange.
+
+```yaml
+currents:
+  oidcTokenExchange:
+    enabled: true
+    # audience: https://currents-record.example.com  # defaults to the URL of domains.recordApiHost
+    # trustForwardedFor: true                        # see Client addresses
+```
+
+- **Network.** The director checks a token with the CI provider's public signing keys, which it fetches over https through the provider's OpenID Connect discovery document. The director pods need outbound access to the providers you use: GitHub Actions (`token.actions.githubusercontent.com`), GitLab.com (`gitlab.com`), CircleCI (`oidc.circleci.com`), Buildkite (`agent.buildkite.com`) and Bitbucket Pipelines (`api.bitbucket.org`). It does not work on an install without internet access, and tokens from self-hosted GitLab and GitHub Enterprise are not accepted.
+- **Audience.** The reporters ask the CI provider for a token whose audience is the origin of `CURRENTS_API_URL`, the director URL the reporter is configured with. GitHub Actions jobs get this automatically. On other providers the job names the audience, such as `aud` in a GitLab CI `id_tokens` entry. `audience` defaults to the URL of `currents.domains.recordApiHost`, which is that URL; set it only if reporters reach the director on another one.
+- **Client addresses.** The director counts at most 120 requests a minute from one address before it checks a token. By default it counts the address of the connection, which behind an ingress or load balancer is that proxy's, so every caller shares the 120. Set `trustForwardedFor: true` only when the proxy in front of the director appends the client's address to `X-Forwarded-For` and passes on none that the caller wrote: otherwise a caller writes the header and gets a new count for each request, so the limit does nothing. Check what your ingress controller and load balancer write before setting it.
+- **Indexes.** The scheduler creates the indexes the exchange needs when it starts, with the other indexes the release declares: a TTL index on `recordKeys.expiresAt` that removes expired keys, and a partial index on `recordKeys.issuedFor.policyId` that finds the keys of a removed trust policy. There is nothing to build by hand, and the [pre-upgrade index check](./upgrade-1.1.md#pre-upgrade-index-check) covers them like the rest. Record keys are looked up by hash without an index on-prem, which is fast while the collection is small; keys from the exchange are removed 6 hours after they are issued.
+- **Limits.** The director also counts at most 600 keys a minute for one organization. When Redis is down it refuses the requests.
+
+See [CI OIDC Token Exchange](../configuration.md#ci-oidc-token-exchange) for the values.
+
 ## Enable SAML SSO (optional)
 
 Delegate sign-in to your SAML 2.0 identity provider (Okta, Microsoft Entra ID, etc.). Users sign in **email-first** — they enter their email, are redirected to your IdP to authenticate, and are auto-provisioned into your organization on return. SMTP must be configured (used for provisioning and invitations).

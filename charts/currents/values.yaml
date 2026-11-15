@@ -148,6 +148,28 @@ currents:
     # can't name a service inside the cluster.
     # @section -- Remote MCP and OAuth
     clientIdMetadataDocuments: true
+  oidcTokenExchange:
+    # -- Let a CI job get a record key, valid for 6 hours, in exchange for the OIDC token its CI
+    # provider gives it, so no record key is stored as a CI secret. Off by default. The director
+    # then needs outbound https access to the CI providers' public OIDC endpoints (GitHub Actions,
+    # GitLab.com, CircleCI, Buildkite, Bitbucket Pipelines): it does not work without internet
+    # access, with self-hosted GitLab or with GitHub Enterprise. See
+    # [CI OIDC Token Exchange](./eks/quickstart.md#ci-oidc-token-exchange-optional).
+    # @section -- CI OIDC Token Exchange
+    enabled: false
+    # -- The public URL of the director that reporters use as `CURRENTS_API_URL`. A token is
+    # accepted only when its audience is the origin of this URL. Defaults to the URL of
+    # `domains.recordApiHost`.
+    # @section -- CI OIDC Token Exchange
+    audience: ""
+    # -- Count the exchange's requests per client address by the last `X-Forwarded-For` entry.
+    # Set it to `true` only when a proxy or load balancer in front of the director appends the
+    # client's address to that header and passes on none that the caller wrote: otherwise a caller
+    # writes the header and gets a new count for each request. Off, the limit counts the address of
+    # the connection, which behind a proxy is the proxy's, so every caller shares 120 requests a
+    # minute.
+    # @section -- CI OIDC Token Exchange
+    trustForwardedFor: false
   apiInternalToken:
     # -- The K8s secret holding the token the director authenticates to the server with;
     # both deployments read it. Templating fails when it is unset, because an empty

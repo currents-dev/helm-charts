@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- `currents.oidcTokenExchange` turns on the director's CI OIDC token exchange, which gives a CI job a record key for 6 hours in exchange for the OIDC token of its CI provider. It is off by default. The director needs outbound https access to the CI providers, and `trustForwardedFor` has to be set deliberately. See [CI OIDC Token Exchange](docs/eks/quickstart.md#ci-oidc-token-exchange-optional).
+
 ## [currents-1.1.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.1.0) - 2026-11-13
 
 Images `2026-11-10-003`: trace links served by the API, AI tasks in an optional `ai-queue-worker` deployment, and a pre-upgrade check of the MongoDB index builds. Upgrade from `1.0.x` following [Upgrading to Chart 1.1](docs/eks/upgrade-1.1.md); from `0.8.x`, follow [Upgrading to Chart 1.0](docs/eks/upgrade-1.0.md) as well.

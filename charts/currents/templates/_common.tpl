@@ -214,6 +214,22 @@ ClickHouse data is loaded from an external export (scripts/org-import).
 {{- end }}
 {{- end -}}
 
+{{- /* The director's CI OIDC token exchange. Nothing is rendered while it is off,
+       and the director then answers POST /oidc/token with 404. */}}
+{{- define "currents.oidcTokenExchangeEnv" -}}
+{{- $oidc := .Values.currents.oidcTokenExchange -}}
+{{- if $oidc.enabled }}
+- name: OIDC_TOKEN_EXCHANGE_ENABLED
+  value: "true"
+- name: OIDC_TOKEN_AUDIENCE
+  value: {{ default (include "currents.url" (dict "context" . "input" .Values.currents.domains.recordApiHost)) $oidc.audience | quote }}
+{{- if $oidc.trustForwardedFor }}
+- name: OIDC_TRUST_FORWARDED_FOR
+  value: "true"
+{{- end }}
+{{- end }}
+{{- end -}}
+
 {{- define "currents.emailEnv" -}}
 {{- $email := .Values.currents.email -}}
 {{- $transporter := $email.transporter | default "smtp" -}}
