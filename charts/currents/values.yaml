@@ -223,7 +223,9 @@ currents:
     onlyFrom: ""
     # -- Days the writer keeps steps in ClickHouse, rounded up to 7, 14, 21, 30, 60, 90,
     # 180 or 365. Empty keeps the default of 21. Applies to steps inserted after the
-    # writer restarts.
+    # writer restarts. To change it, scale the writer deployment to 0, upgrade, then
+    # scale it back: writers rolled one at a time can store two versions of one test
+    # with different expiry dates.
     # @section -- Test Steps in ClickHouse
     retentionDays: ""
   objectStorage:

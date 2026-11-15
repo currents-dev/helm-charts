@@ -318,7 +318,7 @@ Currents can keep the steps of each test attempt in ClickHouse instead of object
 |-------|---------|---------|--------------|
 | `currents.testSteps.dualWriteFrom` | `STEPS_CLICKHOUSE_DUAL_WRITE_FROM` | `director`, `writer` | Tests that start at or after this time write their steps to ClickHouse and to object storage. Dashboard and AI read them from object storage once Redis no longer has them. |
 | `currents.testSteps.onlyFrom` | `STEPS_CLICKHOUSE_ONLY_FROM` | `director`, `writer` | Tests that start at or after this time write steps to ClickHouse only, and read them from there. It wins over `dualWriteFrom` when both match. |
-| `currents.testSteps.retentionDays` | `STEPS_RETENTION_DAYS` | `writer` | Days steps stay in ClickHouse: 7, 14, 21, 30, 60, 90, 180 or 365. Other values round up. Default `21`. Applies to steps inserted after the writer restarts. |
+| `currents.testSteps.retentionDays` | `STEPS_RETENTION_DAYS` | `writer` | Days steps stay in ClickHouse: 7, 14, 21, 30, 60, 90, 180 or 365. Other values round up. Default `21`. Applies to steps inserted after the writer restarts. See [Changing the retention](#changing-the-retention). |
 
 Both times are ISO 8601 with a timezone, such as `2026-12-01T00:00:00Z`. The chart gives the two times to the `director` and the `writer` from the same values, so they cannot differ. Pods read them at startup, so set a time that has not come yet, and wait for the rollout to finish before it does. A pod still on the old value chooses the storage differently for tests that start after the new time. Tests that started before the time you set keep their steps in object storage. Steps in ClickHouse are deleted after the retention period.
 
@@ -365,6 +365,18 @@ To turn it on:
    ```
 
 Do not set `onlyFrom` unless the `writer`, the `server` and the `ai-queue-worker` reach ClickHouse. Without it the writer cannot insert steps and nothing else holds them, so the steps of those tests are lost. The dashboard and AI show no steps when the `server` or `ai-queue-worker` cannot read them.
+
+### Changing the retention
+
+To change `retentionDays`, stop all writers, then start them with the new value. Writers rolled one at a time can store two versions of one test with different expiry dates.
+
+```sh
+kubectl scale deploy/currents-writer --replicas=0
+helm upgrade <release> <chart> -f currents-helm-config.yaml
+kubectl scale deploy/currents-writer --replicas=<writer.replicas>
+```
+
+### Going back
 
 To go back, set both times to empty. New tests then write steps to object storage. Tests already stored in ClickHouse are still read from there.
 
