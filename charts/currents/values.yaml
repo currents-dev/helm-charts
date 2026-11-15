@@ -178,8 +178,8 @@ currents:
     # example `gitlab=https://gitlab.acme.internal` and
     # `github=https://ghes.acme.internal/_services/token`. The director and the server read it
     # and refuse to start with an invalid value, so it is rendered on both while the list is not
-    # empty, whether or not `enabled` is true. Each issuer is `https`, in lowercase, with no
-    # trailing slash, query or fragment. The director needs outbound https access to each host.
+    # empty, whether or not `enabled` is true. Each issuer is `https`, with the host in
+    # lowercase and no trailing slash, query or fragment. The director needs outbound https access to each host.
     # For a certificate from an internal CA, set `NODE_EXTRA_CA_CERTS` on the director with
     # `director.env`, `director.volumes` and `director.volumeMounts`. See
     # [CI OIDC Token Exchange](./eks/quickstart.md#ci-oidc-token-exchange-optional).
