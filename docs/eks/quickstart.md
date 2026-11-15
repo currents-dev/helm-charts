@@ -344,7 +344,17 @@ To turn it on:
        retentionDays: 30
    ```
 
-4. After that time, run tests. Open one in the dashboard more than 2 hours after its last update, when Redis has dropped it, and check that its steps show. Also check that ClickHouse has rows: `SELECT count() FROM test_attempt_steps`.
+4. After that time, run tests, then query `test_attempt_steps` in ClickHouse directly for tests that started after it:
+
+   ```sql
+   SELECT record_id, attempt, step_count
+   FROM default.test_attempt_steps
+   WHERE started_at >= toDateTime64('2026-12-01 00:00:00', 3, 'UTC')
+   ORDER BY started_at DESC
+   LIMIT 20
+   ```
+
+   Every completed attempt that has steps must have a row, and its `step_count` must match the steps in its object storage file, `<orgId>/steps/<runId>/<recordId>/<attempt>.json.gz`. The dashboard reads object storage for these tests, so it does not show whether ClickHouse has them.
 5. Set `onlyFrom` to a future time:
 
    ```yaml
