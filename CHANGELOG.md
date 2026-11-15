@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Added
-- `currents.oidcTokenExchange` turns on the director's CI OIDC token exchange, which gives a CI job a record key for 6 hours in exchange for the OIDC token of its CI provider. It is off by default. The director needs outbound https access to the CI providers, and `trustForwardedFor` has to be set deliberately. See [CI OIDC Token Exchange](docs/eks/quickstart.md#ci-oidc-token-exchange-optional).
+- `currents.oidcTokenExchange` turns on the director's CI OIDC token exchange, which gives a CI job a record key for 6 hours in exchange for the OIDC token of its CI provider. It is off by default. `audience` is required when it is on: a name you choose, such as `currents:record-key:acme`, which the CI jobs set as `CURRENTS_OIDC_AUDIENCE`. The director needs outbound https access to the CI providers, and `trustForwardedFor` has to be set deliberately. See [CI OIDC Token Exchange](docs/eks/quickstart.md#ci-oidc-token-exchange-optional).
 
 ## [currents-1.1.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.1.0) - 2026-11-13
 

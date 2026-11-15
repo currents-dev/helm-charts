@@ -222,7 +222,7 @@ ClickHouse data is loaded from an external export (scripts/org-import).
 - name: OIDC_TOKEN_EXCHANGE_ENABLED
   value: "true"
 - name: OIDC_TOKEN_AUDIENCE
-  value: {{ default (include "currents.url" (dict "context" . "input" .Values.currents.domains.recordApiHost)) $oidc.audience | quote }}
+  value: {{ required "currents.oidcTokenExchange.audience is required when currents.oidcTokenExchange.enabled is true: choose a name for this install, such as currents:record-key:<company>, and set the same value as CURRENTS_OIDC_AUDIENCE in the CI jobs" $oidc.audience | quote }}
 {{- if $oidc.trustForwardedFor }}
 - name: OIDC_TRUST_FORWARDED_FOR
   value: "true"

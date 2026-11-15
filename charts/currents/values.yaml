@@ -157,9 +157,12 @@ currents:
     # [CI OIDC Token Exchange](./eks/quickstart.md#ci-oidc-token-exchange-optional).
     # @section -- CI OIDC Token Exchange
     enabled: false
-    # -- The public URL of the director that reporters use as `CURRENTS_API_URL`. A token is
-    # accepted only when its audience is the origin of this URL. Defaults to the URL of
-    # `domains.recordApiHost`.
+    # -- Required when `enabled` is true, with no default: templating fails when it is empty.
+    # A name you choose for this install, such as `currents:record-key:acme`. It is not a URL,
+    # so a change of DNS does not affect it. A token is accepted only when its audience is exactly
+    # this string, so set the same value as `CURRENTS_OIDC_AUDIENCE` in the CI jobs. Do not use
+    # `currents:record-key`, the name Currents cloud uses: a token made for the cloud would then
+    # be accepted.
     # @section -- CI OIDC Token Exchange
     audience: ""
     # -- Count the exchange's requests per client address by the last `X-Forwarded-For` entry.
