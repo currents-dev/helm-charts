@@ -1,0 +1,60 @@
+name: Publish Docs
+
+# The Release Charts workflow publishes docs/ with each chart release. Run this
+# to publish a docs fix before the next release: branch from the release tag,
+# cherry-pick the fix from main, and run this workflow on that branch.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: publish-docs
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # main holds docs for chart and image changes that are not released yet,
+      # so the published docs come only from a released chart plus docs fixes.
+      - name: Check the branch is a release plus docs changes
+        run: |
+          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+            echo "::error::Run this on a branch cut from the release tag, not main. Release Charts publishes main's docs."
+            exit 1
+          fi
+          version=$(grep '^version:' charts/currents/Chart.yaml | awk '{print $2}')
+          tag="currents-${version}"
+          if ! git merge-base --is-ancestor "$tag" HEAD; then
+            echo "::error::$tag is not an ancestor of $GITHUB_REF. Branch from the release tag."
+            exit 1
+          fi
+          changed=$(git diff --name-only "$tag" HEAD -- . ':!docs/' ':!.github/' ':!scripts/' ':!README.md')
+          if [[ -n "$changed" ]]; then
+            echo "::error::Files outside docs/ differ from $tag:"
+            echo "$changed"
+            exit 1
+          fi
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Pin docs links to the release tag
+        run: ./scripts/pin-doc-links.sh
+
+      - name: Publish docs
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: docs
+          target-folder: docs
+          # Rebase onto gh-pages instead of force-pushing: chart-releaser and
+          # the release-0.8 docs deploy (0.8/docs) also push there.
+          force: false
