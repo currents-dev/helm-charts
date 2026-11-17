@@ -34,3 +34,52 @@ jobs:
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+  # The docs are published here, from the commit chart-releaser just released,
+  # rather than from a workflow on the currents-* tag: that tag is created with
+  # GITHUB_TOKEN, and such pushes start no other workflows.
+  docs:
+    needs: release
+    # A release not marked latest, such as a patch to an older minor, would
+    # replace the latest chart's docs at docs/.
+    if: ${{ github.event.inputs.markLatest == 'true' }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    # Shares a group with the Publish Docs workflow so two docs deploys never
+    # run at once. Only this job is in the group: a newer run replaces a
+    # pending one in the group, and that must not drop a chart release.
+    concurrency:
+      group: publish-docs
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # Publish from the release tag, not the dispatched commit. When the
+      # chart version was not bumped, chart-releaser skips the release, and the
+      # dispatched commit can hold docs for unreleased changes; the tag of that
+      # version then republishes the released docs.
+      - name: Check out the release tag
+        run: |
+          version=$(grep '^version:' charts/currents/Chart.yaml | awk '{print $2}')
+          git checkout "currents-${version}"
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Pin docs links to the release tag
+        run: ./scripts/pin-doc-links.sh
+
+      - name: Publish docs
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: docs
+          target-folder: docs
+          # Rebase onto gh-pages instead of force-pushing: chart-releaser and
+          # the release-0.8 docs deploy (0.8/docs) also push there.
+          force: false
