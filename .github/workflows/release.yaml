@@ -16,10 +16,6 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    # Shares a group with the Publish Docs workflow so two docs deploys never run at once.
-    concurrency:
-      group: publish-docs
-      cancel-in-progress: false
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -39,9 +35,32 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
-      # The docs are published here, from the commit chart-releaser just
-      # released, rather than from a workflow on the currents-* tag: that tag is
-      # created with GITHUB_TOKEN, and such pushes start no other workflows.
+  # The docs are published here, from the commit chart-releaser just released,
+  # rather than from a workflow on the currents-* tag: that tag is created with
+  # GITHUB_TOKEN, and such pushes start no other workflows.
+  docs:
+    needs: release
+    # A release not marked latest, such as a patch to an older minor, would
+    # replace the latest chart's docs at docs/.
+    if: ${{ github.event.inputs.markLatest == 'true' }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    # Shares a group with the Publish Docs workflow so two docs deploys never
+    # run at once. Only this job is in the group: a newer run replaces a
+    # pending one in the group, and that must not drop a chart release.
+    concurrency:
+      group: publish-docs
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
       - name: Pin docs links to the release tag
         run: ./scripts/pin-doc-links.sh
 

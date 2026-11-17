@@ -45,4 +45,4 @@ To publish a docs fix before the next release:
 
 - `git checkout -b docs-fix/currents-<version> currents-<version>`
 - Cherry-pick the fix from `main`. If the tag predates the `Publish Docs` workflow, cherry-pick it too.
-- Push the branch and run the `Publish Docs` workflow on it. It refuses `main` and branches that change files outside `docs/`, `.github/`, `scripts/` and `README.md`.
+- Push the branch and run the `Publish Docs` workflow on it. It refuses `main`, branches not based on the latest release, and branches that change files outside `docs/`, `.github/`, `scripts/` and `README.md`.

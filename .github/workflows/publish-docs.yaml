@@ -31,6 +31,11 @@ jobs:
           fi
           version=$(grep '^version:' charts/currents/Chart.yaml | awk '{print $2}')
           tag="currents-${version}"
+          latest=$(git tag -l 'currents-*' --sort=-v:refname | head -1)
+          if [[ "$tag" != "$latest" ]]; then
+            echo "::error::This branch is based on $tag, but the latest release is $latest. Publishing it would replace the latest docs."
+            exit 1
+          fi
           if ! git merge-base --is-ancestor "$tag" HEAD; then
             echo "::error::$tag is not an ancestor of $GITHUB_REF. Branch from the release tag."
             exit 1
