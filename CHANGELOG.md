@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- **Test steps in ClickHouse, off by default.** `currents.testSteps.dualWriteFrom` and `currents.testSteps.onlyFrom` choose, by the time a test starts, whether its steps go to ClickHouse as well as object storage, or to ClickHouse only. The `director` and the `writer` get the same values. `currents.testSteps.retentionDays` sets how long the `writer` keeps them (default 21). Nothing changes until you set a time. Needs images that include the feature; see [Test Steps in ClickHouse](docs/eks/quickstart.md#test-steps-in-clickhouse-optional).
+
 ## [currents-1.1.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.1.0) - 2026-11-13
 
 Images `2026-11-10-003`: trace links served by the API, AI tasks in an optional `ai-queue-worker` deployment, and a pre-upgrade check of the MongoDB index builds. Upgrade from `1.0.x` following [Upgrading to Chart 1.1](docs/eks/upgrade-1.1.md); from `0.8.x`, follow [Upgrading to Chart 1.0](docs/eks/upgrade-1.0.md) as well.

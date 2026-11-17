@@ -310,6 +310,80 @@ server:
 
 To get a trace link and read it with an agent, see [Read a Trace with an Agent](./read-a-trace.md).
 
+## Test Steps in ClickHouse (Optional)
+
+Currents can keep the steps of each test attempt in ClickHouse instead of object storage. It is off by default: until you set a time below, steps stay in object storage.
+
+| Value | Env var | Service | What it does |
+|-------|---------|---------|--------------|
+| `currents.testSteps.dualWriteFrom` | `STEPS_CLICKHOUSE_DUAL_WRITE_FROM` | `director`, `writer` | Tests that start at or after this time write their steps to ClickHouse and to object storage. Dashboard and AI read them from object storage once Redis no longer has them. |
+| `currents.testSteps.onlyFrom` | `STEPS_CLICKHOUSE_ONLY_FROM` | `director`, `writer` | Tests that start at or after this time write steps to ClickHouse only, and read them from there. It wins over `dualWriteFrom` when both match. |
+| `currents.testSteps.retentionDays` | `STEPS_RETENTION_DAYS` | `writer` | Days steps stay in ClickHouse: 7, 14, 21, 30, 60, 90, 180 or 365. Other values round up. Default `21`. Applies to steps inserted after the writer restarts. See [Changing the retention](#changing-the-retention). |
+
+Both times are ISO 8601 with a timezone, such as `2026-12-01T00:00:00Z`. The chart gives the two times to the `director` and the `writer` from the same values, so they cannot differ. Pods read them at startup, so set a time that has not come yet, and wait for the rollout to finish before it does. A pod still on the old value chooses the storage differently for tests that start after the new time. Tests that started before the time you set keep their steps in object storage. Steps in ClickHouse are deleted after the retention period.
+
+The chart has no separate test-record ingestion service: the `director` does that work.
+
+To turn it on:
+
+1. Upgrade to images that include this feature. The scheduler creates the `test_attempt_steps` table in ClickHouse when it starts, and the table stays empty until you set a time.
+2. Check that `writer`, `server` and `ai-queue-worker` reach ClickHouse. The chart gives every pod `CLICKHOUSE_URL` and the credentials from `currents.clickhouse`, so this holds unless you override them in `global.env` or a service's `env`. The `server` and `ai-queue-worker` read steps from ClickHouse, and the `writer` inserts them:
+
+   ```sh
+   kubectl exec deploy/<fullname>-writer -- env | grep CLICKHOUSE_
+   kubectl exec deploy/<fullname>-server -- env | grep CLICKHOUSE_
+   kubectl exec deploy/<fullname>-ai-queue-worker -- env | grep CLICKHOUSE_
+   ```
+
+   `<fullname>` is the release name if it contains `currents`, and `<release>-currents` otherwise.
+
+3. Set `dualWriteFrom` to a future time, and `retentionDays` if 21 days is not right, then upgrade the release:
+
+   ```yaml
+   currents:
+     testSteps:
+       dualWriteFrom: "2026-12-01T00:00:00Z"
+       retentionDays: 30
+   ```
+
+4. After that time, run tests, then query `test_attempt_steps` in ClickHouse directly for tests that started after it:
+
+   ```sql
+   SELECT record_id, attempt, step_count
+   FROM default.test_attempt_steps
+   WHERE started_at >= toDateTime64('2026-12-01 00:00:00', 3, 'UTC')
+   ORDER BY started_at DESC
+   LIMIT 20
+   ```
+
+   Every completed attempt that has steps must have a row, and its `step_count` must match the steps in its object storage file, `<orgId>/steps/<runId>/<recordId>/<attempt>.json.gz`. The dashboard reads object storage for these tests, so it does not show whether ClickHouse has them.
+5. Set `onlyFrom` to a future time:
+
+   ```yaml
+   currents:
+     testSteps:
+       dualWriteFrom: "2026-12-01T00:00:00Z"
+       onlyFrom: "2026-12-08T00:00:00Z"
+   ```
+
+Do not set `onlyFrom` unless the `writer`, the `server` and the `ai-queue-worker` reach ClickHouse. Without it the writer cannot insert steps and nothing else holds them, so the steps of those tests are lost. The dashboard and AI show no steps when the `server` or `ai-queue-worker` cannot read them.
+
+### Changing the retention
+
+To change `retentionDays`, stop all writers, then start them with the new value. Writers rolled one at a time can store two versions of one test with different expiry dates.
+
+```sh
+kubectl scale deploy -l app.kubernetes.io/component=writer --replicas=0
+# Wait until no writer pod is left, including Terminating ones, so in-flight inserts finish
+kubectl get pods -l app.kubernetes.io/component=writer
+helm upgrade <release> <chart> -f currents-helm-config.yaml
+kubectl scale deploy -l app.kubernetes.io/component=writer --replicas=<writer.replicas>
+```
+
+### Going back
+
+To go back, set both times to empty. New tests then write steps to object storage. Tests already stored in ClickHouse are still read from there.
+
 ## Enable SAML SSO (optional)
 
 Delegate sign-in to your SAML 2.0 identity provider (Okta, Microsoft Entra ID, etc.). Users sign in **email-first** — they enter their email, are redirected to your IdP to authenticate, and are auto-provisioned into your organization on return. SMTP must be configured (used for provisioning and invitations).
