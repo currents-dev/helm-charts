@@ -55,6 +55,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # Publish from the release tag, not the dispatched commit. When the
+      # chart version was not bumped, chart-releaser skips the release, and the
+      # dispatched commit can hold docs for unreleased changes; the tag of that
+      # version then republishes the released docs.
+      - name: Check out the release tag
+        run: |
+          version=$(grep '^version:' charts/currents/Chart.yaml | awk '{print $2}')
+          git checkout "currents-${version}"
 
       - name: Configure Git
         run: |

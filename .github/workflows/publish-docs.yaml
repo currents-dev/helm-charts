@@ -31,7 +31,9 @@ jobs:
           fi
           version=$(grep '^version:' charts/currents/Chart.yaml | awk '{print $2}')
           tag="currents-${version}"
-          latest=$(git tag -l 'currents-*' --sort=-v:refname | head -1)
+          # Only stable X.Y.Z tags count: version sort can put a prerelease
+          # such as currents-1.2.0-rc.1 after currents-1.2.0.
+          latest=$(git tag -l 'currents-*' --sort=-v:refname | grep -E '^currents-[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
           if [[ "$tag" != "$latest" ]]; then
             echo "::error::This branch is based on $tag, but the latest release is $latest. Publishing it would replace the latest docs."
             exit 1
