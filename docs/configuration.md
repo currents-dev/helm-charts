@@ -99,9 +99,7 @@ The following table lists the configurable parameters of the `currents` chart an
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| currents.testSteps.dualWriteFrom | string | `""` | Store test steps in ClickHouse for tests that start at or after this time, in object storage as well. An ISO 8601 timestamp with a timezone, for example `2026-12-01T00:00:00Z`. Empty keeps steps in object storage only. Set it to a time that has not come yet, after the pods have rolled. The director and the writer both get this value. See [Test Steps in ClickHouse](./eks/quickstart.md#test-steps-in-clickhouse-optional). |
-| currents.testSteps.onlyFrom | string | `""` | Store test steps in ClickHouse only, and read them from there, for tests that start at or after this time. Same format as `dualWriteFrom`, and it wins when both match. Set it only after steps from `dualWriteFrom` show in the dashboard, and only when the writer, the server and `aiQueueWorker` reach ClickHouse: with ClickHouse unreachable, new steps are lost. |
-| currents.testSteps.retentionDays | string | `""` | Days the writer keeps steps in ClickHouse, rounded up to 7, 14, 21, 30, 60, 90, 180 or 365. Empty keeps the default of 21. Applies to steps inserted after the writer restarts. To change it, scale the writer deployment to 0, wait until no writer pod is left (including Terminating ones), upgrade, then scale it back: writers rolled one at a time can store two versions of one test with different expiry dates. |
+| currents.testSteps.retentionDays | string | `""` | Days the writer keeps steps in ClickHouse, rounded up to 7, 14, 21, 30, 60, 90, 180 or 365. Empty keeps the default of 21. Applies to steps inserted after the writer restarts. To change it, scale the writer deployment to 0, wait until no writer pod is left (including Terminating ones), upgrade, then scale it back: writers rolled one at a time can store two versions of one test with different expiry dates. See [Test Steps in ClickHouse](./eks/quickstart.md#test-steps-in-clickhouse). |
 
 ### App Content Storage
 
