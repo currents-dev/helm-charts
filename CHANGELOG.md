@@ -2,8 +2,13 @@
 
 ## [Unreleased]
 
+### Upgrade Notes
+- **Test steps are stored in ClickHouse, in the `test_attempt_steps` table.** Before upgrading, check that the `writer`, `server` and `ai-queue-worker` reach ClickHouse. If the `writer` can't, the steps of new tests are lost. If the `server` or `ai-queue-worker` can't, the dashboard, AI and MCP show no steps for a test 2 hours after it is recorded. The chart gives every pod the ClickHouse settings from `currents.clickhouse`, so check only overrides in `global.env` or a service's `env`. See [Test Steps in ClickHouse](docs/eks/quickstart.md#test-steps-in-clickhouse).
+- **Steps of tests recorded before the upgrade no longer show** in the dashboard, AI or MCP. The images read steps only from ClickHouse, not from object storage or MongoDB. After the upgrade you can delete the files under `<orgId>/steps/` in the object storage bucket.
+- If you set `STEPS_CLICKHOUSE_DUAL_WRITE_FROM` or `STEPS_CLICKHOUSE_ONLY_FROM` in `global.env` or a service's `env`, remove them. The images don't read them.
+
 ### Added
-- **Test steps in ClickHouse, off by default.** `currents.testSteps.dualWriteFrom` and `currents.testSteps.onlyFrom` choose, by the time a test starts, whether its steps go to ClickHouse as well as object storage, or to ClickHouse only. The `director` and the `writer` get the same values. `currents.testSteps.retentionDays` sets how long the `writer` keeps them (default 21). Nothing changes until you set a time. Needs images that include the feature; see [Test Steps in ClickHouse](docs/eks/quickstart.md#test-steps-in-clickhouse-optional).
+- `currents.testSteps.retentionDays`: days the `writer` keeps test steps in ClickHouse (default 21). See [Changing the retention](docs/eks/quickstart.md#changing-the-retention) before you change it.
 
 ## [currents-1.1.0](https://github.com/currents-dev/helm-charts/releases/tag/currents-1.1.0) - 2026-11-13
 

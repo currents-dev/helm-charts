@@ -56,9 +56,6 @@ spec:
           {{- end }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
           {{- include "currents.URLConfigEnv" . | nindent 12 }}
-          {{- with include "currents.testStepsEnv" . }}
-            {{- . | nindent 12 }}
-          {{- end }}
             - name: API_URL
               value: http://{{ include "currents.server.fullname" . }}/api/v1
             - name: API_SECRET
