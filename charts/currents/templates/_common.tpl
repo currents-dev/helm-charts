@@ -214,6 +214,81 @@ ClickHouse data is loaded from an external export (scripts/org-import).
 {{- end }}
 {{- end -}}
 
+{{- /* The director's CI OIDC token exchange. Nothing is rendered while it is off,
+       and the director then answers POST /oidc/token with 404. */}}
+{{- define "currents.oidcTokenExchangeEnv" -}}
+{{- $oidc := .Values.currents.oidcTokenExchange -}}
+{{- if $oidc.enabled }}
+{{- /* The director trims the audience, so a value of only spaces would pass
+       `required` and leave the exchange answering "not configured". */}}
+{{- $audience := trim (default "" $oidc.audience | toString) }}
+- name: OIDC_TOKEN_EXCHANGE_ENABLED
+  value: "true"
+- name: OIDC_TOKEN_AUDIENCE
+  value: {{ required "currents.oidcTokenExchange.audience is required when currents.oidcTokenExchange.enabled is true: choose a name for this install, such as currents:record-key:<company>, and ask for it as the audience in the CI jobs" $audience | quote }}
+{{- if $oidc.trustForwardedFor }}
+- name: OIDC_TRUST_FORWARDED_FOR
+  value: "true"
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{- /* The director's CI OIDC API token exchange. Nothing is rendered while it is
+       off, and the director then answers POST /oidc/api/token with 404. */}}
+{{- define "currents.oidcApiTokenExchangeEnv" -}}
+{{- $api := .Values.currents.oidcApiTokens -}}
+{{- if $api.enabled }}
+{{- /* The director trims the audience, so a value of only spaces would pass
+       `required` and leave the exchange answering "not configured". */}}
+{{- $audience := trim (default "" $api.audience | toString) }}
+{{- $record := .Values.currents.oidcTokenExchange }}
+{{- if and $record.enabled (eq $audience (trim (default "" $record.audience | toString))) }}
+{{- fail "currents.oidcApiTokens.audience must differ from currents.oidcTokenExchange.audience: a CI token requested for recording could otherwise be exchanged for an API token" }}
+{{- end }}
+- name: OIDC_API_TOKEN_EXCHANGE_ENABLED
+  value: "true"
+- name: OIDC_API_TOKEN_AUDIENCE
+  value: {{ required "currents.oidcApiTokens.audience is required when currents.oidcApiTokens.enabled is true: choose a name for this install, such as currents:api:<company>, and ask for it as the audience in the CI jobs" $audience | quote }}
+{{- if and $record.trustForwardedFor (not $record.enabled) }}
+- name: OIDC_TRUST_FORWARDED_FOR
+  value: "true"
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{- /* OIDC_API_POLICIES_ENABLED, read by the server. Nothing is rendered while it is off. */}}
+{{- define "currents.oidcApiPoliciesEnv" -}}
+{{- if .Values.currents.oidcApiTokens.policiesEnabled }}
+- name: OIDC_API_POLICIES_ENABLED
+  value: "true"
+{{- end }}
+{{- end -}}
+
+{{- /* OIDC_EXTRA_ISSUERS, read by the director and the server. Nothing is rendered
+       while the list is empty. A list item is `provider=issuer`; a string of
+       comma-separated entries is accepted too. The services check the rest of
+       the rules at start. */}}
+{{- define "currents.oidcExtraIssuersEnv" -}}
+{{- $issuers := .Values.currents.oidcTokenExchange.extraIssuers | default list -}}
+{{- if kindIs "string" $issuers }}
+{{- $issuers = splitList "," $issuers }}
+{{- end }}
+{{- $entries := list }}
+{{- range $issuers }}
+{{- $entry := trim (toString .) }}
+{{- if $entry }}
+{{- if not (regexMatch "^(github|gitlab)=https://" $entry) }}
+{{- fail (printf "currents.oidcTokenExchange.extraIssuers: %q is not a provider=issuer entry. The provider is github or gitlab and the issuer starts with https://, for example gitlab=https://gitlab.acme.internal" $entry) }}
+{{- end }}
+{{- $entries = append $entries $entry }}
+{{- end }}
+{{- end }}
+{{- if $entries }}
+- name: OIDC_EXTRA_ISSUERS
+  value: {{ join "," $entries | quote }}
+{{- end }}
+{{- end -}}
+
 {{- define "currents.emailEnv" -}}
 {{- $email := .Values.currents.email -}}
 {{- $transporter := $email.transporter | default "smtp" -}}

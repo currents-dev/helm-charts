@@ -56,6 +56,11 @@ spec:
           {{- end }}
           {{- include "currents.connectionConfigEnv" . | nindent 12 }}
           {{- include "currents.URLConfigEnv" . | nindent 12 }}
+          {{- include "currents.oidcTokenExchangeEnv" . | nindent 12 }}
+          {{- with include "currents.oidcApiTokenExchangeEnv" . }}
+            {{- . | nindent 12 }}
+          {{- end }}
+          {{- include "currents.oidcExtraIssuersEnv" . | nindent 12 }}
           {{- with include "currents.testStepsEnv" . }}
             {{- . | nindent 12 }}
           {{- end }}
