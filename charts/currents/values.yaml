@@ -149,8 +149,9 @@ currents:
     # @section -- Remote MCP and OAuth
     clientIdMetadataDocuments: true
   oidcTokenExchange:
-    # -- Let a CI job get a record key, valid for 6 hours, in exchange for the OIDC token its CI
-    # provider gives it, so no record key is stored as a CI secret. Off by default. The director
+    # -- Let a CI job get a record key in exchange for the OIDC token its CI
+    # provider gives it, so no record key is stored as a CI secret. The trust policy sets how long
+    # the key lasts: 6 hours by default, 15 minutes to 24 hours. Off by default. The director
     # then needs outbound https access to the CI providers' public OIDC endpoints (GitHub Actions,
     # GitLab.com, CircleCI, Buildkite, Bitbucket Pipelines): it does not work without internet
     # access, unless the issuers are self-managed ones listed in `extraIssuers`. See
@@ -186,8 +187,9 @@ currents:
     # @section -- CI OIDC Token Exchange
     extraIssuers: []
   oidcApiTokens:
-    # -- Let a CI job get an API token, valid for 6 hours, in exchange for the OIDC token its CI
-    # provider gives it, so no API key is stored as a CI secret. Off by default. It is separate
+    # -- Let a CI job get an API token in exchange for the OIDC token its CI
+    # provider gives it, so no API key is stored as a CI secret. The trust policy sets how long
+    # the token lasts: 15 minutes by default, 5 minutes to 6 hours. Off by default. It is separate
     # from `oidcTokenExchange.enabled`: either can be on without the other. The director needs the
     # same outbound https access as for `oidcTokenExchange`, and uses
     # `oidcTokenExchange.trustForwardedFor` and `oidcTokenExchange.extraIssuers`. See
