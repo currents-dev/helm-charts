@@ -15,7 +15,7 @@ The release process for the Currents Helm Chart involves
 - Bump the Helm chart version
 - Push the branch up to GitHub
 - Merge the release to `main`
-- Run the GitHub actions release task
+- Run the GitHub actions release task, which also publishes the docs
 
 ### Scripts
 
@@ -34,4 +34,15 @@ The release process for the Currents Helm Chart involves
 - Merge the PR to `main` once the tests have passed
 - Trigger the `Release Charts` GitHub workflow action manually from the GitHub Actions UI
   - This will package the chart and create a new GitHub release with its artifact
-  - This will also automatically update our Helm Chart repository index, making the new chart visible to users of our Helm repository   
+  - This will also automatically update our Helm Chart repository index, making the new chart visible to users of our Helm repository
+  - This will publish `docs/` from the released commit
+
+## Docs
+
+The docs at https://currents-dev.github.io/helm-charts/docs/ describe the latest released chart. Merging to `main` does not publish them: docs for unreleased changes merge with those changes and go live with the next `Release Charts` run. On publish, `scripts/pin-doc-links.sh` points links to this repo's files at the release tag instead of `main`.
+
+To publish a docs fix before the next release:
+
+- `git checkout -b docs-fix/currents-<version> currents-<version>`
+- Cherry-pick the fix from `main`. If the tag predates the `Publish Docs` workflow, cherry-pick it too.
+- Push the branch and run the `Publish Docs` workflow on it. It refuses `main`, branches not based on the latest release, and branches that change files outside `docs/`, `.github/`, `scripts/` and `README.md`.
