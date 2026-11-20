@@ -353,6 +353,32 @@ currents:
 
 See [CI OIDC Token Exchange](../configuration.md#ci-oidc-token-exchange) for the values.
 
+## CI OIDC API Tokens (Optional)
+
+A CI job can also get an API token from the OIDC token its CI provider gives it, so no API key is stored as a CI secret. The token is valid for 6 hours. An organization admin adds an API token trust policy for each repository or owner in the dashboard; a job without a matching policy is refused. This is separate from the record key exchange above: either can be on without the other.
+
+| Value | Env var | Service | What it does |
+|-------|---------|---------|--------------|
+| `currents.oidcApiTokens.enabled` | `OIDC_API_TOKEN_EXCHANGE_ENABLED` | `director` | Turns on `POST /oidc/api/token`. Off, it answers 404. Revoking a token works either way. |
+| `currents.oidcApiTokens.audience` | `OIDC_API_TOKEN_AUDIENCE` | `director` | The audience a CI token must have. Required when `enabled` is true; no default. |
+| `currents.oidcApiTokens.policiesEnabled` | `OIDC_API_POLICIES_ENABLED` | `server` | Lets admins add API token trust policies in the dashboard. Off, the server refuses to add them; existing ones can still be listed and removed. |
+
+```yaml
+currents:
+  oidcApiTokens:
+    enabled: true
+    audience: currents:api:<company>  # required, differs from oidcTokenExchange.audience
+    policiesEnabled: true
+```
+
+All three are off by default and render nothing while off. The images have to include the API token exchange.
+
+- **Audience.** Pick a name for your install, such as `currents:api:<company>`; it is not a URL. It must differ from `currents.oidcTokenExchange.audience`: templating fails when both exchanges are on with the same name, and the director does not start with equal names, because a CI token requested for recording could then be exchanged for an API token. The CI job asks its provider for a token with this audience.
+- **Shared settings.** The API token exchange uses `currents.oidcTokenExchange.extraIssuers` for self-managed GitLab and GitHub Enterprise Server, and `currents.oidcTokenExchange.trustForwardedFor` for counting requests per address. Both apply with `currents.oidcTokenExchange.enabled` off. The network requirements of [CI OIDC Token Exchange](#ci-oidc-token-exchange-optional) apply to the director here too.
+- **Policies.** Set `policiesEnabled` together with `enabled`. A policy does nothing while the exchange is off.
+
+See [CI OIDC API Tokens](../configuration.md#ci-oidc-api-tokens) for the values.
+
 ## Test Steps in ClickHouse (Optional)
 
 Currents can keep the steps of each test attempt in ClickHouse instead of object storage. It is off by default: until you set a time below, steps stay in object storage.
