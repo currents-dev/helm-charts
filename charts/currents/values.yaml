@@ -1119,6 +1119,35 @@ indexes:
   affinity: {}
 # END Index Configuration
 
+# Migration Configuration
+# The previous release keeps serving while the new pods roll, and the scheduler
+# runs data migrations when it starts. A migration whose data the new code
+# needs from its first request, such as a credential hash the previous release
+# ignores, runs before any pod rolls instead: this section runs a `pre-upgrade`
+# hook Job, after the index check, that runs only those. The scheduler runs the
+# rest at startup.
+migrations:
+  name: migrations
+  preUpgrade:
+    # -- Run the pre-upgrade migration Job. With `false`, the scheduler runs
+    # these migrations at startup, and the new pods refuse what depends on them
+    # until it has.
+    enabled: true
+  # -- Additional environment variables for the pre-upgrade migration Job.
+  env: []
+  # -- Resource limits for the pre-upgrade migration Job.
+  resources: {}
+  # -- [Node selector] for the pre-upgrade migration Job
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+  # -- [Tolerations] for use with node taints
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
+  # -- Assign custom [affinity] rules to the pod
+  # @default -- `{}` (defaults to the global.affinity preset)
+  affinity: {}
+# END Migration Configuration
+
 # Service Account Configuration
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:

@@ -306,6 +306,13 @@ The following table lists the configurable parameters of the `currents` chart an
 | indexes.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] for the pre-upgrade Job |
 | indexes.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
 | indexes.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the pod |
+| migrations.name | string | `"migrations"` |  |
+| migrations.preUpgrade.enabled | bool | `true` | Run the pre-upgrade migration Job. With `false`, the scheduler runs these migrations at startup, and the new pods refuse what depends on them until it has. |
+| migrations.env | list | `[]` | Additional environment variables for the pre-upgrade migration Job. |
+| migrations.resources | object | `{}` | Resource limits for the pre-upgrade migration Job. |
+| migrations.nodeSelector | object | `{}` (defaults to global.nodeSelector) | [Node selector] for the pre-upgrade migration Job |
+| migrations.tolerations | list | `[]` (defaults to global.tolerations) | [Tolerations] for use with node taints |
+| migrations.affinity | object | `{}` (defaults to the global.affinity preset) | Assign custom [affinity] rules to the pod |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | If not set and create is true, a name is generated using the fullname template | The name of the service account to use. |
 | serviceAccount.annotations | object | `{}` | Optional additional annotations to add to the Service Account. Templates are allowed for both keys and values. |

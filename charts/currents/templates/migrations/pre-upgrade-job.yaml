@@ -1,0 +1,121 @@
+{{- if .Values.migrations.preUpgrade.enabled }}
+{{/*
+Pre-upgrade migrations.
+
+A Helm upgrade rolls pods one at a time, so the previous release keeps serving
+while the new scheduler runs data migrations at startup. A migration marked
+`beforeUpgrade` adds data the new code needs and the previous release ignores,
+such as a credential hash: run at startup, the new pods would refuse those
+credentials until it finished. This Job runs only those migrations, with the new
+image's `migrate` CLI, before any pod rolls.
+
+A failed migration fails the Job, and Helm stops the upgrade with the running
+release untouched. Migrations that finished stay applied, and the next upgrade
+skips them. The log is where the failing migration is named, hence the delete
+policy below.
+
+If another runner holds the migration lock, `up` logs that and exits 0. The
+scheduler then runs these migrations at startup.
+*/}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "currents.migrations.fullname" . }}
+  labels:
+    {{- include "currents.labels" (dict "context" . "component" .Values.migrations.name) | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade
+    {{- /* After the index check (-10): an upgrade that check stops should not
+           have changed any data first. */}}
+    helm.sh/hook-weight: "-5"
+    {{- /* Not hook-failed, which deletes the pod and its log as soon as the
+           Job fails. */}}
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  # One attempt. A migration that failed once fails the same way on a retry,
+  # and the next upgrade runs it again.
+  backoffLimit: 0
+  template:
+    metadata:
+      {{- with .Values.global.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "currents.labels" (dict "context" . "component" .Values.migrations.name) | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- /* The scheduler's account, as for the index check, with the same
+             problem when an upgrade creates or renames it: see
+             docs/eks/upgrading.md. */}}
+      serviceAccountName: {{ include "currents.serviceAccountName" . }}
+      {{- with .Values.global.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+        - name: migrations
+          {{- with .Values.global.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- /* The scheduler image, which carries the migrations and the
+                 migrate CLI. */}}
+          image: {{ include "currents.image" (dict "context" . "imageRoot" .Values.scheduler.image) }}
+          imagePullPolicy: {{ default .Values.global.imagePullPolicy .Values.scheduler.image.pullPolicy }}
+          {{- /* A CLI from before migration phases ignores `--phase` and runs
+                 every pending migration, including those the previous
+                 release can't run alongside. Such an image has no
+                 `beforeUpgrade` migrations, so the Job leaves everything to
+                 the scheduler, as when `currents.imageTag` pins an older
+                 release. */}}
+          command:
+            - sh
+            - -c
+            - |
+              cli=/app/packages/mongo/dist/scripts/migrate.js
+              if ! grep -q before-upgrade "$cli"; then
+                echo "This image's migrate CLI has no --phase; the scheduler runs its migrations at startup."
+                exit 0
+              fi
+              exec node "$cli" up --phase before-upgrade
+          env:
+            - name: CURRENTS_ENV
+              value: "onprem"
+            {{- /* readOnlyRootFilesystem: see the index check. */}}
+            - name: HOME
+              value: /tmp
+            {{- include "currents.connectionConfigEnv" . | nindent 12 }}
+            {{- with (concat .Values.global.env .Values.migrations.env) }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.migrations.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.migrations.nodeSelector | default .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.migrations.tolerations | default .Values.global.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.migrations.affinity | default .Values.global.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

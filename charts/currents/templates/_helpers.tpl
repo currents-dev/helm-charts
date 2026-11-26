@@ -61,6 +61,13 @@ Create the pre-upgrade index check name as used by the chart label.
 {{- printf "%s-%s" (include "currents.fullname" .) .Values.indexes.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+Create the pre-upgrade migration Job name as used by the chart label.
+*/}}
+{{- define "currents.migrations.fullname" -}}
+{{- printf "%s-%s" (include "currents.fullname" .) .Values.migrations.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "currents.url" -}}
 {{- if .context.Values.currents.domains.https -}}
 {{- printf "https://%s" .input -}}
