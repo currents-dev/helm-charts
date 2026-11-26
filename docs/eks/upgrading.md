@@ -203,7 +203,21 @@ kubectl get pods -n currents -o custom-columns=NAME:.metadata.name,IMAGE:.spec.c
 
 ## Database Migrations and Startup Tasks
 
-The scheduler component runs startup tasks (including migrations) on startup and logs `Startup tasks complete` when they finish. On a large dataset they can take several minutes. The scheduler pod reports ready while they run, so a finished `kubectl rollout status` doesn't mean the migrations are done.
+After the index check, a second `pre-upgrade` hook Job, `currents-migrations`, runs the data migrations the new release needs before it serves anything, such as a hash of a credential the previous release stores in plaintext. Each upgrade runs only that release's migrations of this kind and skips the ones already applied, so it usually finishes in seconds. If one fails, Helm stops the upgrade with the running release untouched:
+
+```
+Error: UPGRADE FAILED: pre-upgrade hooks failed: job currents-migrations failed: BackoffLimitExceeded
+```
+
+The Job's log names the migration and the error:
+
+```bash
+kubectl logs -n currents job/currents-migrations
+```
+
+Fix the cause and run the upgrade again. Migrations that finished stay applied, so the next run starts at the one that failed. To upgrade without the Job, pass `--set migrations.preUpgrade.enabled=false`. The scheduler then runs those migrations at startup, and until it has, the new pods refuse what depends on them, such as API keys.
+
+The scheduler component runs startup tasks (including the remaining migrations) on startup and logs `Startup tasks complete` when they finish. On a large dataset they can take several minutes. The scheduler pod reports ready while they run, so a finished `kubectl rollout status` doesn't mean the migrations are done.
 
 Check scheduler logs during/after upgrades:
 
@@ -227,6 +241,8 @@ If you need to rollback:
 helm history currents -n currents
 helm rollback currents <revision> -n currents
 ```
+
+Migrations the upgrade ran stay applied after a rollback. The previous release ignores most of them. The upgrade guide for a version lists any it can't run alongside.
 
 Then verify pod health:
 
@@ -275,7 +291,7 @@ If the Job ends in `DeadlineExceeded` and `kubectl logs` finds no pod, the pod w
 error looking up service account currents/<name>: serviceaccount "<name>" not found
 ```
 
-then this upgrade changes `serviceAccount.name`, turns on `serviceAccount.create`, or names an account that does not exist yet. The Job runs as that account and before the chart creates anything, so the account is not there. Run this one upgrade with the same `--set indexes.preUpgrade.mode=off`; from the next upgrade the check runs as the new account.
+then this upgrade changes `serviceAccount.name`, turns on `serviceAccount.create`, or names an account that does not exist yet. The Job runs as that account and before the chart creates anything, so the account is not there. Run this one upgrade with the same `--set indexes.preUpgrade.mode=off`, and `--set migrations.preUpgrade.enabled=false` for `currents-migrations`, which runs as the same account; from the next upgrade both Jobs run as the new account.
 
 The check stops the upgrade whenever it cannot reach a verdict, rather than assuming the build is short. An upgrade it blocks for a reason you have read and accepted costs one flag; one it waves through silently costs the hour it exists to warn you about.
 
